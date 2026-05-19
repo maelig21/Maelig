@@ -182,7 +182,7 @@ export async function saveDevis(payload: DevisPayload, action: "draft" | "send" 
 }
 
 export async function changeDevisStatut(devisId: string, statut: string) {
-  const allowed = ["brouillon","en_attente_validation","signe_non_paye","facture_en_attente","facture_payee","facture_abandonnee"]
+  const allowed = ["brouillon","en_attente_validation_patron","en_attente_validation","signe_non_paye","facture_en_attente","facture_payee","facture_abandonnee"]
   if (!allowed.includes(statut)) throw new Error("statut_invalid")
   const { supabase, orgId } = await getOrg()
   const { error } = await supabase.from("devis")
@@ -190,6 +190,46 @@ export async function changeDevisStatut(devisId: string, statut: string) {
     .eq("id", devisId).eq("org_id", orgId)
   if (error) throw new Error(error.message)
   revalidatePath("/app")
+  revalidatePath(`/app/devis/${devisId}`)
+  return { ok: true }
+}
+
+/**
+ * Patron valide un devis créé par un esclave : statut bascule vers
+ * en_attente_validation (côté client) et un email part automatiquement.
+ */
+export async function approveSlaveDevis(devisId: string) {
+  const { supabase, orgId, role } = await getOrg()
+  if (role !== "owner" && role !== "admin_dep") throw new Error("forbidden_only_owner")
+  const { error } = await supabase
+    .from("devis")
+    .update({ statut: "en_attente_validation" as never, date_envoi_email: new Date().toISOString() })
+    .eq("id", devisId)
+    .eq("org_id", orgId)
+    .eq("statut", "en_attente_validation_patron")
+  if (error) throw new Error(error.message)
+  // TODO : envoyer email client via Resend ici (templates.devisEnvoiTemplate)
+  revalidatePath("/app")
+  revalidatePath("/app/devis/a-valider")
+  revalidatePath(`/app/devis/${devisId}`)
+  return { ok: true }
+}
+
+/**
+ * Patron rejette un devis : retour brouillon avec un message au slave.
+ */
+export async function rejectSlaveDevis(devisId: string, raison: string) {
+  const { supabase, orgId, role } = await getOrg()
+  if (role !== "owner" && role !== "admin_dep") throw new Error("forbidden_only_owner")
+  const { data: devis } = await supabase.from("devis").select("notes_internes").eq("id", devisId).maybeSingle()
+  const note = (devis?.notes_internes ?? "") + `\n[Rejet patron ${new Date().toLocaleString("fr-FR")}] ${raison}`
+  const { error } = await supabase
+    .from("devis")
+    .update({ statut: "brouillon" as never, notes_internes: note })
+    .eq("id", devisId)
+    .eq("org_id", orgId)
+  if (error) throw new Error(error.message)
+  revalidatePath("/app/devis/a-valider")
   revalidatePath(`/app/devis/${devisId}`)
   return { ok: true }
 }

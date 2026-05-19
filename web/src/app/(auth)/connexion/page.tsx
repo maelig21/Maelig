@@ -10,6 +10,7 @@ import { ArrowRight, KeyRound, Mail } from "lucide-react"
 import { createSupabaseBrowserClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input, Label, FieldError } from "@/components/ui/input"
+import { OAuthButtons } from "@/components/auth/oauth-buttons"
 
 const schema = z.object({
   email: z.string().email("Email invalide"),
@@ -75,7 +76,15 @@ function ConnexionInner() {
         </Link>
       </p>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5">
+      <div className="mt-8">
+        <OAuthButtons redirectTo={params.get("redirect_to") ?? "/app"} mode="login" />
+        <div className="relative my-6 text-center text-xs text-muted">
+          <span className="bg-background px-3 relative z-10">ou avec votre email</span>
+          <div className="absolute inset-x-0 top-1/2 h-px bg-border -z-0" />
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div>
           <Label htmlFor="email">Email</Label>
           <div className="relative mt-2">

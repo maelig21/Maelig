@@ -23,7 +23,7 @@ export interface Database {
     Functions: Record<string, never>
     Enums: {
       user_role: "owner" | "slave" | "admin_dep"
-      devis_statut: "brouillon" | "en_attente_validation" | "signe_non_paye" | "facture_en_attente" | "facture_payee" | "facture_abandonnee"
+      devis_statut: "brouillon" | "en_attente_validation_patron" | "en_attente_validation" | "signe_non_paye" | "facture_en_attente" | "facture_payee" | "facture_abandonnee"
       subscription_status: "trialing" | "active" | "past_due" | "canceled" | "incomplete" | "paused"
       relance_type: "hebdo" | "quotidienne" | "finale" | "manuelle"
     }

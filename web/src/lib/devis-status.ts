@@ -9,8 +9,13 @@ export const STATUT_META: Record<
     tone: "neutral",
     description: "Pas encore envoyé au client.",
   },
+  en_attente_validation_patron: {
+    label: "À valider par vous",
+    tone: "warning",
+    description: "Un collaborateur a préparé ce devis, il attend votre validation avant envoi.",
+  },
   en_attente_validation: {
-    label: "Envoyé · en attente",
+    label: "Envoyé · en attente client",
     tone: "info",
     description: "Le client n'a pas encore signé.",
   },
@@ -49,6 +54,13 @@ export const RUBRIQUES: Array<{
     description: "Vocal, mémoire articles, prêt en 2 minutes",
     statuts: [],
     icon: "Plus",
+  },
+  {
+    slug: "a-valider",
+    label: "À valider (vos employés)",
+    description: "Devis créés par vos collaborateurs, à valider avant envoi",
+    statuts: ["en_attente_validation_patron"],
+    icon: "ShieldCheck",
   },
   {
     slug: "attente-validation",

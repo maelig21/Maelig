@@ -1,12 +1,12 @@
 import { notFound } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, Download, Mail, Pencil, Send, Trash2, Receipt } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Card, CardTitle, Badge } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { STATUT_META } from "@/lib/devis-status"
 import { formatEUR, formatDateFR } from "@/lib/utils"
 import type { DevisStatut } from "@/lib/supabase/database.types"
+import { DevisActions } from "./actions"
 
 export const dynamic = "force-dynamic"
 
@@ -122,18 +122,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         </div>
       </Card>
 
-      <div className="flex flex-wrap gap-2">
-        <Button asChild variant="secondary"><Link href={`/app/devis/nouveau?id=${devis.id}`}><Pencil className="h-4 w-4" /> Modifier</Link></Button>
-        <Button variant="secondary"><Download className="h-4 w-4" /> Télécharger PDF</Button>
-        <Button variant="secondary"><Mail className="h-4 w-4" /> Renvoyer au client</Button>
-        {devis.statut === "signe_non_paye" && (
-          <Button><Receipt className="h-4 w-4" /> Convertir en facture</Button>
-        )}
-        {devis.statut === "brouillon" && (
-          <Button><Send className="h-4 w-4" /> Envoyer au client</Button>
-        )}
-        <Button variant="danger"><Trash2 className="h-4 w-4" /> Supprimer</Button>
-      </div>
+      <DevisActions devisId={devis.id} statut={devis.statut} />
     </div>
   )
 }

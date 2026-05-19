@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { FilePlus2, FileCheck, Hourglass, Receipt, Users, Mic, Sparkles, AlertTriangle } from "lucide-react"
+import { FilePlus2, FileCheck, Hourglass, Receipt, Users, Mic, Sparkles, AlertTriangle, ShieldCheck } from "lucide-react"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Card, CardTitle, Badge } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -21,13 +21,16 @@ export default async function DashboardPage() {
     .maybeSingle()
   const orgId = profile?.org_id
 
-  const [{ count: nbClients }, { count: nbDevisAtt }, { count: nbSignes }, { count: nbFacturesAtt }, totalsRes, latestDevisRes] =
+  const [{ count: nbClients }, { count: nbDevisAtt }, { count: nbSignes }, { count: nbFacturesAtt }, { count: nbAValider }, { count: nbIncidentsUrgent }, { count: nbIncidentsOuverts }, totalsRes, latestDevisRes] =
     orgId
       ? await Promise.all([
           supabase.from("clients").select("*", { count: "exact", head: true }).eq("org_id", orgId),
           supabase.from("devis").select("*", { count: "exact", head: true }).eq("org_id", orgId).eq("statut", "en_attente_validation"),
           supabase.from("devis").select("*", { count: "exact", head: true }).eq("org_id", orgId).eq("statut", "signe_non_paye"),
           supabase.from("factures").select("*", { count: "exact", head: true }).eq("org_id", orgId).eq("statut", "en_attente"),
+          supabase.from("devis").select("*", { count: "exact", head: true }).eq("org_id", orgId).eq("statut", "en_attente_validation_patron"),
+          supabase.from("incidents").select("*", { count: "exact", head: true }).eq("org_id", orgId).eq("urgency", "urgent").in("statut", ["ouvert","en_cours","escalade"]),
+          supabase.from("incidents").select("*", { count: "exact", head: true }).eq("org_id", orgId).in("statut", ["ouvert","en_cours","escalade"]),
           supabase
             .from("factures")
             .select("total_ttc, statut")
@@ -40,7 +43,7 @@ export default async function DashboardPage() {
             .order("created_at", { ascending: false })
             .limit(6),
         ])
-      : [{ count: 0 }, { count: 0 }, { count: 0 }, { count: 0 }, { data: [] }, { data: [] }]
+      : [{ count: 0 }, { count: 0 }, { count: 0 }, { count: 0 }, { count: 0 }, { count: 0 }, { count: 0 }, { data: [] }, { data: [] }]
 
   const totalEnAttente = (totalsRes.data ?? [])
     .filter((f: { statut: string }) => f.statut === "en_attente" || f.statut === "partielle")
@@ -81,6 +84,38 @@ export default async function DashboardPage() {
         </div>
       </div>
 
+      {/* CONTROL TOWER : à valider + urgences */}
+      {(profile?.role === "owner" || profile?.role === "admin_dep") && ((nbAValider ?? 0) > 0 || (nbIncidentsUrgent ?? 0) > 0) && (
+        <Card className="border-electric/40 glow-electric">
+          <div className="flex items-start gap-3">
+            <Sparkles className="h-5 w-5 text-electric mt-0.5" />
+            <div className="flex-1">
+              <CardTitle>Là, maintenant. Mettez votre énergie ici.</CardTitle>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {(nbAValider ?? 0) > 0 && (
+                  <Link href="/app/devis/a-valider" className="group flex items-center gap-3 rounded-xl border border-warning/30 bg-warning/5 p-3 hover:bg-warning/10 transition-colors">
+                    <ShieldCheck className="h-5 w-5 text-warning" />
+                    <div className="flex-1">
+                      <div className="font-display font-semibold">{nbAValider} devis à valider</div>
+                      <div className="text-xs text-muted">Vos employés ont préparé, en attente de votre OK pour partir.</div>
+                    </div>
+                  </Link>
+                )}
+                {(nbIncidentsUrgent ?? 0) > 0 && (
+                  <Link href="/app/incidents" className="group flex items-center gap-3 rounded-xl border border-danger/30 bg-danger/5 p-3 hover:bg-danger/10 transition-colors">
+                    <AlertTriangle className="h-5 w-5 text-danger" />
+                    <div className="flex-1">
+                      <div className="font-display font-semibold">{nbIncidentsUrgent} signalement(s) URGENT(S)</div>
+                      <div className="text-xs text-muted">Une galère sur le chantier vous attend. Tête froide.</div>
+                    </div>
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
+
       {/* KPIs */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard label="Encaissé" value={formatEUR(totalEncaisse)} tone="success" />
@@ -91,6 +126,14 @@ export default async function DashboardPage() {
 
       {/* Pipeline shortcuts */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <ShortcutCard
+          href="/app/incidents"
+          Icon={AlertTriangle}
+          color="var(--wire-red)"
+          title="Galères chantier"
+          stat={nbIncidentsOuverts ?? 0}
+          help="Signalements ouverts par vos employés"
+        />
         <ShortcutCard
           href="/app/devis/attente-validation"
           Icon={Hourglass}
