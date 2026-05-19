@@ -1,0 +1,50 @@
+project_id = "bxveolgqxtnybscfriyy"
+
+# DEP — Plateforme de gestion électrique
+# Ce config.toml synchronise la config Supabase Auth en 1 commande :
+#   supabase config push --project-ref bxveolgqxtnybscfriyy
+# Requiert un SUPABASE_ACCESS_TOKEN avec droits sur ce projet (= compte Maelig).
+
+[auth]
+site_url = "https://dep-electrique.vercel.app"
+additional_redirect_urls = [
+  "https://dep-electrique.vercel.app/**",
+  "https://dep-electrique.vercel.app/app",
+  "https://dep-electrique.vercel.app/reinitialisation",
+  "https://dep-electrique.vercel.app/verifier-email",
+  "http://localhost:3000/**",
+]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+enable_signup = true
+enable_anonymous_sign_ins = false
+enable_manual_linking = false
+
+[auth.email]
+enable_signup = true
+enable_confirmations = true
+double_confirm_changes = true
+secure_password_change = false
+max_frequency = "1m0s"
+otp_length = 6
+otp_expiry = 3600
+
+[auth.email.template.confirmation]
+subject = "Confirmez votre inscription DEP"
+
+[auth.email.template.recovery]
+subject = "Réinitialisation mot de passe DEP"
+
+[auth.email.template.magic_link]
+subject = "Votre lien magique DEP"
+
+[auth.email.template.invite]
+subject = "Vous avez été invité sur DEP"
+
+[auth.external.google]
+enabled = true
+skip_nonce_check = false
+
+[auth.external.apple]
+enabled = true
