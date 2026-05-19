@@ -58,7 +58,7 @@ function VocalStepClient({ onNext }) {
       <p style={{ fontSize: 14, color: 'var(--dep-grey-1)', marginBottom: 24 }}>Choisis dans ton carnet ou crée un nouveau</p>
 
       <div style={{
-        background: 'var(--dep-white)', border: '1px solid var(--dep-line-light)',
+        background: 'var(--dep-white)', color: 'var(--dep-black)', border: '1px solid var(--dep-line-light)',
         borderRadius: 14, padding: '12px 14px',
         display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16,
       }}>
@@ -73,7 +73,7 @@ function VocalStepClient({ onNext }) {
           <button key={c.id} onClick={() => setSelected(c.id)} style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
             padding: '14px 16px', borderRadius: 14,
-            background: 'var(--dep-white)',
+            background: 'var(--dep-white)', color: 'var(--dep-black)',
             border: '1.5px solid', borderColor: selected === c.id ? 'var(--dep-yellow)' : 'var(--dep-line-light)',
             fontFamily: 'inherit', cursor: 'pointer', textAlign: 'left',
             transition: 'border-color 0.15s',
@@ -222,7 +222,7 @@ function VocalStepArticles({ onNext }) {
               boxShadow: '0 18px 40px -12px rgba(245,197,24,0.5), inset 0 -4px 0 rgba(0,0,0,0.12)',
               transition: 'transform 0.15s ease',
             }}><DepIcon.mic style={{ width: 64, height: 64, strokeWidth: 2.4 }} /></button>
-            <div style={{ fontSize: 14, color: 'var(--dep-grey-1)', maxWidth: 280, margin: '0 auto', lineHeight: 1.5 }}>
+            <div style={{ fontSize: 14, color: 'var(--dep-grey-1)', maxWidth: 'min(280px, 100%)', margin: '0 auto', lineHeight: 1.5 }}>
               Appuie pour dicter. Exemple : « tableau électrique 13 modules 800 euros, prises encastrées x12 à 35 € chacune, main d'œuvre 4h »
             </div>
           </>
@@ -244,7 +244,7 @@ function VocalStepArticles({ onNext }) {
                 border: 'none', cursor: 'pointer', position: 'relative', zIndex: 2,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <span style={{ width: 36, height: 36, background: 'var(--dep-paper)', borderRadius: 6 }} />
+                <span style={{ width: 36, height: 36, background: 'var(--dep-paper)', color: 'var(--dep-black)', borderRadius: 6 }} />
               </button>
             </div>
             <div className="mono" style={{ fontSize: 'clamp(18px, 3vw, 32px)', fontWeight: 600, letterSpacing: '-0.03em', marginBottom: 10 }}>{fmt(seconds)}</div>
@@ -259,7 +259,7 @@ function VocalStepArticles({ onNext }) {
             <div style={{
               width: 160, height: 160, margin: '8px auto 20px',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              borderRadius: '50%', background: 'var(--dep-paper-2)',
+              borderRadius: '50%', background: 'var(--dep-paper-2)', color: 'var(--dep-black)',
               position: 'relative', overflow: 'hidden',
             }}>
               <svg viewBox="0 0 64 64" width="80" height="80" style={{ animation: 'spin 1.6s linear infinite' }}>
@@ -378,7 +378,7 @@ function VocalStepValidation({ onSend }) {
       <p style={{ fontSize: 14, color: 'var(--dep-grey-1)', marginBottom: 22 }}>Relis 30 secondes, on envoie au client</p>
 
       <div style={{
-        background: 'var(--dep-white)', borderRadius: 16,
+        background: 'var(--dep-white)', color: 'var(--dep-black)', borderRadius: 16,
         border: '1px solid var(--dep-line-light)', overflow: 'hidden',
       }}>
         <div style={{ padding: '16px 18px', borderBottom: '1px solid var(--dep-line-light)' }}>
@@ -442,12 +442,12 @@ function VocalStepSent({ onReset }) {
         <DepIcon.check style={{ width: 44, height: 44, strokeWidth: 3 }} />
       </div>
       <h1 style={{ fontSize: 'clamp(18px, 3vw, 32px)', letterSpacing: '-0.03em', fontWeight: 700, marginBottom: 12 }}>Devis envoyé</h1>
-      <p style={{ fontSize: 15, color: 'var(--dep-grey-1)', lineHeight: 1.5, marginBottom: 28, maxWidth: 280, margin: '0 auto 28px' }}>
+      <p style={{ fontSize: 15, color: 'var(--dep-grey-1)', lineHeight: 1.5, marginBottom: 28, maxWidth: 'min(280px, 100%)', margin: '0 auto 28px' }}>
         Cabinet Bouygues SARL reçoit ton devis 2 300,40 € TTC. Relance auto à J+8 si pas de réponse
       </p>
 
       <div style={{
-        background: 'var(--dep-white)', borderRadius: 16,
+        background: 'var(--dep-white)', color: 'var(--dep-black)', borderRadius: 16,
         border: '1px solid var(--dep-line-light)', padding: 18, marginBottom: 22,
         textAlign: 'left', fontFamily: 'var(--font-mono)', fontSize: 12,
       }}>
@@ -488,7 +488,7 @@ function FormField({ label, hint, children }) {
 }
 const fieldInput = {
   width: '100%', padding: '14px 14px', borderRadius: 12,
-  border: '1.5px solid var(--dep-line-light)', background: 'var(--dep-white)',
+  border: '1.5px solid var(--dep-line-light)', background: 'var(--dep-white)', color: 'var(--dep-black)',
   fontFamily: 'var(--font-display)', fontSize: 15, outline: 'none',
   boxSizing: 'border-box',
 };

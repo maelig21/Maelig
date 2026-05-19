@@ -132,11 +132,11 @@ function Topbar() {
   return (
     <div style={{
       height: 64, padding: '0 32px', display: 'flex', alignItems: 'center', gap: 16,
-      borderBottom: '1px solid var(--dep-line-light)', background: 'var(--dep-paper)',
+      borderBottom: '1px solid var(--dep-line-light)', background: 'var(--dep-paper)', color: 'var(--dep-black)',
     }}>
       <div style={{
-        flex: 1, maxWidth: 400, display: 'flex', alignItems: 'center', gap: 10,
-        padding: '8px 14px', background: 'var(--dep-white)',
+        flex: 1, maxWidth: 'min(400px, 100%)', display: 'flex', alignItems: 'center', gap: 10,
+        padding: '8px 14px', background: 'var(--dep-white)', color: 'var(--dep-black)',
         border: '1px solid var(--dep-line-light)', borderRadius: 10,
       }}>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--dep-grey-2)" strokeWidth="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
@@ -151,7 +151,7 @@ function Topbar() {
       </div>
       <div style={{ flex: 1 }} />
       <button style={{
-        width: 38, height: 38, borderRadius: 19, background: 'var(--dep-white)',
+        width: 38, height: 38, borderRadius: 19, background: 'var(--dep-white)', color: 'var(--dep-black)',
         border: '1px solid var(--dep-line-light)', cursor: 'pointer', position: 'relative',
         display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
       }}>
@@ -196,7 +196,7 @@ function ActionCard({ a }) {
     >
       <span style={{
         width: 44, height: 44, borderRadius: 10,
-        background: 'var(--dep-black)', color: tone.bd,
+        background: 'var(--dep-black)', color: 'var(--dep-paper)', color: tone.bd,
         display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
       }}>
         <Icon style={{ width: 22, height: 22 }} />
@@ -233,7 +233,7 @@ function KpiCard({ k }) {
   };
   return (
     <div style={{
-      padding: '18px 20px', background: 'var(--dep-white)',
+      padding: '18px 20px', background: 'var(--dep-white)', color: 'var(--dep-black)',
       border: '1px solid var(--dep-line-light)', borderRadius: 14,
       display: 'flex', flexDirection: 'column', gap: 6,
     }}>
@@ -306,7 +306,7 @@ export default function Dashboard() {
   return (
     <div className="dep" style={{
       width: '100%', height: '100%',
-      display: 'flex', overflow: 'hidden', background: 'var(--dep-paper)',
+      display: 'flex', overflow: 'hidden', background: 'var(--dep-paper)', color: 'var(--dep-black)',
     }}>
       <Sidebar />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -326,12 +326,12 @@ export default function Dashboard() {
             <div style={{ display: 'flex', gap: 8 }}>
               <button style={{
                 padding: '10px 14px', borderRadius: 10, border: '1px solid var(--dep-line-light)',
-                background: 'var(--dep-white)', fontFamily: 'inherit', fontSize: 13, fontWeight: 500, cursor: 'pointer',
+                background: 'var(--dep-white)', color: 'var(--dep-black)', fontFamily: 'inherit', fontSize: 13, fontWeight: 500, cursor: 'pointer',
                 display: 'inline-flex', alignItems: 'center', gap: 6,
               }}>30 jours</button>
               <button style={{
                 padding: '10px 14px', borderRadius: 10, border: '1px solid var(--dep-line-light)',
-                background: 'var(--dep-white)', fontFamily: 'inherit', fontSize: 13, fontWeight: 500, cursor: 'pointer',
+                background: 'var(--dep-white)', color: 'var(--dep-black)', fontFamily: 'inherit', fontSize: 13, fontWeight: 500, cursor: 'pointer',
               }}>Exporter</button>
             </div>
           </div>
@@ -370,7 +370,7 @@ export default function Dashboard() {
           {/* Detail */}
           <section style={{ display: 'grid', gridTemplateColumns: '1.7fr 1fr', gap: 16, marginBottom: 24 }}>
             <div style={{
-              background: 'var(--dep-white)', borderRadius: 16,
+              background: 'var(--dep-white)', color: 'var(--dep-black)', borderRadius: 16,
               border: '1px solid var(--dep-line-light)', padding: 20,
             }}>
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 16 }}>
@@ -387,7 +387,7 @@ export default function Dashboard() {
               <CashFlowChart />
             </div>
             <div style={{
-              background: 'var(--dep-white)', borderRadius: 16,
+              background: 'var(--dep-white)', color: 'var(--dep-black)', borderRadius: 16,
               border: '1px solid var(--dep-line-light)', padding: 20,
               display: 'flex', flexDirection: 'column',
             }}>

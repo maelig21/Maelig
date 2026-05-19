@@ -152,7 +152,7 @@ function IncidentScreen2({ t, lang }) {
 
       {/* Mock waveform preview */}
       <div style={{
-        background: 'var(--dep-black-2)', border: '1px solid var(--dep-line-dark)',
+        background: 'var(--dep-black-2)', color: 'var(--dep-paper)', border: '1px solid var(--dep-line-dark)',
         borderRadius: 18, padding: '18px 18px', marginBottom: 16,
         position: 'relative', zIndex: 3,
       }}>
@@ -173,7 +173,7 @@ function IncidentScreen2({ t, lang }) {
 
       {/* Transcription bilingue */}
       <div style={{
-        background: 'var(--dep-black-2)', border: '1px solid var(--dep-line-dark)',
+        background: 'var(--dep-black-2)', color: 'var(--dep-paper)', border: '1px solid var(--dep-line-dark)',
         borderRadius: 18, padding: '16px 18px', marginBottom: 16, position: 'relative', zIndex: 3,
       }}>
         <div className="dep-eyebrow dep-eyebrow--on-dark" style={{ marginBottom: 10 }}>
@@ -212,7 +212,7 @@ function IncidentScreen2({ t, lang }) {
 
       {/* Note */}
       <div style={{
-        background: 'var(--dep-black-2)', border: '1px solid var(--dep-line-dark)',
+        background: 'var(--dep-black-2)', color: 'var(--dep-paper)', border: '1px solid var(--dep-line-dark)',
         borderRadius: 14, padding: '12px 14px', marginBottom: 16,
         display: 'flex', alignItems: 'center', gap: 10,
         position: 'relative', zIndex: 3,
@@ -263,10 +263,10 @@ function IncidentScreen3({ t, lang }) {
           <style>{`@keyframes check-draw { from { stroke-dashoffset: 60; } to { stroke-dashoffset: 0; } }`}</style>
         </div>
         <h1 style={{ fontSize: 'clamp(18px, 3vw, 32px)', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 10 }}>{t.sent}</h1>
-        <p style={{ fontSize: 14, color: 'var(--dep-grey-3)', maxWidth: 260, margin: '0 auto 8px' }}>
+        <p style={{ fontSize: 14, color: 'var(--dep-grey-3)', maxWidth: 'min(260px, 100%)', margin: '0 auto 8px' }}>
           {t.sentSub}
         </p>
-        <p style={{ fontSize: 12, color: 'var(--dep-grey-2)', fontStyle: 'italic', maxWidth: 260, margin: '0 auto', direction: 'ltr' }}>
+        <p style={{ fontSize: 12, color: 'var(--dep-grey-2)', fontStyle: 'italic', maxWidth: 'min(260px, 100%)', margin: '0 auto', direction: 'ltr' }}>
           {lang !== 'fr' && '« Envoyé au patron »'}
         </p>
 

@@ -144,14 +144,43 @@ html, body {
 
 img, svg, video, iframe { max-width: 100%; height: auto; }
 
+/* Box-sizing universel — anti-overflow */
+*, *::before, *::after { box-sizing: border-box; }
+
 /* Responsive guard pour les sections du port v2 (artboard 1280) */
+@media (max-width: 1024px) {
+  /* Réduire grids gaps */
+  [style*="gridTemplateColumns"] { gap: clamp(16px, 3vw, 32px) !important; }
+  /* Réduire flex gaps lourds */
+  [style*="gap: clamp(20px, 4vw, "] { gap: clamp(16px, 3vw, 40px) !important; }
+}
+
 @media (max-width: 768px) {
-  /* Forcer les éléments fixes à se replier */
+  /* Marquee plus rapide sur mobile */
   .dep-marquee { animation-duration: 28s; }
-  /* Stack toute grille 2 cols sur mobile */
-  [style*="gridTemplateColumns"] { gap: 24px !important; }
-  /* Réduire les paddings massifs */
-  section { padding-left: 16px !important; padding-right: 16px !important; }
+  /* Réduire les paddings sections */
+  section { padding-left: clamp(14px, 4vw, 24px) !important; padding-right: clamp(14px, 4vw, 24px) !important; }
+  /* Stack inline-style flex row → col */
+  [style*="display: 'flex'"][style*="alignItems"] { flex-wrap: wrap; }
+  /* Tous éléments dans le viewport */
+  [style*="maxWidth"] { max-width: 100% !important; }
+  /* Réduire les big gaps */
+  [style*="gap: clamp"] { gap: clamp(12px, 3vw, 24px) !important; }
+  /* Headers / titres très large : ne dépasse jamais le screen */
+  h1, h2, h3 { word-break: break-word; overflow-wrap: anywhere; }
+  /* Cards trop large : padding inner réduit */
+  [style*="padding: '36px 40px'"], [style*="padding: '40px"] { padding: clamp(20px, 5vw, 40px) !important; }
+  /* Phone frames fixed widths */
+  [style*="width: 'min(390px, 100%)'"] { width: 100% !important; }
+}
+
+@media (max-width: 480px) {
+  /* Hero h1 réduit encore */
+  h1 { font-size: clamp(34px, 11vw, 56px) !important; line-height: 1.02 !important; }
+  /* Multi-col grid stack */
+  [style*="gridTemplateColumns"] { grid-template-columns: 1fr !important; }
+  /* Marquees stoppent les overflows horizontaux */
+  .dep-marquee { animation-duration: 22s; }
 }
 
 h1, h2, h3, h4 {

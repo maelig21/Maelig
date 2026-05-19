@@ -60,7 +60,7 @@ function ChatHeader({ partner, statusLabel, langLabel, flag, dir, perspective })
     <header style={{
       padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12,
       borderBottom: '1px solid var(--dep-line-light)',
-      background: 'var(--dep-white)',
+      background: 'var(--dep-white)', color: 'var(--dep-black)',
       direction: dir,
     }}>
       <div style={{
@@ -232,7 +232,7 @@ function ChatComposer({ perspective, dir }) {
   const placeholder = perspective === 'maelig' ? 'Écris en français' : 'كتب بالدارجة';
   return (
     <div style={{
-      padding: '12px 14px', background: 'var(--dep-white)',
+      padding: '12px 14px', background: 'var(--dep-white)', color: 'var(--dep-black)',
       borderTop: '1px solid var(--dep-line-light)',
       display: 'flex', alignItems: 'center', gap: 8,
       direction: dir,
@@ -241,7 +241,7 @@ function ChatComposer({ perspective, dir }) {
         <DepIcon.camera style={{ width: 16, height: 16 }} />
       </button>
       <div style={{
-        flex: 1, background: 'var(--dep-paper-2)', borderRadius: 22,
+        flex: 1, background: 'var(--dep-paper-2)', color: 'var(--dep-black)', borderRadius: 22,
         display: 'flex', alignItems: 'center', padding: '4px 12px',
       }}>
         <input
@@ -291,7 +291,7 @@ function ChatView({ perspective }) {
     <div style={{
       width: '100%', height: '100%', position: 'relative',
       display: 'flex', flexDirection: 'column', overflow: 'hidden',
-      background: 'var(--dep-paper)',
+      background: 'var(--dep-paper)', color: 'var(--dep-black)',
     }} className="dep">
       <ChatHeader
         partner={partner.name}
@@ -333,7 +333,7 @@ function ChatView({ perspective }) {
         {/* Typing indicator */}
         <div style={{ display: 'flex', justifyContent: isPatron ? 'flex-start' : 'flex-end' }}>
           <div style={{
-            padding: '12px 16px', background: 'var(--dep-white)',
+            padding: '12px 16px', background: 'var(--dep-white)', color: 'var(--dep-black)',
             border: '1px solid var(--dep-line-light)',
             borderRadius: isPatron ? '20px 20px 20px 4px' : '20px 20px 4px 20px',
             display: 'flex', alignItems: 'center', gap: 6,
@@ -376,7 +376,7 @@ export default function Chat() {
 
       <div style={{
         display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 32,
-        justifyItems: 'center', alignItems: 'start', maxWidth: 1320, margin: '0 auto',
+        justifyItems: 'center', alignItems: 'start', maxWidth: 'min(1320px, 100%)', margin: '0 auto',
       }}>
         {/* Patron */}
         <PhoneInCanvas perspective="maelig" />
@@ -387,7 +387,7 @@ export default function Chat() {
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18,
         }}>
           <div style={{
-            padding: '12px 14px', borderRadius: 14, background: 'var(--dep-black-2)',
+            padding: '12px 14px', borderRadius: 14, background: 'var(--dep-black-2)', color: 'var(--dep-paper)',
             border: '1px solid var(--dep-line-dark)', textAlign: 'center',
           }}>
             <div className="mono" style={{ fontSize: 9, letterSpacing: '0.18em', color: 'var(--dep-yellow)', marginBottom: 6 }}>
