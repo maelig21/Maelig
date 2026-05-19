@@ -21,9 +21,27 @@ type FormValues = z.infer<typeof schema>
 
 export default function ConnexionPage() {
   return (
-    <Suspense fallback={<div className="text-sm text-muted">Chargement…</div>}>
-      <ConnexionInner />
-    </Suspense>
+    <div>
+      <h1 className="font-display text-3xl font-bold tracking-tight">Bon retour.</h1>
+      <p className="mt-2 text-sm text-muted">
+        Pas encore de compte ?{" "}
+        <Link href="/inscription" className="text-electric hover:underline">
+          Démarrez vos 14 jours gratuits
+        </Link>
+      </p>
+
+      <div className="mt-8">
+        <OAuthButtons mode="login" />
+        <div className="relative my-6 text-center text-xs text-muted">
+          <span className="bg-background px-3 relative z-10">ou avec votre email</span>
+          <div className="absolute inset-x-0 top-1/2 h-px bg-border -z-0" />
+        </div>
+      </div>
+
+      <Suspense fallback={<div className="text-sm text-muted">Chargement du formulaire…</div>}>
+        <ConnexionInner />
+      </Suspense>
+    </div>
   )
 }
 
@@ -68,22 +86,6 @@ function ConnexionInner() {
 
   return (
     <div>
-      <h1 className="font-display text-3xl font-bold tracking-tight">Bon retour.</h1>
-      <p className="mt-2 text-sm text-muted">
-        Pas encore de compte ?{" "}
-        <Link href="/inscription" className="text-electric hover:underline">
-          Démarrez vos 14 jours gratuits
-        </Link>
-      </p>
-
-      <div className="mt-8">
-        <OAuthButtons redirectTo={params.get("redirect_to") ?? "/app"} mode="login" />
-        <div className="relative my-6 text-center text-xs text-muted">
-          <span className="bg-background px-3 relative z-10">ou avec votre email</span>
-          <div className="absolute inset-x-0 top-1/2 h-px bg-border -z-0" />
-        </div>
-      </div>
-
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div>
           <Label htmlFor="email">Email</Label>
