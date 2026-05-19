@@ -242,7 +242,7 @@ function KpiCard({ k }) {
         <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: toneMap[k.tone] || 'var(--dep-grey-2)', fontWeight: 600 }}>{k.delta}</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>
-        <span className="mono tnum" style={{ fontSize: 32, fontWeight: 700, letterSpacing: '-0.04em', color: 'var(--dep-black)' }}>{k.value}</span>
+        <span className="mono tnum" style={{ fontSize: 'clamp(18px, 3vw, 32px)', fontWeight: 700, letterSpacing: '-0.04em', color: 'var(--dep-black)' }}>{k.value}</span>
         <span style={{ fontSize: 11, color: 'var(--dep-grey-2)', alignSelf: 'flex-end', marginBottom: 6 }}>{k.unit}</span>
       </div>
       <div style={{ marginTop: 2 }}>
@@ -341,7 +341,7 @@ export default function Dashboard() {
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 14 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <span className="dep-cable" />
-                <h2 style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.025em' }}>Là, maintenant</h2>
+                <h2 style={{ fontSize: 'clamp(16px, 2.4vw, 24px)', fontWeight: 700, letterSpacing: '-0.025em' }}>Là, maintenant</h2>
               </div>
               <span className="mono" style={{ fontSize: 11, color: 'var(--dep-grey-2)', letterSpacing: '0.14em', textTransform: 'uppercase' }}>
                 Trié par urgence
@@ -360,9 +360,9 @@ export default function Dashboard() {
           <section style={{ marginBottom: 32 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
               <span className="dep-cable" />
-              <h2 style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.025em' }}>Chiffres clés · 30 jours</h2>
+              <h2 style={{ fontSize: 'clamp(14px, 2vw, 20px)', fontWeight: 700, letterSpacing: '-0.025em' }}>Chiffres clés · 30 jours</h2>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: 14 }}>
               {KPIS.map(k => <KpiCard key={k.label} k={k} />)}
             </div>
           </section>

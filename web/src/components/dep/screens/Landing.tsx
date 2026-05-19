@@ -57,7 +57,7 @@ function LandingNav() {
     <div style={{
       position: 'absolute', top: 0, left: 0, right: 0, zIndex: 20,
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '24px 48px',
+      padding: 'clamp(16px, 3.5vw, 24px) clamp(16px, 4vw, 48px)',
     }}>
       <Image src="/dep-logo.png" alt="DEP" width={120} height={40} priority style={{ width: "auto", height: 40 }} />
       <DepMagnetic strength={0.2}>
@@ -74,7 +74,7 @@ function LandingHero() {
   return (
     <section style={{
       position: 'relative',
-      padding: '160px 64px 96px',
+      padding: 'clamp(96px, 14vw, 160px) clamp(20px, 5vw, 64px) clamp(48px, 8vw, 96px)',
       background: 'var(--dep-black)',
       color: 'var(--dep-paper)',
       overflow: 'hidden',
@@ -98,7 +98,7 @@ function LandingHero() {
         </DepReveal>
 
         <DepReveal delay={120}>
-          <h1 style={{ fontSize: 96, fontWeight: 700, letterSpacing: '-0.045em', lineHeight: 0.96, marginBottom: 32 }}>
+          <h1 style={{ fontSize: 'clamp(40px, 9vw, 96px)', fontWeight: 700, letterSpacing: '-0.045em', lineHeight: 0.96, marginBottom: 32 }}>
             Parlez.<br />
             C'est <span style={{ color: 'var(--dep-yellow)', fontStyle: 'italic', fontWeight: 600 }}>facturé</span>
           </h1>
@@ -106,7 +106,7 @@ function LandingHero() {
 
         <DepReveal delay={240}>
           <p style={{
-            fontSize: 22, lineHeight: 1.45, color: 'var(--dep-grey-4)',
+            fontSize: 'clamp(15px, 2.2vw, 22px)', lineHeight: 1.45, color: 'var(--dep-grey-4)',
             maxWidth: 720, marginBottom: 48,
           }}>
             Tu parles, ton devis sort. Tu valides, la facture part. Le client paie, t&apos;es payé.
@@ -140,7 +140,7 @@ function LandingHero() {
             paddingTop: 32, borderTop: '1px solid var(--dep-line-dark)', maxWidth: 880,
           }}>
             <div>
-              <div className="mono" style={{ fontSize: 40, fontWeight: 600, letterSpacing: '-0.04em', color: 'var(--dep-yellow)' }}>
+              <div className="mono" style={{ fontSize: 'clamp(22px, 4vw, 40px)', fontWeight: 600, letterSpacing: '-0.04em', color: 'var(--dep-yellow)' }}>
                 <CountUp to={4} />
                 <span style={{ color: 'var(--dep-paper)' }}> min</span>
               </div>
@@ -148,14 +148,14 @@ function LandingHero() {
             </div>
             <div style={{ width: 1, alignSelf: 'stretch', background: 'var(--dep-line-dark)' }} />
             <div>
-              <div className="mono" style={{ fontSize: 40, fontWeight: 600, letterSpacing: '-0.04em' }}>
+              <div className="mono" style={{ fontSize: 'clamp(22px, 4vw, 40px)', fontWeight: 600, letterSpacing: '-0.04em' }}>
                 <CountUp to={29120} suffix=" €" />
               </div>
               <div style={{ fontSize: 13, color: 'var(--dep-grey-3)', marginTop: 4 }}>Récupérés par patron en moyenne par an</div>
             </div>
             <div style={{ width: 1, alignSelf: 'stretch', background: 'var(--dep-line-dark)' }} />
             <div>
-              <div className="mono" style={{ fontSize: 40, fontWeight: 600, letterSpacing: '-0.04em' }}>
+              <div className="mono" style={{ fontSize: 'clamp(22px, 4vw, 40px)', fontWeight: 600, letterSpacing: '-0.04em' }}>
                 <CountUp to={20} />
               </div>
               <div style={{ fontSize: 13, color: 'var(--dep-grey-3)', marginTop: 4 }}>Langues chantier supportées</div>
@@ -175,23 +175,23 @@ function LandingMultilingue() {
   // Killer feature: side-by-side translations + marquee of 20 languages.
   return (
     <section style={{
-      position: 'relative', padding: '120px 64px',
+      position: 'relative', padding: 'clamp(64px, 10vw, 120px) clamp(20px, 5vw, 64px)',
       background: 'var(--dep-black)', color: 'var(--dep-paper)',
       overflow: 'hidden',
     }} className="dep-noise">
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 72, alignItems: 'center', position: 'relative', zIndex: 3 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: 72, alignItems: 'center', position: 'relative', zIndex: 3 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 28 }}>
             <span className="dep-cable" />
             <span className="dep-eyebrow dep-eyebrow--on-dark">Killer feature · multilingue chantier</span>
           </div>
-          <h2 style={{ fontSize: 52, fontWeight: 700, letterSpacing: '-0.035em', lineHeight: 1.03, marginBottom: 28 }}>
+          <h2 style={{ fontSize: 'clamp(28px, 5vw, 52px)', fontWeight: 700, letterSpacing: '-0.035em', lineHeight: 1.03, marginBottom: 28 }}>
             Ton chef d'équipe parle <em style={{ color: 'var(--dep-yellow)', fontStyle: 'italic' }}>darija</em>.<br />
             Ton apprenti parle <em style={{ color: 'var(--dep-yellow)', fontStyle: 'italic' }}>polonais</em>.<br />
             Toi tu parles FR.<br />
             DEP fait le pont
           </h2>
-          <p style={{ fontSize: 19, color: 'var(--dep-grey-4)', lineHeight: 1.55, maxWidth: 520 }}>
+          <p style={{ fontSize: 'clamp(14px, 1.9vw, 19px)', color: 'var(--dep-grey-4)', lineHeight: 1.55, maxWidth: 520 }}>
             Sur chantier, plus aucune consigne perdue. Plus aucun malentendu.
             Plus aucun retard pour cause de barrière de la langue
           </p>
@@ -221,7 +221,7 @@ function LandingMultilingue() {
               background: 'var(--dep-black-2)', color: 'var(--dep-paper)',
               border: '1px solid var(--dep-line-dark)',
               padding: '14px 18px', borderRadius: '20px 20px 20px 4px',
-              maxWidth: 360, fontSize: 17, direction: 'rtl', textAlign: 'right',
+              maxWidth: 360, fontSize: 'clamp(13px, 1.7vw, 17px)', direction: 'rtl', textAlign: 'right',
               fontWeight: 500,
             }}>
               كريم، رتّب الديجونكتورات 16 أمبير ف التابلو ديك اللي ليمين قبل نصّ النهار
@@ -234,7 +234,7 @@ function LandingMultilingue() {
               background: 'var(--dep-black-2)', color: 'var(--dep-paper)',
               border: '1px solid var(--dep-line-dark)',
               padding: '14px 18px', borderRadius: '20px 20px 20px 4px',
-              maxWidth: 360, fontSize: 17, direction: 'rtl', textAlign: 'right',
+              maxWidth: 360, fontSize: 'clamp(13px, 1.7vw, 17px)', direction: 'rtl', textAlign: 'right',
               fontWeight: 500,
             }}>
               صافي، خدمت. غير عندي مشكل ف برشا ديال الإيداع
@@ -272,7 +272,7 @@ function LandingMultilingue() {
                 padding: '12px 28px', marginRight: 16,
                 border: '1px solid var(--dep-line-dark)',
                 borderRadius: 999, color: 'var(--dep-paper)',
-                fontSize: 24, fontWeight: 500, letterSpacing: '-0.01em',
+                fontSize: 'clamp(16px, 2.4vw, 24px)', fontWeight: 500, letterSpacing: '-0.01em',
                 direction: lang.dir, flexShrink: 0,
                 background: 'rgba(255,255,255,0.02)',
               }}>
@@ -290,7 +290,7 @@ function LandingMultilingue() {
 function LandingMath() {
   return (
     <section style={{
-      background: 'var(--dep-paper)', padding: '120px 64px',
+      background: 'var(--dep-paper)', padding: 'clamp(64px, 10vw, 120px) clamp(20px, 5vw, 64px)',
       position: 'relative', overflow: 'hidden',
     }}>
       <div style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 80, alignItems: 'center' }}>
@@ -299,14 +299,14 @@ function LandingMath() {
             <span className="dep-cable" />
             <span className="dep-eyebrow">Le calcul — pas marketing, juste les chiffres</span>
           </div>
-          <h2 style={{ fontSize: 52, fontWeight: 700, letterSpacing: '-0.035em', lineHeight: 1.05, marginBottom: 24 }}>
+          <h2 style={{ fontSize: 'clamp(28px, 5vw, 52px)', fontWeight: 700, letterSpacing: '-0.035em', lineHeight: 1.05, marginBottom: 24 }}>
             <span className="mono tnum" style={{ background: 'var(--dep-yellow)', padding: '0 12px', borderRadius: 8, fontWeight: 700 }}>29 120 €</span> récupérés
             <br />par an, par patron
           </h2>
-          <p style={{ fontSize: 19, color: 'var(--dep-black)', lineHeight: 1.6, maxWidth: 520, marginBottom: 32 }}>
+          <p style={{ fontSize: 'clamp(14px, 1.9vw, 19px)', color: 'var(--dep-black)', lineHeight: 1.6, maxWidth: 520, marginBottom: 32 }}>
             Tu passes 8h par semaine sur l'admin. Devis, factures, relances, planning équipe. À 70 €/h facturable, tu perds 560 € chaque semaine. Multiplié par 52 semaines, ça fait 29 120 € qui sortent de ta poche.
           </p>
-          <p style={{ fontSize: 17, color: 'var(--dep-black)', fontWeight: 600 }}>
+          <p style={{ fontSize: 'clamp(13px, 1.7vw, 17px)', color: 'var(--dep-black)', fontWeight: 600 }}>
             DEP récupère cette somme. Tu rentres chez toi à 18h
           </p>
         </div>
@@ -320,24 +320,24 @@ function LandingMath() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 18, fontFamily: 'var(--font-mono)', fontSize: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
               <span style={{ color: 'var(--dep-black)' }}>Admin par semaine</span>
-              <span className="tnum" style={{ fontSize: 22, fontWeight: 600 }}>8 h</span>
+              <span className="tnum" style={{ fontSize: 'clamp(15px, 2.2vw, 22px)', fontWeight: 600 }}>8 h</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
               <span style={{ color: 'var(--dep-black)' }}>Tarif horaire facturable</span>
-              <span className="tnum" style={{ fontSize: 22, fontWeight: 600 }}>70 €</span>
+              <span className="tnum" style={{ fontSize: 'clamp(15px, 2.2vw, 22px)', fontWeight: 600 }}>70 €</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
               <span style={{ color: 'var(--dep-black)' }}>Semaines de travail</span>
-              <span className="tnum" style={{ fontSize: 22, fontWeight: 600 }}>52</span>
+              <span className="tnum" style={{ fontSize: 'clamp(15px, 2.2vw, 22px)', fontWeight: 600 }}>52</span>
             </div>
             <div style={{ height: 1, background: 'var(--dep-line-light)', margin: '4px 0' }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
               <span style={{ color: 'var(--dep-black)', fontWeight: 600 }}>Coût annuel admin</span>
-              <span className="tnum" style={{ fontSize: 28, fontWeight: 700, color: 'var(--dep-red)' }}>−29 120 €</span>
+              <span className="tnum" style={{ fontSize: 'clamp(18px, 2.8vw, 28px)', fontWeight: 700, color: 'var(--dep-red)' }}>−29 120 €</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', background: 'var(--dep-yellow-soft)', padding: '14px 16px', borderRadius: 12, marginTop: 6 }}>
-              <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 17 }}>Avec DEP, tu récupères</span>
-              <span className="tnum" style={{ fontSize: 28, fontWeight: 700 }}>+29 120 €</span>
+              <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 'clamp(13px, 1.7vw, 17px)' }}>Avec DEP, tu récupères</span>
+              <span className="tnum" style={{ fontSize: 'clamp(18px, 2.8vw, 28px)', fontWeight: 700 }}>+29 120 €</span>
             </div>
           </div>
         </div>
@@ -355,14 +355,14 @@ function LandingParcours() {
   ];
   return (
     <section style={{
-      background: 'var(--dep-black)', padding: '120px 64px',
+      background: 'var(--dep-black)', padding: 'clamp(64px, 10vw, 120px) clamp(20px, 5vw, 64px)',
     }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
           <span className="dep-cable" />
           <span className="dep-eyebrow">Parcours · 4 étapes · 4 minutes</span>
         </div>
-        <h2 style={{ fontSize: 56, fontWeight: 700, letterSpacing: '-0.035em', lineHeight: 1.04, marginBottom: 64, maxWidth: 800 }}>
+        <h2 style={{ fontSize: 'clamp(30px, 5.5vw, 56px)', fontWeight: 700, letterSpacing: '-0.035em', lineHeight: 1.04, marginBottom: 64, maxWidth: 800 }}>
           De ta voix au cash, sans repasser au bureau
         </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24 }}>
@@ -385,7 +385,7 @@ function LandingParcours() {
                   <Icon style={{ width: 26, height: 26 }} />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <h3 style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 10 }}>{s.title}</h3>
+                  <h3 style={{ fontSize: 'clamp(18px, 2.8vw, 28px)', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 10 }}>{s.title}</h3>
                   <p style={{ fontSize: 14, color: 'var(--dep-grey-4)', lineHeight: 1.5 }}>{s.body}</p>
                 </div>
                 {i < 3 && (
@@ -410,16 +410,16 @@ function LandingVignettes() {
     { before: 'Équipe perdue, consignes en FR qu\'ils captent pas', after: 'Équipe alignée, chacun lit dans sa langue' },
   ];
   return (
-    <section style={{ background: 'var(--dep-black-3)', padding: '120px 64px' }}>
+    <section style={{ background: 'var(--dep-black-3)', padding: 'clamp(64px, 10vw, 120px) clamp(20px, 5vw, 64px)' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
           <span className="dep-cable" />
           <span className="dep-eyebrow">Avant DEP · Avec DEP</span>
         </div>
-        <h2 style={{ fontSize: 56, fontWeight: 700, letterSpacing: '-0.035em', lineHeight: 1.04, marginBottom: 56, maxWidth: 880 }}>
+        <h2 style={{ fontSize: 'clamp(30px, 5.5vw, 56px)', fontWeight: 700, letterSpacing: '-0.035em', lineHeight: 1.04, marginBottom: 56, maxWidth: 880 }}>
           Ce qui change vraiment, c'est pas la facturation. C'est ta vie
         </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: 24 }}>
           {v.map((x, i) => (
             <div key={i} style={{
               background: 'var(--dep-white)', borderRadius: 20,
@@ -430,7 +430,7 @@ function LandingVignettes() {
                 borderBottom: '1px solid var(--dep-line-light)',
               }}>
                 <div className="mono" style={{ fontSize: 11, color: 'var(--dep-grey-3)', letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 8 }}>Avant DEP</div>
-                <div style={{ fontSize: 17, color: 'var(--dep-grey-4)', textDecoration: 'line-through', textDecorationColor: 'rgba(0,0,0,0.2)', lineHeight: 1.45 }}>
+                <div style={{ fontSize: 'clamp(13px, 1.7vw, 17px)', color: 'var(--dep-grey-4)', textDecoration: 'line-through', textDecorationColor: 'rgba(0,0,0,0.2)', lineHeight: 1.45 }}>
                   {x.before}
                 </div>
               </div>
@@ -439,7 +439,7 @@ function LandingVignettes() {
                   <span className="dep-cable" style={{ width: 16 }} />
                   Avec DEP
                 </div>
-                <div style={{ fontSize: 19, color: 'var(--dep-paper)', fontWeight: 600, lineHeight: 1.4, letterSpacing: '-0.01em' }}>
+                <div style={{ fontSize: 'clamp(14px, 1.9vw, 19px)', color: 'var(--dep-paper)', fontWeight: 600, lineHeight: 1.4, letterSpacing: '-0.01em' }}>
                   {x.after}
                 </div>
               </div>
@@ -453,13 +453,13 @@ function LandingVignettes() {
 
 function LandingPricing() {
   return (
-    <section id="tarifs" style={{ background: 'var(--dep-black)', color: 'var(--dep-paper)', padding: '120px 64px', position: 'relative', overflow: 'hidden' }} className="dep-noise">
+    <section id="tarifs" style={{ background: 'var(--dep-black)', color: 'var(--dep-paper)', padding: 'clamp(64px, 10vw, 120px) clamp(20px, 5vw, 64px)', position: 'relative', overflow: 'hidden' }} className="dep-noise">
       <div style={{ maxWidth: 1100, margin: '0 auto', position: 'relative', zIndex: 3 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
           <span className="dep-cable" />
           <span className="dep-eyebrow dep-eyebrow--on-dark">Tarification · sans CB pour démarrer</span>
         </div>
-        <h2 style={{ fontSize: 64, fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 64 }}>
+        <h2 style={{ fontSize: 'clamp(32px, 6vw, 64px)', fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 64 }}>
           Un prix.<br />Pas d'options.
         </h2>
 
@@ -469,17 +469,17 @@ function LandingPricing() {
             borderRadius: 24, padding: 40, position: 'relative', overflow: 'hidden',
           }}>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 24 }}>
-              <h3 style={{ fontSize: 36, fontWeight: 700, letterSpacing: '-0.03em' }}>DEP Pro</h3>
+              <h3 style={{ fontSize: 'clamp(20px, 3.5vw, 36px)', fontWeight: 700, letterSpacing: '-0.03em' }}>DEP Pro</h3>
               <span style={{ fontSize: 12, fontFamily: 'var(--font-mono)', letterSpacing: '0.16em', textTransform: 'uppercase' }}>
                 pour le patron
               </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 32 }}>
               <span className="mono" style={{ fontSize: 88, fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1 }}>100</span>
-              <span style={{ fontSize: 28, fontWeight: 600 }}>€</span>
+              <span style={{ fontSize: 'clamp(18px, 2.8vw, 28px)', fontWeight: 600 }}>€</span>
               <span style={{ fontSize: 16, color: 'rgba(0,0,0,0.6)' }}>/ mois HT</span>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 24px', marginBottom: 32 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: '10px 24px', marginBottom: 32 }}>
               {['Vocal devis illimité', 'Factures Factur-X 2026', 'Relances auto J+30', 'Catalogue articles', 'Multilingue 20 langues', 'Incidents chantier', 'Signature client mobile', 'Support email 24h'].map(f => (
                 <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 500 }}>
                   <DepIcon.check style={{ width: 16, height: 16, flexShrink: 0 }} />
@@ -506,13 +506,13 @@ function LandingPricing() {
             border: '1px solid var(--dep-line-dark)', borderRadius: 24,
             padding: 40, background: 'var(--dep-black-2)',
           }}>
-            <h3 style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.025em', marginBottom: 8 }}>+ Employés</h3>
+            <h3 style={{ fontSize: 'clamp(18px, 2.8vw, 28px)', fontWeight: 700, letterSpacing: '-0.025em', marginBottom: 8 }}>+ Employés</h3>
             <p style={{ fontSize: 14, color: 'var(--dep-grey-3)', marginBottom: 28 }}>
               Chaque employé connecté au chat traduit et au module incidents
             </p>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 32 }}>
-              <span className="mono" style={{ fontSize: 64, fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1 }}>5</span>
-              <span style={{ fontSize: 22, fontWeight: 600 }}>€</span>
+              <span className="mono" style={{ fontSize: 'clamp(32px, 6vw, 64px)', fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1 }}>5</span>
+              <span style={{ fontSize: 'clamp(15px, 2.2vw, 22px)', fontWeight: 600 }}>€</span>
               <span style={{ fontSize: 14, color: 'var(--dep-grey-3)' }}>/ employé / mois</span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -541,13 +541,13 @@ function LandingFAQ() {
   ];
   const [open, setOpen] = useLState(0);
   return (
-    <section id="faq" style={{ background: 'var(--dep-black-3)', padding: '120px 64px' }}>
+    <section id="faq" style={{ background: 'var(--dep-black-3)', padding: 'clamp(64px, 10vw, 120px) clamp(20px, 5vw, 64px)' }}>
       <div style={{ maxWidth: 1000, margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
           <span className="dep-cable" />
           <span className="dep-eyebrow">FAQ chantier · questions concrètes</span>
         </div>
-        <h2 style={{ fontSize: 52, fontWeight: 700, letterSpacing: '-0.035em', lineHeight: 1.05, marginBottom: 48 }}>
+        <h2 style={{ fontSize: 'clamp(28px, 5vw, 52px)', fontWeight: 700, letterSpacing: '-0.035em', lineHeight: 1.05, marginBottom: 48 }}>
           Ce que tu te demandes vraiment
         </h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 0, borderTop: '1px solid var(--dep-line-light)' }}>
@@ -557,7 +557,7 @@ function LandingFAQ() {
                 width: '100%', textAlign: 'left', padding: '24px 0',
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 background: 'transparent', border: 'none', cursor: 'pointer',
-                fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 600,
+                fontFamily: 'var(--font-display)', fontSize: 'clamp(15px, 2.2vw, 22px)', fontWeight: 600,
                 color: 'var(--dep-paper)', letterSpacing: '-0.02em',
               }}>
                 {q}
@@ -573,7 +573,7 @@ function LandingFAQ() {
                 </span>
               </button>
               {open === i && (
-                <div style={{ paddingBottom: 24, fontSize: 17, color: 'var(--dep-grey-4)', lineHeight: 1.55, maxWidth: 760 }}>
+                <div style={{ paddingBottom: 24, fontSize: 'clamp(13px, 1.7vw, 17px)', color: 'var(--dep-grey-4)', lineHeight: 1.55, maxWidth: 760 }}>
                   {a}
                 </div>
               )}
@@ -589,17 +589,17 @@ function LandingCTAFinal() {
   return (
     <section style={{
       background: 'var(--dep-black)', color: 'var(--dep-paper)',
-      padding: '160px 64px', textAlign: 'center', position: 'relative', overflow: 'hidden',
+      padding: 'clamp(80px, 12vw, 160px) clamp(20px, 5vw, 64px)', textAlign: 'center', position: 'relative', overflow: 'hidden',
     }} className="dep-noise">
       <div className="dep-mesh" />
       <div style={{ position: 'relative', zIndex: 3, maxWidth: 1000, margin: '0 auto' }}>
-        <h2 style={{ fontSize: 80, fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 48 }}>
+        <h2 style={{ fontSize: 'clamp(36px, 8vw, 80px)', fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 48 }}>
           Ton prochain devis,<br />
           tu le <em style={{ color: 'var(--dep-yellow)', fontStyle: 'italic' }}>dictes</em> en 4 min<br />
           ou tu le tapes une heure ?
         </h2>
         <DepMagnetic strength={0.3}>
-          <a href="/inscription" className="dep-btn dep-btn--primary dep-btn--lg" style={{ textDecoration: 'none', fontSize: 20, padding: '24px 36px' }}>
+          <a href="/inscription" className="dep-btn dep-btn--primary dep-btn--lg" style={{ textDecoration: 'none', fontSize: 'clamp(14px, 2vw, 20px)', padding: '24px 36px' }}>
             Démarrer mon essai gratuit
             <DepIcon.arrow style={{ width: 22, height: 22 }} />
           </a>
@@ -614,7 +614,7 @@ function LandingCTAFinal() {
 
 function LandingFooter() {
   return (
-    <footer style={{ background: 'var(--dep-black)', color: 'var(--dep-grey-3)', padding: '48px 64px 64px', borderTop: '1px solid var(--dep-line-dark)' }}>
+    <footer style={{ background: 'var(--dep-black)', color: 'var(--dep-grey-3)', padding: 'clamp(32px, 6vw, 48px) clamp(20px, 5vw, 64px) clamp(40px, 7vw, 64px)', borderTop: '1px solid var(--dep-line-dark)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 48, flexWrap: 'wrap' }}>
         <div>
           <Image src="/dep-logo.png" alt="DEP" width={120} height={40} priority style={{ width: "auto", height: 40 }} />

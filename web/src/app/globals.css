@@ -138,6 +138,20 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   letter-spacing: -0.01em;
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+img, svg, video, iframe { max-width: 100%; height: auto; }
+
+/* Responsive guard pour les sections du port v2 (artboard 1280) */
+@media (max-width: 768px) {
+  /* Forcer les éléments fixes à se replier */
+  .dep-marquee { animation-duration: 28s; }
+  /* Stack toute grille 2 cols sur mobile */
+  [style*="gridTemplateColumns"] { gap: 24px !important; }
+  /* Réduire les paddings massifs */
+  section { padding-left: 16px !important; padding-right: 16px !important; }
 }
 
 h1, h2, h3, h4 {

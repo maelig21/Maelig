@@ -71,7 +71,7 @@ function IncidentScreen1({ t, lang }) {
       </div>
 
       <h1 style={{
-        fontSize: 48, fontWeight: 700, letterSpacing: '-0.035em', lineHeight: 1.04,
+        fontSize: 'clamp(26px, 4.5vw, 48px)', fontWeight: 700, letterSpacing: '-0.035em', lineHeight: 1.04,
         marginBottom: 36, position: 'relative', zIndex: 3,
       }}>
         {t.h1}
@@ -228,7 +228,7 @@ function IncidentScreen2({ t, lang }) {
       {/* Sticky send */}
       <div style={{ marginTop: 'auto', position: 'relative', zIndex: 3 }}>
         <DepMagnetic strength={0.15}>
-          <button className="dep-btn dep-btn--primary" style={{ width: '100%', padding: '20px', fontSize: 17 }}>
+          <button className="dep-btn dep-btn--primary" style={{ width: '100%', padding: '20px', fontSize: 'clamp(13px, 1.7vw, 17px)' }}>
             {t.send}
             <DepIcon.send style={{ width: 18, height: 18, transform: dir === 'rtl' ? 'scaleX(-1)' : 'none' }} />
           </button>
@@ -262,7 +262,7 @@ function IncidentScreen3({ t, lang }) {
           </svg>
           <style>{`@keyframes check-draw { from { stroke-dashoffset: 60; } to { stroke-dashoffset: 0; } }`}</style>
         </div>
-        <h1 style={{ fontSize: 32, fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 10 }}>{t.sent}</h1>
+        <h1 style={{ fontSize: 'clamp(18px, 3vw, 32px)', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 10 }}>{t.sent}</h1>
         <p style={{ fontSize: 14, color: 'var(--dep-grey-3)', maxWidth: 260, margin: '0 auto 8px' }}>
           {t.sentSub}
         </p>
@@ -315,7 +315,7 @@ export default function Incidents() {
         03 — Incidents mobile · 3 écrans · 3 langues côte à côte
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 32, justifyItems: 'center', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: 32, justifyItems: 'center', alignItems: 'start' }}>
         <PhoneWithLabel label="01 · Accueil incident" sublabel="Darija (ar-MA) · RTL">
           <IncidentScreen1 t={INCIDENT_I18N.ar} lang="ar" />
         </PhoneWithLabel>

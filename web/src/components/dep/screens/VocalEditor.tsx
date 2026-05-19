@@ -54,7 +54,7 @@ function VocalStepClient({ onNext }) {
   ];
   return (
     <div style={{ padding: '20px 20px 120px' }}>
-      <h1 style={{ fontSize: 28, letterSpacing: '-0.03em', fontWeight: 700, marginBottom: 8 }}>Pour quel client ?</h1>
+      <h1 style={{ fontSize: 'clamp(18px, 2.8vw, 28px)', letterSpacing: '-0.03em', fontWeight: 700, marginBottom: 8 }}>Pour quel client ?</h1>
       <p style={{ fontSize: 14, color: 'var(--dep-grey-1)', marginBottom: 24 }}>Choisis dans ton carnet ou crée un nouveau</p>
 
       <div style={{
@@ -96,7 +96,7 @@ function VocalStepClient({ onNext }) {
       }}>
         <span style={{
           width: 28, height: 28, borderRadius: 8, background: 'var(--dep-yellow)',
-          color: 'var(--dep-black)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 18,
+          color: 'var(--dep-black)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 'clamp(14px, 1.8vw, 18px)',
         }}>+</span>
         Nouveau client
       </button>
@@ -111,7 +111,7 @@ function VocalStepChantier({ onNext }) {
   const [type, setType] = useVState('Rénovation');
   return (
     <div style={{ padding: '20px 20px 120px' }}>
-      <h1 style={{ fontSize: 28, letterSpacing: '-0.03em', fontWeight: 700, marginBottom: 8 }}>Le chantier</h1>
+      <h1 style={{ fontSize: 'clamp(18px, 2.8vw, 28px)', letterSpacing: '-0.03em', fontWeight: 700, marginBottom: 8 }}>Le chantier</h1>
       <p style={{ fontSize: 14, color: 'var(--dep-grey-1)', marginBottom: 24 }}>Adresse et type, on enchaîne</p>
 
       <FormField label="Adresse chantier">
@@ -130,7 +130,7 @@ function VocalStepChantier({ onNext }) {
       </FormField>
 
       <FormField label="Type de chantier">
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: 8 }}>
           {types.map(t => (
             <button key={t} onClick={() => setType(t)} style={{
               padding: '14px 12px', borderRadius: 12,
@@ -143,7 +143,7 @@ function VocalStepChantier({ onNext }) {
         </div>
       </FormField>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: 12 }}>
         <FormField label="Surface m²">
           <input defaultValue="64" style={{ ...fieldInput, fontFamily: 'var(--font-mono)' }} />
         </FormField>
@@ -198,7 +198,7 @@ function VocalStepArticles({ onNext }) {
 
   return (
     <div style={{ padding: '20px 20px 140px' }}>
-      <h1 style={{ fontSize: 28, letterSpacing: '-0.03em', fontWeight: 700, marginBottom: 8 }}>Dicte tes articles</h1>
+      <h1 style={{ fontSize: 'clamp(18px, 2.8vw, 28px)', letterSpacing: '-0.03em', fontWeight: 700, marginBottom: 8 }}>Dicte tes articles</h1>
       <p style={{ fontSize: 14, color: 'var(--dep-grey-1)', marginBottom: 22 }}>
         Parle naturellement. Mon IA structure derrière
       </p>
@@ -247,7 +247,7 @@ function VocalStepArticles({ onNext }) {
                 <span style={{ width: 36, height: 36, background: 'var(--dep-paper)', borderRadius: 6 }} />
               </button>
             </div>
-            <div className="mono" style={{ fontSize: 32, fontWeight: 600, letterSpacing: '-0.03em', marginBottom: 10 }}>{fmt(seconds)}</div>
+            <div className="mono" style={{ fontSize: 'clamp(18px, 3vw, 32px)', fontWeight: 600, letterSpacing: '-0.03em', marginBottom: 10 }}>{fmt(seconds)}</div>
             <DepWaveform active />
             <div style={{ fontSize: 13, color: 'var(--dep-grey-3)', marginTop: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
               <span className="dep-rec-dot" style={{ width: 8, height: 8 }} /> J'écoute. Appuie pour arrêter
@@ -267,7 +267,7 @@ function VocalStepArticles({ onNext }) {
               </svg>
               <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
             </div>
-            <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 6 }}>Mon IA réfléchit</div>
+            <div style={{ fontSize: 'clamp(15px, 2.2vw, 22px)', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 6 }}>Mon IA réfléchit</div>
             <div style={{ fontSize: 13, color: 'var(--dep-grey-1)' }}>J'extrais tes articles, ça prend 2 secondes</div>
           </>
         )}
@@ -280,7 +280,7 @@ function VocalStepArticles({ onNext }) {
                   color: 'white', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                 }}><DepIcon.check style={{ width: 18, height: 18 }} /></span>
                 <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontWeight: 700, fontSize: 18, letterSpacing: '-0.02em' }}>Voici ce que j'ai compris</div>
+                  <div style={{ fontWeight: 700, fontSize: 'clamp(14px, 1.8vw, 18px)', letterSpacing: '-0.02em' }}>Voici ce que j'ai compris</div>
                   <div style={{ fontSize: 12, color: 'var(--dep-grey-1)' }}>5 articles · dictée 1:42 · cache local OK</div>
                 </div>
               </div>
@@ -318,7 +318,7 @@ function VocalStepArticles({ onNext }) {
           }}>
             <div>
               <div style={{ fontSize: 12, color: 'var(--dep-grey-3)', textTransform: 'uppercase', letterSpacing: '0.14em' }}>Total HT estimé</div>
-              <div className="mono tnum" style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.03em', marginTop: 2 }}>{total.toLocaleString('fr-FR')} €</div>
+              <div className="mono tnum" style={{ fontSize: 'clamp(18px, 2.8vw, 28px)', fontWeight: 700, letterSpacing: '-0.03em', marginTop: 2 }}>{total.toLocaleString('fr-FR')} €</div>
             </div>
             <span className="dep-pill" style={{ borderColor: 'var(--dep-yellow)', color: 'var(--dep-yellow)' }}>+ Article</span>
           </div>
@@ -374,7 +374,7 @@ function ArticleCard({ article }) {
 function VocalStepValidation({ onSend }) {
   return (
     <div style={{ padding: '20px 20px 140px' }}>
-      <h1 style={{ fontSize: 28, letterSpacing: '-0.03em', fontWeight: 700, marginBottom: 8 }}>Récap avant envoi</h1>
+      <h1 style={{ fontSize: 'clamp(18px, 2.8vw, 28px)', letterSpacing: '-0.03em', fontWeight: 700, marginBottom: 8 }}>Récap avant envoi</h1>
       <p style={{ fontSize: 14, color: 'var(--dep-grey-1)', marginBottom: 22 }}>Relis 30 secondes, on envoie au client</p>
 
       <div style={{
@@ -406,7 +406,7 @@ function VocalStepValidation({ onSend }) {
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--dep-line-light)', paddingTop: 10, marginTop: 2 }}>
             <span style={{ fontWeight: 700, color: 'var(--dep-black)' }}>Total TTC</span>
-            <span className="tnum" style={{ fontWeight: 700, fontSize: 20 }}>2 300,40 €</span>
+            <span className="tnum" style={{ fontWeight: 700, fontSize: 'clamp(14px, 2vw, 20px)' }}>2 300,40 €</span>
           </div>
         </div>
       </div>
@@ -441,7 +441,7 @@ function VocalStepSent({ onReset }) {
       }}>
         <DepIcon.check style={{ width: 44, height: 44, strokeWidth: 3 }} />
       </div>
-      <h1 style={{ fontSize: 32, letterSpacing: '-0.03em', fontWeight: 700, marginBottom: 12 }}>Devis envoyé</h1>
+      <h1 style={{ fontSize: 'clamp(18px, 3vw, 32px)', letterSpacing: '-0.03em', fontWeight: 700, marginBottom: 12 }}>Devis envoyé</h1>
       <p style={{ fontSize: 15, color: 'var(--dep-grey-1)', lineHeight: 1.5, marginBottom: 28, maxWidth: 280, margin: '0 auto 28px' }}>
         Cabinet Bouygues SARL reçoit ton devis 2 300,40 € TTC. Relance auto à J+8 si pas de réponse
       </p>
