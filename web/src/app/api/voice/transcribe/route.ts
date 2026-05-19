@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { supabaseAdmin } from "@/lib/supabase/admin"
 import { transcribeAudioFromUrl } from "@/lib/llm/asr"
 import { correctFR, extractDevisFromTranscript } from "@/lib/llm/dashscope"
+import { clarifyTranscript } from "@/lib/llm/clarify"
 
 export const runtime = "nodejs"
 export const maxDuration = 60
@@ -62,10 +63,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "asr_failed", detail: msg }, { status: 502 })
   }
 
-  // Parallel: correct + extract
-  const [corrected, extracted] = await Promise.all([
+  // Parallel: correct + extract + clarify
+  const articleNames = (articles ?? []).map((a) => a.nom)
+  const [corrected, extracted, clarification] = await Promise.all([
     correctFR(rawText).catch(() => rawText),
-    extractDevisFromTranscript(rawText, (articles ?? []).map((a) => a.nom)).catch(() => ({ items: [] as const })),
+    extractDevisFromTranscript(rawText, articleNames).catch(() => ({ items: [] as const })),
+    clarifyTranscript(rawText, { knownArticles: articleNames }).catch(() => null),
   ])
 
   // Store transcription record
@@ -88,6 +91,7 @@ export async function POST(req: Request) {
     corrected,
     language: langDetected,
     extracted,
+    clarification,
   })
 }
 

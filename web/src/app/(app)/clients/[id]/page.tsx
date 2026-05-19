@@ -48,12 +48,39 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       <div className="grid sm:grid-cols-3 gap-4">
         <Card>
           <CardTitle className="text-sm">Coordonnées</CardTitle>
-          <ul className="mt-3 space-y-1.5 text-sm">
-            {client.email && <li className="flex items-center gap-2"><Mail className="h-3.5 w-3.5 text-muted" />{client.email}</li>}
-            {client.telephone && <li className="flex items-center gap-2"><Phone className="h-3.5 w-3.5 text-muted" />{client.telephone}</li>}
+          <ul className="mt-4 space-y-2.5 text-sm">
+            {client.email && (
+              <li>
+                <a href={`mailto:${client.email}`} className="inline-flex items-center gap-2.5 text-foreground hover:text-electric group">
+                  <span className="grid h-7 w-7 place-items-center rounded-md border border-border bg-surface-2 group-hover:border-electric/40">
+                    <Mail className="h-3.5 w-3.5 text-muted group-hover:text-electric" />
+                  </span>
+                  <span className="truncate">{client.email}</span>
+                </a>
+              </li>
+            )}
+            {client.telephone && (
+              <li>
+                <a href={`tel:${client.telephone.replace(/\s/g, "")}`} className="inline-flex items-center gap-2.5 text-foreground hover:text-electric group">
+                  <span className="grid h-7 w-7 place-items-center rounded-md border border-border bg-surface-2 group-hover:border-electric/40">
+                    <Phone className="h-3.5 w-3.5 text-muted group-hover:text-electric" />
+                  </span>
+                  <span className="font-mono">{client.telephone}</span>
+                </a>
+              </li>
+            )}
             {(client.adresse || client.ville) && (
-              <li className="flex items-start gap-2"><MapPin className="h-3.5 w-3.5 text-muted mt-0.5" />
-                <span>{[client.adresse, client.cp, client.ville].filter(Boolean).join("\n")}</span>
+              <li>
+                <a
+                  href={`https://maps.google.com/?q=${encodeURIComponent([client.adresse, client.cp, client.ville].filter(Boolean).join(" "))}`}
+                  target="_blank" rel="noreferrer"
+                  className="inline-flex items-start gap-2.5 text-foreground hover:text-electric group"
+                >
+                  <span className="grid h-7 w-7 place-items-center rounded-md border border-border bg-surface-2 group-hover:border-electric/40 mt-0.5">
+                    <MapPin className="h-3.5 w-3.5 text-muted group-hover:text-electric" />
+                  </span>
+                  <span>{[client.adresse, client.cp, client.ville].filter(Boolean).join(" · ")}</span>
+                </a>
               </li>
             )}
           </ul>

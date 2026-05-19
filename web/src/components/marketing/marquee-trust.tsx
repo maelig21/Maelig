@@ -1,24 +1,24 @@
 "use client"
-import { Zap, Shield, Sparkles, Smile, Clock4, Hammer } from "lucide-react"
+import { Zap, Shield, Sparkles, Languages, Clock4, BrainCircuit } from "lucide-react"
 
 const items = [
-  { Icon: Zap, label: "Conçu pour les électriciens" },
-  { Icon: Clock4, label: "Devis en 90 secondes chrono" },
+  { Icon: Languages, label: "Vos employés enfin compris" },
+  { Icon: Clock4, label: "1 journée gagnée par semaine" },
+  { Icon: BrainCircuit, label: "Mémoire articles intelligente" },
+  { Icon: Zap, label: "Devis vocal en 90 secondes" },
+  { Icon: Sparkles, label: "Clarification IA avant validation" },
   { Icon: Shield, label: "Données hébergées en Europe" },
-  { Icon: Sparkles, label: "Vocal multilingue auto-corrigé" },
-  { Icon: Hammer, label: "Mémoire des articles intelligente" },
-  { Icon: Smile, label: "Pensé pour les chefs allergiques au digital" },
 ]
 
 export function MarqueeTrust() {
   const loop = [...items, ...items]
   return (
-    <div className="relative overflow-hidden border-y border-border bg-surface/40 py-4">
-      <div className="marquee flex gap-10 whitespace-nowrap">
+    <div className="relative overflow-hidden border-y border-border bg-surface/40 py-5">
+      <div className="marquee flex gap-12 whitespace-nowrap">
         {loop.map(({ Icon, label }, i) => (
           <span
             key={`${label}-${i}`}
-            className="flex items-center gap-2 text-sm text-muted"
+            className="flex items-center gap-2.5 text-[15px] text-foreground/85"
           >
             <Icon className="h-4 w-4 text-electric" />
             {label}

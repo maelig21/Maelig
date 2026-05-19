@@ -5,12 +5,14 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { ExtractedDevis } from "@/lib/llm/dashscope"
+import type { Clarification } from "@/lib/llm/clarify"
 
 interface Result {
   raw: string
   corrected: string
   language?: string
   extracted: ExtractedDevis
+  clarification?: Clarification | null
 }
 
 export function VoiceRecorder({
@@ -118,6 +120,7 @@ export function VoiceRecorder({
         corrected: data.corrected ?? "",
         language: data.language,
         extracted: data.extracted ?? { items: [] },
+        clarification: data.clarification ?? null,
       })
     } catch (e) {
       toast.error("Erreur réseau", { description: e instanceof Error ? e.message : String(e) })

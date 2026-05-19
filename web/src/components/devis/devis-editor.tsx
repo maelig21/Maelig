@@ -12,8 +12,10 @@ import { Input, Label, Textarea, FieldError } from "@/components/ui/input"
 import { Card, CardTitle, Badge } from "@/components/ui/card"
 import { VoiceRecorder } from "@/components/voice/voice-recorder"
 import { SmartTextarea } from "@/components/voice/smart-textarea"
+import { ClarifyCard } from "@/components/voice/clarify-card"
 import { saveDevis, type DevisPayload } from "@/lib/actions/devis"
 import { formatEUR } from "@/lib/utils"
+import type { Clarification } from "@/lib/llm/clarify"
 
 interface ArticleLite {
   id: string
@@ -72,6 +74,22 @@ function DevisEditorInner({
   const [showVoice, setShowVoice] = useState(startMicOpen)
   const [clientSelectorOpen, setClientSelectorOpen] = useState(false)
 
+  // Clarification flow : when voice returns, we show ClarifyCard BEFORE applying anything.
+  type VoiceData = {
+    raw: string
+    corrected: string
+    language?: string
+    extracted: {
+      items: Array<{ description: string; quantity: number; unit: string; category?: string }>
+      heures_main_oeuvre?: number
+      chantier_adresse?: string
+      client_hint?: string
+      notes?: string
+    }
+    clarification?: Clarification | null
+  }
+  const [pendingVoice, setPendingVoice] = useState<VoiceData | null>(null)
+
   const totalArticles = useMemo(
     () => items.reduce((s, it) => s + (Number(it.quantite) || 0) * (Number(it.prix_unitaire_ht) || 0), 0),
     [items],
@@ -88,9 +106,16 @@ function DevisEditorInner({
     return true
   }
 
-  function applyTranscript(r: { raw: string; corrected: string; language?: string; extracted: { items: Array<{ description: string; quantity: number; unit: string; category?: string }>; heures_main_oeuvre?: number; chantier_adresse?: string; client_hint?: string; notes?: string } }) {
+  // Step 1 of voice flow: receive ASR + clarification → hold pendingVoice, show ClarifyCard.
+  function handleVoiceResult(r: VoiceData) {
     setTranscript({ raw: r.raw, corrected: r.corrected, language: r.language })
-    // Map items into devis items with article auto-match
+    setPendingVoice(r)
+  }
+
+  // Step 2: user a confirmé la clarification → on applique vraiment.
+  function applyPendingVoice() {
+    const r = pendingVoice
+    if (!r) return
     const additions: DevisPayload["items"] = r.extracted.items.map((it) => {
       const match = knownArticles.find((a) => a.nom.toLowerCase() === it.description.toLowerCase())
       return {
@@ -107,9 +132,15 @@ function DevisEditorInner({
     if (r.extracted.notes && !notesClient) setNotesClient(r.extracted.notes)
     if (r.extracted.client_hint && !client.nom) setClient((c) => ({ ...c, nom: r.extracted.client_hint! }))
     toast.success(`${additions.length} ligne(s) ajoutées depuis votre vocal`, {
-      description: r.language && r.language !== "fr" ? `Détecté : ${r.language} → traduit en français` : undefined,
+      description: r.language && r.language !== "fr" ? `Détecté : ${r.language}, traduit en français` : undefined,
     })
+    setPendingVoice(null)
     setShowVoice(false)
+  }
+
+  function discardPendingVoice() {
+    setPendingVoice(null)
+    setTranscript(null)
   }
 
   function addLine() {
@@ -203,10 +234,11 @@ function DevisEditorInner({
         </ol>
       </div>
 
-      {/* Voice panel */}
+      {/* Voice panel + clarification */}
       <AnimatePresence>
-        {showVoice && (
+        {showVoice && !pendingVoice && (
           <motion.div
+            key="voice-panel"
             initial={{ opacity: 0, y: -8, height: 0 }}
             animate={{ opacity: 1, y: 0, height: "auto" }}
             exit={{ opacity: 0, y: -8, height: 0 }}
@@ -214,23 +246,51 @@ function DevisEditorInner({
           >
             <Card className="border-electric/40 glow-electric">
               <div className="grid md:grid-cols-[auto,1fr] items-center gap-6">
-                <VoiceRecorder onResult={applyTranscript} />
+                <VoiceRecorder onResult={handleVoiceResult} />
                 <div>
-                  <CardTitle>Astuce</CardTitle>
-                  <p className="mt-1 text-sm text-muted">
-                    Listez le matériel en parlant naturellement : <em className="text-foreground/80">&ldquo;Trois prises 16 ampères dans le salon, un disjoncteur différentiel 40 ampères, et 8 heures de pose chez Madame Martin au 12 rue de la Gare à Brest.&rdquo;</em>
+                  <CardTitle>Parlez comme à un collègue</CardTitle>
+                  <p className="mt-2 text-base text-foreground/85 leading-relaxed">
+                    <em className="text-foreground">« Trois prises 16A dans le salon, un disjoncteur différentiel 40A, et 8 heures de pose chez Madame Martin au 12 rue de la Gare à Brest. »</em>
                   </p>
-                  {transcript ? (
-                    <div className="mt-4 rounded-lg border border-border bg-surface-2 p-3">
-                      <div className="text-[10px] uppercase tracking-[0.18em] text-muted mb-1 flex items-center gap-2">
-                        <Languages className="h-3 w-3 text-electric" /> Texte corrigé · langue: {transcript.language ?? "auto"}
-                      </div>
-                      <p className="text-sm text-foreground/90 italic">&ldquo;{transcript.corrected}&rdquo;</p>
-                    </div>
-                  ) : null}
+                  <p className="mt-3 text-sm text-muted">
+                    <Languages className="inline h-3.5 w-3.5 text-electric mr-1 align-middle" />
+                    Vous pouvez parler en arabe, portugais, wolof, bambara… DEP traduit en français propre.
+                  </p>
                 </div>
               </div>
             </Card>
+          </motion.div>
+        )}
+
+        {pendingVoice && (
+          <motion.div
+            key="clarify-panel"
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            className="overflow-hidden"
+          >
+            <ClarifyCard
+              clarification={
+                pendingVoice.clarification ?? {
+                  summary: pendingVoice.corrected || pendingVoice.raw,
+                  items: pendingVoice.extracted.items.map((it) => ({
+                    label: it.description,
+                    qty: it.quantity,
+                    unit: it.unit,
+                    confidence: "medium" as const,
+                  })),
+                  client: pendingVoice.extracted.client_hint ?? null,
+                  site: pendingVoice.extracted.chantier_adresse ?? null,
+                  labor_hours: pendingVoice.extracted.heures_main_oeuvre ?? null,
+                  questions: [],
+                }
+              }
+              language={pendingVoice.language}
+              onConfirm={applyPendingVoice}
+              onEdit={() => { setPendingVoice(null); setShowVoice(true) }}
+              onCancel={discardPendingVoice}
+            />
           </motion.div>
         )}
       </AnimatePresence>

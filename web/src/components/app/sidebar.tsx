@@ -31,6 +31,7 @@ const NAV = [
   { type: "section", label: "Ressources" },
   { href: "/app/clients", label: "Clients", Icon: Users },
   { href: "/app/catalogue", label: "Catalogue d'articles", Icon: PackageSearch },
+  { href: "/app/parametres/equipe", label: "Mon équipe", Icon: Users },
   { type: "section", label: "Compte" },
   { href: "/app/parametres", label: "Paramètres", Icon: Settings },
 ] as const
