@@ -1,13 +1,7 @@
 import type { Metadata, Viewport } from "next"
-import { Inter, Bricolage_Grotesque, JetBrains_Mono } from "next/font/google"
+import { Bricolage_Grotesque, IBM_Plex_Mono } from "next/font/google"
 import { Toaster } from "sonner"
 import "./globals.css"
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  display: "swap",
-})
 
 const bricolage = Bricolage_Grotesque({
   variable: "--font-bricolage",
@@ -16,10 +10,11 @@ const bricolage = Bricolage_Grotesque({
   weight: ["300", "400", "500", "600", "700", "800"],
 })
 
-const jetbrains = JetBrains_Mono({
-  variable: "--font-jetbrains",
+const ibmMono = IBM_Plex_Mono({
+  variable: "--font-mono",
   subsets: ["latin"],
   display: "swap",
+  weight: ["400", "500", "600"],
 })
 
 export const metadata: Metadata = {
@@ -62,7 +57,7 @@ export default function RootLayout({
   return (
     <html lang="fr" className="dark">
       <body
-        className={`${inter.variable} ${bricolage.variable} ${jetbrains.variable} antialiased grain`}
+        className={`${bricolage.variable} ${ibmMono.variable} antialiased grain`}
       >
         {children}
         <Toaster

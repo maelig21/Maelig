@@ -1,52 +1,99 @@
 @import "tailwindcss";
 
 /* ============================================================
-   DEP — Design tokens (Niche 3.0)
-   - Palette extraite du logo DEP : noir profond, argent métal,
-     jaune électrique (éclair), accents fils (rouge/bleu/vert).
-   - Typo display: Bricolage Grotesque (variable, distinctive).
-   - Typo body: Inter (lisibilité chefs non-digital).
-   - Mono: JetBrains Mono.
+   DEP — Design tokens v2 (Niche 3.0)
+   Source : ~/Maelig/design_handoff_dep/prototype/dep-tokens.css
+   - Couleurs : noir profond + jaune signal #F5C518 + paper #FAFAF7
+   - Typo display : Bricolage Grotesque (self-hosted via next/font)
+   - Mono : IBM Plex Mono (chiffres, prix, références)
+   - Pas Google Fonts CDN (next/font self-host = RGPD OK)
    ============================================================ */
 
 :root {
-  /* Surfaces */
-  --background:        #07070b;
-  --surface:           #0e0e15;
-  --surface-2:         #14141d;
+  /* ── Brand surfaces ── */
+  --dep-black:        #0A0A0A;   /* off-black, jamais #000 pur */
+  --dep-black-2:      #131313;
+  --dep-black-3:      #1A1A1A;
+  --dep-line-dark:    #2A2A2A;
+  --dep-grey-1:       #3D3D3D;
+  --dep-grey-2:       #6B6B6B;
+  --dep-grey-3:       #A8A8A8;
+  --dep-grey-4:       #C8C8C5;
+  --dep-line-light:   #E5E5E2;
+  --dep-paper-2:      #F2F1EC;
+  --dep-paper:        #FAFAF7;
+  --dep-white:        #FFFFFF;
+
+  /* ── Signal jaune électrique ── */
+  --dep-yellow:       #F5C518;
+  --dep-yellow-deep:  #D9AC0F;
+  --dep-yellow-soft:  rgba(245, 197, 24, 0.14);
+
+  /* ── Status ── */
+  --dep-red:          #DC2626;
+  --dep-red-soft:     #FEF2F2;
+  --dep-amber:        #F59E0B;
+  --dep-amber-soft:   #FFFBEB;
+  --dep-green:        #10B981;
+  --dep-green-soft:   #ECFDF5;
+  --dep-blush:        #FCA5A5;
+
+  /* ── Legacy alias (retro-compat avec marketing components existants) ── */
+  --background:        var(--dep-black);
+  --surface:           var(--dep-black-2);
+  --surface-2:         var(--dep-black-3);
   --surface-3:         #1d1d28;
-  --border:            #25252f;
-  --border-strong:     #3a3a47;
-
-  /* Texts */
-  --foreground:        #f4f4f5;
-  --muted:             #a1a1aa;
-  --muted-2:           #71717a;
-
-  /* Brand */
-  --electric:          #ffd500;     /* jaune éclair (primary) */
-  --electric-soft:     #ffe352;
-  --electric-deep:     #b89800;
-  --electric-glow:     rgba(255,213,0,0.45);
-
-  --wire-red:          #e63946;
+  --border:            var(--dep-line-dark);
+  --border-strong:     var(--dep-grey-1);
+  --foreground:        var(--dep-paper);
+  --muted:             var(--dep-grey-3);
+  --muted-2:           var(--dep-grey-2);
+  --electric:          var(--dep-yellow);
+  --electric-soft:     #FFE352;
+  --electric-deep:     var(--dep-yellow-deep);
+  --electric-glow:     rgba(245,197,24,0.45);
+  --wire-red:          var(--dep-red);
   --wire-blue:         #2f6fff;
-  --wire-green:        #10b981;
-  --wire-yellow:       #f4c20b;
-
-  --success:           #22c55e;
-  --warning:           #f59e0b;
-  --danger:            #ef4444;
+  --wire-green:        var(--dep-green);
+  --wire-yellow:       var(--dep-yellow);
+  --success:           var(--dep-green);
+  --warning:           var(--dep-amber);
+  --danger:            var(--dep-red);
   --info:              #3b82f6;
+  --ring:              rgba(245,197,24,0.55);
 
-  --ring:              rgba(255,213,0,0.55);
+  /* ── Fluid type ── */
+  --type-hero:     clamp(48px, 7vw, 96px);
+  --type-h1:       clamp(40px, 5vw, 72px);
+  --type-h2:       clamp(32px, 4vw, 52px);
+  --type-h3:       clamp(22px, 2.4vw, 32px);
+  --type-lead:     clamp(18px, 1.4vw, 22px);
+  --type-body:     16px;
+  --type-small:    14px;
+  --type-micro:    12px;
 
-  --radius-sm: 0.5rem;
-  --radius:    0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.5rem;
+  /* ── Spacing ── */
+  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 24px; --sp-6: 32px; --sp-7: 48px; --sp-8: 64px;
+  --sp-9: 96px; --sp-10: 128px;
 
-  --shadow-electric: 0 0 0 1px rgba(255,213,0,0.20), 0 8px 28px -8px rgba(255,213,0,0.25);
+  /* ── Radii ── */
+  --r-xs: 6px; --r-sm: 10px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px;
+  --r-pill: 9999px;
+  --radius-sm: var(--r-sm);
+  --radius:    var(--r-md);
+  --radius-lg: var(--r-lg);
+  --radius-xl: var(--r-xl);
+
+  /* ── Shadows custom (PAS Material) ── */
+  --shadow-soft:    0 1px 0 rgba(0,0,0,0.04), 0 8px 24px -8px rgba(0,0,0,0.12);
+  --shadow-card:    0 1px 0 rgba(0,0,0,0.04), 0 18px 40px -12px rgba(0,0,0,0.16);
+  --shadow-yellow:  0 0 0 1px rgba(245,197,24,0.6), 0 12px 32px -8px rgba(245,197,24,0.35);
+  --shadow-on-dark: 0 1px 0 rgba(255,255,255,0.03) inset, 0 16px 36px -16px rgba(0,0,0,0.5);
+  --shadow-electric: var(--shadow-yellow);
+
+  /* ── Noise ── */
+  --noise-opacity: 0.07;
 }
 
 @theme inline {
@@ -71,14 +118,13 @@
   --color-danger:          var(--danger);
   --color-info:            var(--info);
 
-  --font-sans:    var(--font-inter);
+  --font-sans:    var(--font-bricolage);
   --font-display: var(--font-bricolage);
-  --font-mono:    var(--font-jetbrains);
 
-  --radius-sm:    var(--radius-sm);
-  --radius:       var(--radius);
-  --radius-lg:    var(--radius-lg);
-  --radius-xl:    var(--radius-xl);
+  --radius-sm:    var(--r-sm);
+  --radius:       var(--r-md);
+  --radius-lg:    var(--r-lg);
+  --radius-xl:    var(--r-xl);
 }
 
 * { border-color: var(--border); }
@@ -86,21 +132,38 @@
 html, body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), Inter, ui-sans-serif, system-ui, sans-serif;
-  font-feature-settings: "cv11","ss01","ss03";
+  font-family: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: "ss01","ss02","cv11";
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  letter-spacing: -0.01em;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-bricolage);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.04;
+  text-wrap: balance;
+}
+
+.mono, code, .num, .tnum {
+  font-family: var(--font-mono);
+  font-feature-settings: "zero", "tnum";
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
 }
 
 body {
   background-image:
-    radial-gradient(1200px 600px at 80% -10%, rgba(255,213,0,0.06), transparent 60%),
-    radial-gradient(900px 500px at -10% 60%, rgba(47,111,255,0.05), transparent 70%),
-    radial-gradient(800px 400px at 50% 110%, rgba(16,185,129,0.04), transparent 70%);
+    radial-gradient(1200px 600px at 80% -10%, rgba(245,197,24,0.06), transparent 60%),
+    radial-gradient(900px 500px at -10% 60%, rgba(47,111,255,0.04), transparent 70%),
+    radial-gradient(800px 400px at 50% 110%, rgba(16,185,129,0.03), transparent 70%);
   background-attachment: fixed;
 }
 
-/* Grid background */
+/* ── Grid background ── */
 .bg-grid {
   background-image:
     linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
@@ -109,7 +172,7 @@ body {
   mask-image: radial-gradient(ellipse 800px 500px at 50% 0%, #000 50%, transparent 90%);
 }
 
-/* Noise grain (Niche 3.0) */
+/* ── Noise grain (Niche 3.0) ── */
 .grain::after {
   content: "";
   position: fixed; inset: 0; pointer-events: none; z-index: 0;
@@ -117,7 +180,16 @@ body {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.7'/></svg>");
 }
 
-/* Glass cards */
+.dep-noise::before {
+  content: "";
+  position: absolute; inset: 0; pointer-events: none; z-index: 2;
+  opacity: var(--noise-opacity);
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.85'/%3E%3C/svg%3E");
+  background-size: 240px 240px;
+}
+
+/* ── Glass cards ── */
 .glass {
   background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
   border: 1px solid var(--border);
@@ -125,10 +197,10 @@ body {
   -webkit-backdrop-filter: blur(14px) saturate(140%);
 }
 
-/* Glow utilities */
-.glow-electric { box-shadow: var(--shadow-electric); }
+/* ── Glow utilities ── */
+.glow-electric { box-shadow: var(--shadow-yellow); }
 
-/* Wire underline animation */
+/* ── Wire underline animation ── */
 @keyframes flow {
   0% { background-position: 0% 50%; }
   100% { background-position: 200% 50%; }
@@ -146,32 +218,164 @@ body {
   animation: flow 6s linear infinite;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 9999px; }
-::-webkit-scrollbar-thumb:hover { background: var(--electric-deep); }
-
-/* Focus rings */
-:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
-  border-radius: 6px;
+/* ── Câble jaune accent (eyebrows) ── */
+.dep-cable {
+  display: inline-block;
+  width: 28px; height: 2px;
+  background: var(--dep-yellow);
+  border-radius: var(--r-pill);
+  vertical-align: middle;
 }
 
-/* Selection */
-::selection { background: var(--electric); color: #000; }
+/* ── Pulse rec dot (vocal enregistrement) ── */
+@keyframes dep-pulse-rec {
+  0%   { box-shadow: 0 0 0 0 rgba(220,38,38,0.55); }
+  70%  { box-shadow: 0 0 0 22px rgba(220,38,38,0); }
+  100% { box-shadow: 0 0 0 0 rgba(220,38,38,0); }
+}
+.dep-rec-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--dep-red);
+  animation: dep-pulse-rec 1.4s ease-out infinite;
+  display: inline-block;
+}
 
-/* Marquee */
+/* ── Marquee multilingue ── */
+@keyframes dep-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.dep-marquee {
+  display: flex;
+  width: max-content;
+  animation: dep-marquee 38s linear infinite;
+}
+.dep-marquee--slow { animation-duration: 64s; }
+.dep-marquee:hover { animation-play-state: paused; }
+
 @keyframes marquee {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
 }
 .marquee { animation: marquee 30s linear infinite; }
 
-/* Pulse electric */
+/* ── Sparkline animée ── */
+@keyframes dep-sparkdraw {
+  from { stroke-dashoffset: 200; }
+  to   { stroke-dashoffset: 0; }
+}
+
+/* ── Stagger reveal (in-view) ── */
+.dep-reveal { opacity: 0; transform: translateY(14px); transition: opacity .6s ease, transform .6s ease; }
+.dep-reveal.is-in { opacity: 1; transform: translateY(0); }
+
+/* ── Magnetic wrapper ── */
+.dep-magnetic { display: inline-block; transition: transform 0.25s cubic-bezier(0.2,0.7,0.3,1); }
+
+/* ── Conic mesh hero ── */
+.dep-mesh {
+  position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  background:
+    radial-gradient(60% 50% at 70% 40%, rgba(245,197,24,0.10), transparent 70%),
+    radial-gradient(40% 35% at 20% 80%, rgba(245,197,24,0.06), transparent 70%),
+    conic-gradient(from 220deg at 80% 20%, rgba(245,197,24,0.05), transparent 30%, transparent 70%, rgba(245,197,24,0.04));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dep-reveal { opacity: 1; transform: none; transition: none; }
+  .dep-marquee, .marquee { animation: none; }
+  .dep-rec-dot { animation: none; }
+  .pulse-electric { animation: none; }
+}
+
+/* ── Pulse electric (legacy retro-compat) ── */
 @keyframes pulse-electric {
   0%, 100% { box-shadow: 0 0 0 0 var(--electric-glow); }
   50%      { box-shadow: 0 0 0 14px transparent; }
 }
 .pulse-electric { animation: pulse-electric 2.4s ease-out infinite; }
+
+/* ── DEP buttons (composables sur Tailwind) ── */
+.dep-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 22px;
+  border-radius: var(--r-md);
+  border: 1px solid transparent;
+  font-family: var(--font-bricolage);
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
+  user-select: none;
+  white-space: nowrap;
+}
+.dep-btn:focus-visible {
+  outline: 2px solid var(--dep-yellow);
+  outline-offset: 3px;
+}
+.dep-btn--primary {
+  background: var(--dep-yellow);
+  color: var(--dep-black);
+  box-shadow: var(--shadow-yellow);
+}
+.dep-btn--primary:hover { background: var(--dep-yellow-deep); }
+.dep-btn--ghost-dark {
+  background: transparent;
+  color: var(--dep-paper);
+  border-color: var(--dep-grey-1);
+}
+.dep-btn--ghost-dark:hover { border-color: var(--dep-paper); }
+.dep-btn--ghost-light {
+  background: transparent;
+  color: var(--dep-black);
+  border-color: var(--dep-line-light);
+}
+.dep-btn--ghost-light:hover { border-color: var(--dep-black); }
+
+/* ── Eyebrow / micro label ── */
+.dep-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--dep-grey-2);
+}
+
+/* ── Pills ── */
+.dep-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--r-pill);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  border: 1px solid var(--dep-line-dark);
+  color: var(--dep-grey-3);
+  background: rgba(255,255,255,0.02);
+}
+.dep-pill--yellow { background: var(--dep-yellow); color: var(--dep-black); border-color: transparent; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--electric-deep); }
+
+/* ── Focus ── */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ── Selection ── */
+::selection { background: var(--electric); color: #000; }
