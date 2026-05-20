@@ -78,6 +78,8 @@ function DevisEditorInner({
     !skipVoiceParam && !(initialPayload?.items?.length) && !(initialPayload?.client?.nom),
   )
   const [clientSelectorOpen, setClientSelectorOpen] = useState(false)
+  // Banner violet "Relisez !" — affiché après injection vocale jusqu'à dismiss.
+  const [reviewNeeded, setReviewNeeded] = useState(false)
 
   // Clarification flow : when voice returns, we show ClarifyCard BEFORE applying anything.
   type VoiceData = {
@@ -111,16 +113,11 @@ function DevisEditorInner({
     return true
   }
 
-  // Step 1 of voice flow: receive ASR + clarification → hold pendingVoice, show ClarifyCard.
+  // UX 2026-05-20 : moins de friction — auto-inject tout directement.
+  // Plus de ClarifyCard intermédiaire. Un BANNER VIOLET apparaît après injection
+  // pour rappeler à l'user de relire (surtout termes techniques).
   function handleVoiceResult(r: VoiceData) {
     setTranscript({ raw: r.raw, corrected: r.corrected, language: r.language })
-    setPendingVoice(r)
-  }
-
-  // Step 2: user a confirmé la clarification → on applique vraiment.
-  function applyPendingVoice() {
-    const r = pendingVoice
-    if (!r) return
     const additions: DevisPayload["items"] = r.extracted.items.map((it) => {
       const match = knownArticles.find((a) => a.nom.toLowerCase() === it.description.toLowerCase())
       return {
@@ -136,9 +133,16 @@ function DevisEditorInner({
     if (r.extracted.chantier_adresse && !chantier) setChantier(r.extracted.chantier_adresse)
     if (r.extracted.notes && !notesClient) setNotesClient(r.extracted.notes)
     if (r.extracted.client_hint && !client.nom) setClient((c) => ({ ...c, nom: r.extracted.client_hint! }))
-    toast.success(`${additions.length} ligne(s) ajoutées depuis votre vocal`, {
+    setShowVoice(false)
+    setStep(2)                       // direct vers étape Articles pour que user voit ce qui a été ajouté
+    setReviewNeeded(true)             // déclenche le banner violet
+    toast.success(`${additions.length} ligne(s) ajoutées`, {
       description: r.language && r.language !== "fr" ? `Détecté : ${r.language}, traduit en français` : undefined,
     })
+  }
+
+  // Anciennement ClarifyCard flow — gardé pour compat mais désactivé.
+  function applyPendingVoice() {
     setPendingVoice(null)
     setShowVoice(false)
   }
@@ -272,6 +276,40 @@ function DevisEditorInner({
           </motion.div>
         )}
 
+      </AnimatePresence>
+
+      {/* Banner VIOLET après injection vocale — relire avant d'envoyer */}
+      <AnimatePresence>
+        {reviewNeeded && !showVoice && (
+          <motion.div
+            key="review-banner"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="relative rounded-[var(--radius)] border-2 border-purple-500 bg-gradient-to-r from-purple-600/15 via-purple-500/10 to-fuchsia-500/15 p-4 shadow-[0_0_24px_-8px_rgba(168,85,247,0.6)]"
+          >
+            <div className="flex items-start gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-purple-500 text-white text-lg">
+                ⚠️
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-display text-base font-bold text-purple-200">
+                  Relisez avant d&apos;envoyer
+                </p>
+                <p className="mt-0.5 text-sm text-purple-100/90 leading-relaxed">
+                  Surtout les <strong className="text-white">mots techniques</strong> (références, ampérages, marques) — l&apos;IA peut s&apos;être trompée.
+                </p>
+              </div>
+              <button
+                onClick={() => setReviewNeeded(false)}
+                className="text-purple-200/70 hover:text-white text-xl leading-none px-2"
+                aria-label="Fermer l'avertissement"
+              >
+                ×
+              </button>
+            </div>
+          </motion.div>
+        )}
       </AnimatePresence>
 
       {/* Stepper (always visible, even with voice — pour permettre saisie complémentaire) */}
