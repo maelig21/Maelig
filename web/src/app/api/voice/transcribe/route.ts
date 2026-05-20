@@ -5,6 +5,9 @@ import { transcribeAudioFromUrl } from "@/lib/llm/asr"
 import { correctFR, extractDevisFromTranscript } from "@/lib/llm/dashscope"
 import { clarifyTranscript } from "@/lib/llm/clarify"
 import { limitVoice, limitVoiceDaily, checkLimits, tooManyRequests } from "@/lib/ratelimit"
+import { checkMagic, safeExtFromMime } from "@/lib/security/file-magic"
+
+const MAX_AUDIO_BYTES = 25 * 1024 * 1024
 
 export const runtime = "nodejs"
 export const maxDuration = 60
@@ -34,15 +37,30 @@ export async function POST(req: Request) {
   const file = form.get("audio") as File | null
   const language = (form.get("language") as string | null) || undefined
   if (!file || file.size === 0) return NextResponse.json({ error: "audio_missing" }, { status: 400 })
-  if (file.size > 25 * 1024 * 1024)
-    return NextResponse.json({ error: "audio_too_large", limit_mb: 25 }, { status: 413 })
+  if (file.size > MAX_AUDIO_BYTES)
+    return NextResponse.json({ error: "audio_too_large", limit_mb: MAX_AUDIO_BYTES / 1024 / 1024 }, { status: 413 })
+
+  // P1-8 audit 2026-05-20 — Magic byte verification (anti spoofed MIME)
+  const magic = await checkMagic(file, "audio", file.type)
+  if (!magic.ok) {
+    return NextResponse.json({ error: "audio_invalid", reason: magic.reason }, { status: 415 })
+  }
+  // Validation langue (anti injection dans le call ASR provider)
+  // Pattern borné max 6 chars (xx ou xx-XX) — ReDoS-safe.
+  // eslint-disable-next-line security/detect-unsafe-regex
+  if (language && !/^[a-z]{2,3}(?:-[A-Z]{2})?$/.test(language)) {
+    return NextResponse.json({ error: "bad_language_tag" }, { status: 400 })
+  }
 
   const admin = supabaseAdmin()
-  const filename = `${profile.org_id}/${Date.now()}-${crypto.randomUUID()}.${guessExt(file.type)}`
+  // crypto.randomUUID() = safe (pas de path traversal possible). org_id provient
+  // de profile (server-trusted), pas du form. Extension dérivée du MIME, pas du
+  // filename user.
+  const filename = `${profile.org_id}/${Date.now()}-${crypto.randomUUID()}.${safeExtFromMime(file.type)}`
   const buf = Buffer.from(await file.arrayBuffer())
 
   const { error: upErr } = await admin.storage.from("audio").upload(filename, buf, {
-    contentType: file.type || "audio/webm",
+    contentType: file.type,
     upsert: false,
   })
   if (upErr) return NextResponse.json({ error: "upload_failed", detail: upErr.message }, { status: 500 })
@@ -103,11 +121,4 @@ export async function POST(req: Request) {
   })
 }
 
-function guessExt(mime: string): string {
-  if (mime.includes("webm")) return "webm"
-  if (mime.includes("mp4") || mime.includes("m4a")) return "m4a"
-  if (mime.includes("mpeg") || mime.includes("mp3")) return "mp3"
-  if (mime.includes("wav")) return "wav"
-  if (mime.includes("ogg")) return "ogg"
-  return "webm"
-}
+// guessExt remplacé par safeExtFromMime (lib/security/file-magic).

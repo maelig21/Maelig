@@ -11,9 +11,12 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input, Label, FieldError } from "@/components/ui/input"
 
+// P1 audit 2026-05-20 — Pas de min(12) sur LOGIN : on ne veut pas
+// bloquer les comptes créés avant le hardening. Mais on garde min(8) côté UX
+// pour signaler une saisie clairement incomplète.
 const schema = z.object({
-  email: z.string().email("Email invalide"),
-  password: z.string().min(6, "6 caractères minimum"),
+  email: z.string().email("Email invalide").max(255),
+  password: z.string().min(8, "8 caractères minimum").max(72),
 })
 
 type FormValues = z.infer<typeof schema>
@@ -46,8 +49,31 @@ function ConnexionInner() {
   })
 
   const onSubmit = async (data: FormValues) => {
+    // P1-1 audit : pré-flight rate limit anti credential stuffing (IP + email)
+    const pre = await fetch("/api/auth/preflight", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "login", email: data.email }),
+    })
+    if (pre.status === 429 || pre.status === 423) {
+      const reason = pre.status === 423
+        ? "Compte verrouillé 15 min après 5 tentatives échouées."
+        : "Trop de tentatives. Attendez 15 minutes."
+      toast.error("Accès bloqué", { description: reason })
+      return
+    }
     const supabase = createSupabaseBrowserClient()
-    const { error } = await supabase.auth.signInWithPassword(data)
+    const { data: signIn, error } = await supabase.auth.signInWithPassword(data)
+    // Audit log (best-effort, fail-soft)
+    void fetch("/api/auth/event", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        event: error ? "login_fail" : "login_ok",
+        email: data.email,
+        user_id: signIn?.user?.id,
+        metadata: error ? { reason: error.message?.slice(0, 120) } : undefined,
+      }),
+    }).catch(() => {})
     if (error) {
       toast.error("Connexion impossible", { description: error.message })
       return

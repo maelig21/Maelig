@@ -10,11 +10,22 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input, Label, FieldError } from "@/components/ui/input"
 
+// P1-2 audit 2026-05-20 — Politique mot de passe stricte (compliance B2B).
+//   - 12 chars minimum
+//   - 3 catégories sur 4 (min/maj/chiffre/spécial)
+//   - non commun (dictionnaire ~5k)
+//   - ne contient pas l'email ni le nom
+//   - pas de séquences (1234, qwerty) ni répétitions (aaaa)
+// La validation détaillée se fait via @/lib/security/password côté serveur ET front.
+import { checkPasswordStrength } from "@/lib/security/password"
+
 const schema = z.object({
-  fullName: z.string().min(2, "Indiquez votre nom"),
-  company: z.string().min(2, "Nom de l'entreprise"),
-  email: z.string().email("Email invalide"),
-  password: z.string().min(8, "8 caractères minimum"),
+  fullName: z.string().min(2, "Indiquez votre nom").max(120),
+  company: z.string().min(2, "Nom de l'entreprise").max(120),
+  email: z.string().email("Email invalide").max(255),
+  password: z.string()
+    .min(12, "12 caractères minimum (sécurité données client)")
+    .max(72, "72 caractères maximum"),
 })
 type FormValues = z.infer<typeof schema>
 
@@ -26,8 +37,24 @@ export default function InscriptionPage() {
   })
 
   const onSubmit = async (values: FormValues) => {
+    // P1-2 — Validation password stricte (côté front, doublée côté back par Supabase)
+    const pw = checkPasswordStrength(values.password, { email: values.email, name: values.fullName })
+    if (!pw.ok) {
+      toast.error("Mot de passe trop faible", { description: pw.hint ?? "Renforcez votre mot de passe." })
+      return
+    }
+    // P1-1 : pré-flight rate limit (IP + email) anti credential stuffing
+    const pre = await fetch("/api/auth/preflight", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "signup", email: values.email }),
+    })
+    if (pre.status === 429 || pre.status === 423) {
+      toast.error("Accès bloqué", { description: "Trop de tentatives. Attendez 15 minutes." })
+      return
+    }
     const supabase = createSupabaseBrowserClient()
-    const { error } = await supabase.auth.signUp({
+    const { data: signUp, error } = await supabase.auth.signUp({
       email: values.email,
       password: values.password,
       options: {
@@ -38,6 +65,15 @@ export default function InscriptionPage() {
         },
       },
     })
+    void fetch("/api/auth/event", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        event: error ? "signup_fail" : "signup",
+        email: values.email,
+        user_id: signUp?.user?.id,
+        metadata: error ? { reason: error.message?.slice(0, 120) } : undefined,
+      }),
+    }).catch(() => {})
     if (error) {
       toast.error("Inscription impossible", { description: error.message })
       return

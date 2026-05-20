@@ -22,6 +22,16 @@ import { transcribeAudioFromUrl } from "@/lib/llm/asr"
 import { correctFR } from "@/lib/llm/dashscope"
 import { analyzeIncident } from "@/lib/llm/incidents"
 import { sendEmail } from "@/lib/email/resend"
+import { limitIncident, tooManyRequests } from "@/lib/ratelimit"
+import { checkMagic, ALLOWED_MIME, safeExtFromMime } from "@/lib/security/file-magic"
+
+// P1-8 audit 2026-05-20 — Whitelist MIME strict + magic byte verification.
+// Cf src/lib/security/file-magic.ts pour la liste complète + sniff.
+const MAX_FILES_TOTAL = 10      // P1-8 limit nombre total (photos + vidéos)
+const MAX_PHOTO_BYTES = 30 * 1024 * 1024   // 30 MB / photo
+const MAX_VIDEO_BYTES = 100 * 1024 * 1024  // 100 MB / vidéo (chantier)
+const MAX_AUDIO_BYTES = 25 * 1024 * 1024
+
 
 export const runtime = "nodejs"
 export const maxDuration = 90
@@ -36,6 +46,12 @@ export async function POST(req: Request) {
     .eq("id", user.id)
     .maybeSingle()
   if (!profile?.org_id) return NextResponse.json({ error: "no_org" }, { status: 403 })
+
+  // P1-9 audit : rate limit 5/min/user pour création d'incident (déjà défini, jamais appliqué)
+  if (limitIncident) {
+    const rl = await limitIncident.limit(user.id)
+    if (!rl.success) return tooManyRequests({ success: false, remaining: rl.remaining, reset: rl.reset, limit: rl.limit })
+  }
 
   const form = await req.formData().catch(() => null)
   if (!form) return NextResponse.json({ error: "form_required" }, { status: 400 })
@@ -54,17 +70,21 @@ export async function POST(req: Request) {
   const incidentId = crypto.randomUUID()
   const folder = `${profile.org_id}/incidents/${incidentId}`
 
-  // 1) Upload audio if any
+  // 1) Upload audio if any — magic byte verification + size + MIME whitelist
   let audioPath: string | null = null
   let audioUrl: string | null = null
   if (audio && audio.size > 0) {
-    if (audio.size > 25 * 1024 * 1024) {
-      return NextResponse.json({ error: "audio_too_large", limit_mb: 25 }, { status: 413 })
+    if (audio.size > MAX_AUDIO_BYTES) {
+      return NextResponse.json({ error: "audio_too_large", limit_mb: MAX_AUDIO_BYTES / 1024 / 1024 }, { status: 413 })
     }
-    audioPath = `${folder}/audio.${guessExt(audio.type)}`
+    const magicAudio = await checkMagic(audio, "audio", audio.type)
+    if (!magicAudio.ok) {
+      return NextResponse.json({ error: "audio_invalid", reason: magicAudio.reason }, { status: 415 })
+    }
+    audioPath = `${folder}/audio.${safeExtFromMime(audio.type)}`
     const buf = Buffer.from(await audio.arrayBuffer())
     const { error } = await admin.storage.from("chantier-media").upload(audioPath, buf, {
-      contentType: audio.type || "audio/webm",
+      contentType: audio.type,
       upsert: false,
     })
     if (error) return NextResponse.json({ error: "audio_upload_failed", detail: error.message }, { status: 500 })
@@ -72,23 +92,40 @@ export async function POST(req: Request) {
     audioUrl = signed?.signedUrl ?? null
   }
 
-  // 2) Upload photos + videos
+  // 2) Upload photos + videos — count limit + magic byte verification
   const attachments: Array<{ path: string; type: string; name: string; size: number }> = []
-  for (const field of ["photos", "videos"]) {
+  let uploadedCount = 0
+  for (const field of ["photos", "videos"] as const) {
     const files = form.getAll(field) as File[]
+    const category: "image" | "video" = field === "photos" ? "image" : "video"
+    const maxBytes = field === "photos" ? MAX_PHOTO_BYTES : MAX_VIDEO_BYTES
     for (let i = 0; i < files.length; i++) {
+      if (uploadedCount >= MAX_FILES_TOTAL) break    // P1-8 hard cap
       const f = files[i]
       if (!f || f.size === 0) continue
-      if (f.size > 30 * 1024 * 1024) continue
-      const ext = guessExt(f.type) || (field === "videos" ? "mp4" : "jpg")
-      const path = `${folder}/${field}-${i}.${ext}`
+      if (f.size > maxBytes) continue                // skip silently les fichiers trop lourds
+      if (!ALLOWED_MIME[category].has((f.type || "").toLowerCase())) continue
+      const magic = await checkMagic(f, category, f.type)
+      if (!magic.ok) {
+        console.warn(`[incident] reject ${field}[${i}]: ${magic.reason}`)
+        continue
+      }
+      const ext = safeExtFromMime(f.type)
+      const path = `${folder}/${field}-${uploadedCount}.${ext}`
       const buf = Buffer.from(await f.arrayBuffer())
       const { error } = await admin.storage.from("chantier-media").upload(path, buf, {
         contentType: f.type,
         upsert: false,
       })
       if (!error) {
-        attachments.push({ path, type: f.type, name: f.name || `${field}-${i}`, size: f.size })
+        attachments.push({
+          path,
+          type: f.type,
+          // jamais le filename user (path traversal, XSS via name) — on génère
+          name: `${field}-${uploadedCount}`,
+          size: f.size,
+        })
+        uploadedCount++
       }
     }
   }
@@ -192,20 +229,8 @@ export async function POST(req: Request) {
   })
 }
 
-function guessExt(mime: string): string {
-  if (!mime) return "bin"
-  if (mime.includes("webm")) return "webm"
-  if (mime.includes("mp4")) return "mp4"
-  if (mime.includes("quicktime")) return "mov"
-  if (mime.includes("mpeg") || mime.includes("mp3")) return "mp3"
-  if (mime.includes("wav")) return "wav"
-  if (mime.includes("ogg")) return "ogg"
-  if (mime.includes("jpeg") || mime.includes("jpg")) return "jpg"
-  if (mime.includes("png")) return "png"
-  if (mime.includes("heic")) return "heic"
-  if (mime.includes("webp")) return "webp"
-  return mime.split("/")[1] ?? "bin"
-}
+// guessExt remplacé par safeExtFromMime (lib/security/file-magic) — anti
+// inférence depuis filename user (path traversal, double extension).
 
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!))

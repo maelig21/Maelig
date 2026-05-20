@@ -8,7 +8,12 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input, Label, FieldError } from "@/components/ui/input"
 
-const schema = z.object({ password: z.string().min(8, "8 caractères minimum") })
+// P1-2 audit 2026-05-20 — Aligné avec /inscription : 12 chars + checkPasswordStrength
+import { checkPasswordStrength } from "@/lib/security/password"
+
+const schema = z.object({
+  password: z.string().min(12, "12 caractères minimum (sécurité données client)").max(72),
+})
 type FormValues = z.infer<typeof schema>
 
 export default function ReinitPage() {
@@ -18,8 +23,22 @@ export default function ReinitPage() {
   })
 
   const onSubmit = async ({ password }: FormValues) => {
+    const pw = checkPasswordStrength(password)
+    if (!pw.ok) {
+      toast.error("Mot de passe trop faible", { description: pw.hint ?? "Renforcez votre mot de passe." })
+      return
+    }
     const supabase = createSupabaseBrowserClient()
-    const { error } = await supabase.auth.updateUser({ password })
+    const { data, error } = await supabase.auth.updateUser({ password })
+    void fetch("/api/auth/event", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        event: error ? "signup_fail" : "reset_ok",
+        user_id: data?.user?.id,
+        email: data?.user?.email,
+        metadata: error ? { reason: error.message?.slice(0, 120) } : { kind: "password_reset" },
+      }),
+    }).catch(() => {})
     if (error) {
       toast.error("Échec", { description: error.message })
       return
@@ -31,7 +50,7 @@ export default function ReinitPage() {
   return (
     <div>
       <h1 className="font-display text-3xl font-bold tracking-tight">Nouveau mot de passe</h1>
-      <p className="mt-2 text-sm text-muted">Choisissez un mot de passe solide (≥ 8 caractères).</p>
+      <p className="mt-2 text-sm text-muted">12 caractères minimum, mélangez min/maj/chiffre/spécial.</p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5">
         <div>

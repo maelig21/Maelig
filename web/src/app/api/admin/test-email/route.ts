@@ -2,6 +2,9 @@ import { NextResponse } from "next/server"
 import { z } from "zod"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { supabaseAdmin } from "@/lib/supabase/admin"
+import { limitAdminEmail, tooManyRequests, clientIp } from "@/lib/ratelimit"
+import { generateStrongPassword } from "@/lib/security/password"
+import { logAuthEvent } from "@/lib/security/audit"
 
 const ADMIN_EMAILS = ["ayouneslead@gmail.com", "djibrilmindset@gmail.com", "djibrilsylearn@gmail.com"]
 
@@ -18,6 +21,12 @@ export async function POST(req: Request) {
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle()
   const isAdmin = profile?.role === "admin_dep" || ADMIN_EMAILS.includes((user.email || "").toLowerCase())
   if (!isAdmin) return NextResponse.json({ error: "forbidden" }, { status: 403 })
+
+  // P1-3 audit : rate limit 20/h par admin sur cet endpoint (prévention abuse)
+  if (limitAdminEmail) {
+    const rl = await limitAdminEmail.limit(user.id)
+    if (!rl.success) return tooManyRequests({ success: false, remaining: rl.remaining, reset: rl.reset, limit: rl.limit })
+  }
 
   const parsed = Body.safeParse(await req.json().catch(() => ({})))
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
@@ -58,10 +67,13 @@ export async function POST(req: Request) {
       if (error) throw error
     } else {
       // test_transactional : on simule un signup OTP qui déclenche le SMTP
+      // P1 audit 2026-05-20 — generateStrongPassword (24 chars, charset large,
+      // crypto.getRandomValues) au lieu de crypto.randomUUID() qui suit un
+      // pattern prévisible (8-4-4-4-12 hex).
       const { error } = await admin.auth.admin.generateLink({
         type: "signup",
         email: recipient,
-        password: crypto.randomUUID(),
+        password: generateStrongPassword(24),
         options: { redirectTo: `${baseUrl}/app` },
       })
       // Tolère "user already registered" : on tombe sur reset à la place
@@ -89,6 +101,15 @@ export async function POST(req: Request) {
     error_message: errorMessage,
     request_payload: { template, recipient },
     response_payload: responsePayload,
+  })
+
+  // P1 audit 2026-05-20 — Trace dans auth_events (RGPD: admin action sur user)
+  await logAuthEvent("admin_action", {
+    ip: clientIp(req),
+    userAgent: req.headers.get("user-agent") ?? null,
+    userId: user.id,
+    email: user.email,
+    metadata: { admin_action: "test-email", template, recipient_masked: recipient.slice(0, 2) + "***", status },
   })
 
   if (status === "failed") {

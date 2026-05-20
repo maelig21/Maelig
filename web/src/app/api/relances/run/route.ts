@@ -9,6 +9,7 @@
  * Vercel ajoute automatiquement ce header pour les crons configurés.
  */
 import { NextResponse } from "next/server"
+import { timingSafeEqual } from "crypto"
 import { supabaseAdmin } from "@/lib/supabase/admin"
 import { sendEmail } from "@/lib/email/resend"
 import { relanceTemplate } from "@/lib/email/templates"
@@ -18,6 +19,15 @@ export const maxDuration = 60
 
 const CRON_SECRET = process.env.CRON_SECRET
 
+/** Constant-time string compare (anti timing attack). Diff length = early false. */
+function timingSafeStringEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false
+  const ab = Buffer.from(a)
+  const bb = Buffer.from(b)
+  if (ab.length !== bb.length) return false
+  return timingSafeEqual(ab, bb)
+}
+
 export async function GET(req: Request) {
   // P0-2 fix audit 2026-05-20 : fail-closed si CRON_SECRET absent.
   // Sans ça, n'importe qui pouvait `curl /api/relances/run` → spam Resend.
@@ -25,8 +35,11 @@ export async function GET(req: Request) {
     console.error("CRON_SECRET missing in env — refusing to run relances")
     return NextResponse.json({ error: "service unavailable" }, { status: 503 })
   }
+  // P1 audit 2026-05-20 — constant-time comparison (anti timing attack
+  // permettant de découvrir le secret octet par octet via mesure de latence).
   const auth = req.headers.get("authorization") ?? ""
-  if (auth !== `Bearer ${CRON_SECRET}`) {
+  const expected = `Bearer ${CRON_SECRET}`
+  if (!timingSafeStringEqual(auth, expected)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 })
   }
 

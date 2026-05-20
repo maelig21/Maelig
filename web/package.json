@@ -6,7 +6,14 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "lint:security": "eslint --no-warn-ignored 'src/**/*.{ts,tsx}'",
+    "typecheck": "tsc --noEmit",
+    "audit:deps": "pnpm audit --prod --audit-level=moderate",
+    "audit:secrets": "gitleaks detect --source=. --no-banner --redact",
+    "audit:semgrep": "semgrep --config=p/owasp-top-ten --config=p/javascript --config=p/typescript --config=p/nextjs --config=p/react --config=p/jwt --config=p/secrets --metrics=off --severity ERROR --severity WARNING --error src/",
+    "audit:all": "pnpm audit:deps && pnpm audit:secrets && pnpm audit:semgrep && pnpm typecheck && pnpm lint:security",
+    "security:report": "bash scripts/security-report.sh"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -54,7 +61,13 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.5.18",
+    "eslint-plugin-security": "^3.0.1",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "pnpm": {
+    "overrides": {
+      "postcss": "^8.5.10"
+    }
   }
 }

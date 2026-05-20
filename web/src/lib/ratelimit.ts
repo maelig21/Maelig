@@ -42,6 +42,21 @@ export const limitStripe = redis
   ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "1 h"), prefix: "rl:stripe", analytics: true })
   : null
 
+/** P1-1 audit 2026-05-20 — Anti credential stuffing : 5 tentatives login/signup IP / 15 min. */
+export const limitAuth = redis
+  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "15 m"), prefix: "rl:auth", analytics: true })
+  : null
+
+/** P1-1 — Password reset : 3 demandes par IP / heure (anti spam email). */
+export const limitPasswordReset = redis
+  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(3, "1 h"), prefix: "rl:pwreset", analytics: true })
+  : null
+
+/** P1-3 — Admin test-email : 20 / heure par admin (limite spam même par admin). */
+export const limitAdminEmail = redis
+  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(20, "1 h"), prefix: "rl:adminemail", analytics: true })
+  : null
+
 export interface LimitResult {
   success: boolean
   remaining: number
@@ -63,6 +78,12 @@ export async function checkLimits(
     }
   }
   return NOOP
+}
+
+/** Extrait l'IP client depuis les headers Vercel/Cloudflare. */
+export function clientIp(req: Request): string {
+  const xff = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+  return xff || req.headers.get("x-real-ip") || req.headers.get("cf-connecting-ip") || "anonymous"
 }
 
 /** Renvoie la Response 429 standard avec les headers RateLimit-*. */

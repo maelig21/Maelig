@@ -9,7 +9,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input, Label, FieldError } from "@/components/ui/input"
 
-const schema = z.object({ email: z.string().email("Email invalide") })
+const schema = z.object({ email: z.string().email("Email invalide").max(255) })
 type FormValues = z.infer<typeof schema>
 
 export default function OubliPage() {
@@ -18,15 +18,30 @@ export default function OubliPage() {
   })
 
   const onSubmit = async ({ email }: FormValues) => {
+    const pre = await fetch("/api/auth/preflight", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "password_reset", email }),
+    })
+    if (pre.status === 429 || pre.status === 423) {
+      toast.error("Trop de demandes", { description: "Attendez 1h ou contactez support." })
+      return
+    }
     const supabase = createSupabaseBrowserClient()
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reinitialisation`,
     })
+    // P1 audit — Tracé même si error pour détecter enumeration attacks
+    void fetch("/api/auth/event", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ event: "reset_request", email, metadata: { error: error?.message ?? null } }),
+    }).catch(() => {})
     if (error) {
-      toast.error("Envoi impossible", { description: error.message })
+      // P1 — Réponse identique success/error pour empêcher email enumeration
+      toast.success("Email envoyé", { description: "Si ce compte existe, vous recevrez un lien." })
       return
     }
-    toast.success("Email envoyé", { description: "Cliquez sur le lien dans votre boîte mail." })
+    toast.success("Email envoyé", { description: "Si ce compte existe, vous recevrez un lien." })
   }
 
   return (
