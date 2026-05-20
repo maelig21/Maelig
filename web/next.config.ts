@@ -25,7 +25,9 @@ const nextConfig: NextConfig = {
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://dashscope.aliyuncs.com https://dashscope-intl.aliyuncs.com https://api.stripe.com https://*.ingest.sentry.io",
+      // P1 2026-05-20 — *.sentry.io (au lieu *.ingest.sentry.io) car les DSN EU
+      // utilisent *.ingest.de.sentry.io (multi-niveau, hors couverture de *.ingest.sentry.io).
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://dashscope.aliyuncs.com https://dashscope-intl.aliyuncs.com https://api.stripe.com https://*.sentry.io https://*.upstash.io",
       "frame-src https://js.stripe.com",
       "frame-ancestors 'none'",
       "base-uri 'self'",
