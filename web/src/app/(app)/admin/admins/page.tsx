@@ -20,8 +20,8 @@ type Admin = {
 }
 
 export default async function AdminsPage() {
-  const { supabase } = await requireAdmin()
-  const { data } = await supabase.from("v_admin_admins").select("*").limit(100)
+  const { admin } = await requireAdmin()
+  const { data } = await admin.from("v_admin_admins").select("*").limit(100)
   const rows = (data ?? []) as Admin[]
 
   return (

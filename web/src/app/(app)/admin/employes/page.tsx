@@ -28,8 +28,8 @@ type Employe = {
 }
 
 export default async function EmployesPage() {
-  const { supabase } = await requireAdmin()
-  const { data } = await supabase.from("v_admin_employes").select("*").limit(500)
+  const { admin } = await requireAdmin()
+  const { data } = await admin.from("v_admin_employes").select("*").limit(500)
   const rows = (data ?? []) as Employe[]
 
   const totaux = rows.reduce(

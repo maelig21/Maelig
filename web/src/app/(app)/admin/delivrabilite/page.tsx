@@ -18,8 +18,8 @@ type EmailLog = {
 }
 
 export default async function DelivrabilitePage() {
-  const { supabase, user } = await requireAdmin()
-  const { data: logs } = await supabase
+  const { admin, user } = await requireAdmin()
+  const { data: logs } = await admin
     .from("email_test_log")
     .select("*")
     .order("sent_at", { ascending: false })

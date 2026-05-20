@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
+import { supabaseAdmin } from "@/lib/supabase/admin"
 
 export const ADMIN_EMAILS = [
   "ayouneslead@gmail.com",
@@ -7,6 +8,11 @@ export const ADMIN_EMAILS = [
   "djibrilsylearn@gmail.com",
 ]
 
+// requireAdmin gate les Server Components admin et retourne :
+// - supabase : client server-side avec session user (lecture profiles/orgs OK via RLS)
+// - admin    : client service_role (bypass RLS, OBLIGATOIRE pour les vues v_admin_*
+//              désormais revoke from authenticated — P0-1 fix audit 2026-05-20)
+// - user, profile : pour personnaliser l'UI
 export async function requireAdmin() {
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -21,7 +27,7 @@ export async function requireAdmin() {
   const isAdmin = profile?.role === "admin_dep" || ADMIN_EMAILS.includes((user.email || "").toLowerCase())
   if (!isAdmin) redirect("/app")
 
-  return { supabase, user, profile }
+  return { supabase, admin: supabaseAdmin(), user, profile }
 }
 
 export function formatRelative(iso: string | null | undefined): string {

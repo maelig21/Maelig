@@ -19,8 +19,14 @@ export const maxDuration = 60
 const CRON_SECRET = process.env.CRON_SECRET
 
 export async function GET(req: Request) {
+  // P0-2 fix audit 2026-05-20 : fail-closed si CRON_SECRET absent.
+  // Sans ça, n'importe qui pouvait `curl /api/relances/run` → spam Resend.
+  if (!CRON_SECRET) {
+    console.error("CRON_SECRET missing in env — refusing to run relances")
+    return NextResponse.json({ error: "service unavailable" }, { status: 503 })
+  }
   const auth = req.headers.get("authorization") ?? ""
-  if (CRON_SECRET && auth !== `Bearer ${CRON_SECRET}`) {
+  if (auth !== `Bearer ${CRON_SECRET}`) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 })
   }
 

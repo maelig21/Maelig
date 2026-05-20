@@ -21,11 +21,11 @@ type RoleStats = {
 }
 
 export default async function AdminOverviewPage() {
-  const { supabase } = await requireAdmin()
+  const { admin } = await requireAdmin()
 
   const [{ data: stats }, { data: signupsStats }] = await Promise.all([
-    supabase.from("v_admin_role_stats").select("*").maybeSingle(),
-    supabase.from("v_admin_signups_stats").select("*").maybeSingle(),
+    admin.from("v_admin_role_stats").select("*").maybeSingle(),
+    admin.from("v_admin_signups_stats").select("*").maybeSingle(),
   ])
 
   const s = (stats ?? {}) as Partial<RoleStats>

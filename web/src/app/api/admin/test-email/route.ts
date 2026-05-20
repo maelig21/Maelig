@@ -24,7 +24,14 @@ export async function POST(req: Request) {
 
   const { recipient, template } = parsed.data
   const admin = supabaseAdmin()
-  const baseUrl = req.headers.get("origin") ?? process.env.NEXT_PUBLIC_SITE_URL ?? "https://dep-electrique.vercel.app"
+  // P0-3 fix audit 2026-05-20 : NE PAS trust le header Origin
+  // (un attaquant peut le forger pour injecter un magic link Supabase signé
+  // qui redirige vers son domaine de phishing). Whitelist hardcoded.
+  const ALLOWED_BASES = [
+    "https://dep-electrique.vercel.app",
+    process.env.NEXT_PUBLIC_APP_URL,
+  ].filter(Boolean) as string[]
+  const baseUrl = ALLOWED_BASES[0]
 
   let status: "sent" | "failed" = "sent"
   let errorMessage: string | null = null
