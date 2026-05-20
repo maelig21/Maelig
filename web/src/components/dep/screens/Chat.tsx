@@ -309,7 +309,7 @@ function ChatView({ perspective }) {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         fontSize: 12, color: 'var(--dep-grey-1)', direction: dir,
       }}>
-        <span>Toujours afficher l'original aussi</span>
+        <span>Toujours afficher l’original aussi</span>
         <button onClick={() => setShowAll(s => !s)} aria-pressed={showAll} style={{
           width: 36, height: 22, borderRadius: 11, padding: 2,
           background: showAll ? 'var(--dep-yellow)' : 'var(--dep-line-light)',

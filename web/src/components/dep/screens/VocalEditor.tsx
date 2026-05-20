@@ -223,7 +223,7 @@ function VocalStepArticles({ onNext }) {
               transition: 'transform 0.15s ease',
             }}><DepIcon.mic style={{ width: 64, height: 64, strokeWidth: 2.4 }} /></button>
             <div style={{ fontSize: 14, color: 'var(--dep-grey-1)', maxWidth: 'min(280px, 100%)', margin: '0 auto', lineHeight: 1.5 }}>
-              Appuie pour dicter. Exemple : « tableau électrique 13 modules 800 euros, prises encastrées x12 à 35 € chacune, main d'œuvre 4h »
+              Appuie pour dicter. Exemple : « tableau électrique 13 modules 800 euros, prises encastrées x12 à 35 € chacune, main d’œuvre 4h »
             </div>
           </>
         )}
@@ -250,7 +250,7 @@ function VocalStepArticles({ onNext }) {
             <div className="mono" style={{ fontSize: 'clamp(18px, 3vw, 32px)', fontWeight: 600, letterSpacing: '-0.03em', marginBottom: 10 }}>{fmt(seconds)}</div>
             <DepWaveform active />
             <div style={{ fontSize: 13, color: 'var(--dep-grey-3)', marginTop: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-              <span className="dep-rec-dot" style={{ width: 8, height: 8 }} /> J'écoute. Appuie pour arrêter
+              <span className="dep-rec-dot" style={{ width: 8, height: 8 }} /> J’écoute. Appuie pour arrêter
             </div>
           </>
         )}
@@ -268,7 +268,7 @@ function VocalStepArticles({ onNext }) {
               <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
             </div>
             <div style={{ fontSize: 'clamp(15px, 2.2vw, 22px)', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 6 }}>Mon IA réfléchit</div>
-            <div style={{ fontSize: 13, color: 'var(--dep-grey-1)' }}>J'extrais tes articles, ça prend 2 secondes</div>
+            <div style={{ fontSize: 13, color: 'var(--dep-grey-1)' }}>J’extrais tes articles, ça prend 2 secondes</div>
           </>
         )}
         {phase === 'results' && (
@@ -280,7 +280,7 @@ function VocalStepArticles({ onNext }) {
                   color: 'white', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                 }}><DepIcon.check style={{ width: 18, height: 18 }} /></span>
                 <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontWeight: 700, fontSize: 'clamp(14px, 1.8vw, 18px)', letterSpacing: '-0.02em' }}>Voici ce que j'ai compris</div>
+                  <div style={{ fontWeight: 700, fontSize: 'clamp(14px, 1.8vw, 18px)', letterSpacing: '-0.02em' }}>Voici ce que j’ai compris</div>
                   <div style={{ fontSize: 12, color: 'var(--dep-grey-1)' }}>5 articles · dictée 1:42 · cache local OK</div>
                 </div>
               </div>
@@ -455,7 +455,7 @@ function VocalStepSent({ onReset }) {
           <span style={{ color: 'var(--dep-grey-1)' }}>N° devis</span><span className="tnum">DEP-2026-0142</span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-          <span style={{ color: 'var(--dep-grey-1)' }}>Envoyé</span><span>Aujourd'hui 11:42</span>
+          <span style={{ color: 'var(--dep-grey-1)' }}>Envoyé</span><span>Aujourd’hui 11:42</span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <span style={{ color: 'var(--dep-grey-1)' }}>Temps total</span><span>4 min 11 s</span>

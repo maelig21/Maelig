@@ -100,7 +100,7 @@ function LandingHero() {
         <DepReveal delay={120}>
           <h1 style={{ fontSize: 'clamp(40px, 9vw, 96px)', fontWeight: 700, letterSpacing: '-0.045em', lineHeight: 0.96, marginBottom: 32 }}>
             <DepImpact tone="action">Parlez</DepImpact><DepTypingDots size={18} /><br />
-            C'est <DepImpact tone="action">facturé</DepImpact>.
+            C’est <DepImpact tone="action">facturé</DepImpact>.
           </h1>
         </DepReveal>
 
@@ -186,7 +186,7 @@ function LandingMultilingue() {
             <span className="dep-eyebrow dep-eyebrow--on-dark">Killer feature · multilingue chantier</span>
           </div>
           <h2 style={{ fontSize: 'clamp(28px, 5vw, 52px)', fontWeight: 700, letterSpacing: '-0.035em', lineHeight: 1.03, marginBottom: 28 }}>
-            Ton chef d'équipe parle <em style={{ color: 'var(--dep-yellow)', fontStyle: 'italic' }}>darija</em>.<br />
+            Ton chef d’équipe parle <em style={{ color: 'var(--dep-yellow)', fontStyle: 'italic' }}>darija</em>.<br />
             Ton apprenti parle <em style={{ color: 'var(--dep-yellow)', fontStyle: 'italic' }}>polonais</em>.<br />
             Toi tu parles FR.<br />
             DEP fait le pont
@@ -252,7 +252,7 @@ function LandingMultilingue() {
               padding: '14px 18px', borderRadius: '20px 20px 4px 20px',
               maxWidth: 'min(360px, 100%)', fontSize: 16, fontWeight: 500,
             }}>
-              C'est bon, c'est fait. J'ai juste un souci avec un des supports
+              C’est bon, c’est fait. J’ai juste un souci avec un des supports
             </div>
           </div>
         </div>
@@ -305,7 +305,7 @@ function LandingMath() {
             <br />par an, par patron
           </h2>
           <p style={{ fontSize: 'clamp(14px, 1.9vw, 19px)', color: 'var(--dep-black)', lineHeight: 1.6, maxWidth: 'min(520px, 100%)', marginBottom: 32 }}>
-            Tu passes 8h par semaine sur l'admin. Devis, factures, relances, planning équipe. À 70 €/h facturable, tu perds 560 € chaque semaine. Multiplié par 52 semaines, ça fait 29 120 € qui sortent de ta poche.
+            Tu passes 8h par semaine sur l’admin. Devis, factures, relances, planning équipe. À 70 €/h facturable, tu perds 560 € chaque semaine. Multiplié par 52 semaines, ça fait 29 120 € qui sortent de ta poche.
           </p>
           <p style={{ fontSize: 'clamp(13px, 1.7vw, 17px)', color: 'var(--dep-black)', fontWeight: 600 }}>
             DEP récupère cette somme. Tu rentres chez toi à 18h
@@ -418,7 +418,7 @@ function LandingVignettes() {
           <span className="dep-eyebrow">Avant DEP · Avec DEP</span>
         </div>
         <h2 style={{ fontSize: 'clamp(30px, 5.5vw, 56px)', fontWeight: 700, letterSpacing: '-0.035em', lineHeight: 1.04, marginBottom: 56, maxWidth: 'min(880px, 100%)' }}>
-          Ce qui change vraiment, c'est pas la facturation. C'est ta vie
+          Ce qui change vraiment, c’est pas la facturation. C’est ta vie
         </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: 24 }}>
           {v.map((x, i) => (
@@ -465,7 +465,7 @@ function LandingPricing() {
           <span className="dep-eyebrow dep-eyebrow--on-dark">Tarification · <DepImpact tone="trust">sans CB</DepImpact> pour démarrer</span>
         </div>
         <h2 style={{ fontSize: 'clamp(32px, 6vw, 64px)', fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 64 }}>
-          Un prix.<br />Pas d'options.
+          Un prix.<br />Pas d’options.
         </h2>
 
         <div className="dep-pricing-grid" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 32, alignItems: 'stretch' }}>

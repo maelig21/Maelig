@@ -9,7 +9,7 @@ export function getStripe(): Stripe {
     throw new Error("STRIPE_SECRET_KEY missing — configure Stripe in env first")
   }
   _stripe = new Stripe(key, {
-    apiVersion: "2025-08-27.basil",
+    apiVersion: "2026-04-22.dahlia",
     typescript: true,
     appInfo: { name: "DEP", version: "0.1.0" },
   })

@@ -17,7 +17,7 @@
  *
  * Cible RGPD : un dump Sentry doit pouvoir être partagé sans risque.
  */
-import type { Event, EventHint } from "@sentry/nextjs"
+import type { ErrorEvent, EventHint } from "@sentry/nextjs"
 
 // P1 audit 2026-05-20 — Regex bornées (ReDoS-safe) avec quantifieurs {n,m}
 // au lieu de + pour éviter catastrophic backtracking.
@@ -108,7 +108,7 @@ function redactObj(obj: any, depth = 0): any {
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function sentryBeforeSend(event: Event, _hint?: EventHint): Event | null {
+export function sentryBeforeSend(event: ErrorEvent, _hint?: EventHint): ErrorEvent | null {
   try {
     // Drop si event provient d'un endpoint health/ping (noise)
     if (event.request?.url && /\/(api\/health|api\/ping|favicon)/.test(event.request.url)) {

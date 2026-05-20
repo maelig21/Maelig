@@ -3,31 +3,58 @@
 // Stub minimal for now.
 export type Json = string | number | boolean | null | { [k: string]: Json } | Json[]
 
+// Helper: every Table needs `Relationships: []` per @supabase/ssr v2.40+ generics
+type Tbl<R> = { Row: R; Insert: Partial<R>; Update: Partial<R>; Relationships: [] }
+
 export interface Database {
   public: {
     Tables: {
-      orgs: { Row: OrgRow; Insert: Partial<OrgRow>; Update: Partial<OrgRow> }
-      profiles: { Row: ProfileRow; Insert: Partial<ProfileRow>; Update: Partial<ProfileRow> }
-      clients: { Row: ClientRow; Insert: Partial<ClientRow>; Update: Partial<ClientRow> }
-      articles: { Row: ArticleRow; Insert: Partial<ArticleRow>; Update: Partial<ArticleRow> }
-      devis: { Row: DevisRow; Insert: Partial<DevisRow>; Update: Partial<DevisRow> }
-      devis_items: { Row: DevisItemRow; Insert: Partial<DevisItemRow>; Update: Partial<DevisItemRow> }
-      factures: { Row: FactureRow; Insert: Partial<FactureRow>; Update: Partial<FactureRow> }
-      paiements: { Row: PaiementRow; Insert: Partial<PaiementRow>; Update: Partial<PaiementRow> }
-      relances: { Row: RelanceRow; Insert: Partial<RelanceRow>; Update: Partial<RelanceRow> }
-      audio_transcriptions: { Row: AudioRow; Insert: Partial<AudioRow>; Update: Partial<AudioRow> }
-      text_corrections: { Row: TextCorrRow; Insert: Partial<TextCorrRow>; Update: Partial<TextCorrRow> }
-      audit_logs: { Row: AuditRow; Insert: Partial<AuditRow>; Update: Partial<AuditRow> }
+      orgs: Tbl<OrgRow>
+      profiles: Tbl<ProfileRow>
+      clients: Tbl<ClientRow>
+      articles: Tbl<ArticleRow>
+      devis: Tbl<DevisRow>
+      devis_items: Tbl<DevisItemRow>
+      factures: Tbl<FactureRow>
+      paiements: Tbl<PaiementRow>
+      relances: Tbl<RelanceRow>
+      audio_transcriptions: Tbl<AudioRow>
+      text_corrections: Tbl<TextCorrRow>
+      audit_logs: Tbl<AuditRow>
+      auth_lockouts: Tbl<AuthLockoutRow>
+      auth_events: Tbl<AuthEventRow>
     }
-    Views: Record<string, never>
-    Functions: Record<string, never>
+    Views: { [_ in never]: never }
+    Functions: {
+      record_auth_fail: {
+        Args: { p_ip: string; p_email_hash: string }
+        Returns: { fails: number; locked_until: string | null }[]
+      }
+      track_llm_cost: {
+        Args: { p_org_id: string; p_cost: number }
+        Returns: void
+      }
+    }
     Enums: {
       user_role: "owner" | "slave" | "admin_dep"
       devis_statut: "brouillon" | "en_attente_validation_patron" | "en_attente_validation" | "signe_non_paye" | "facture_en_attente" | "facture_payee" | "facture_abandonnee"
       subscription_status: "trialing" | "active" | "past_due" | "canceled" | "incomplete" | "paused"
       relance_type: "hebdo" | "quotidienne" | "finale" | "manuelle"
     }
+    CompositeTypes: { [_ in never]: never }
   }
+}
+
+export interface AuthLockoutRow {
+  id: string; ip: string; email_hash: string | null;
+  fails: number; locked_until: string | null;
+  created_at: string; updated_at: string
+}
+
+export interface AuthEventRow {
+  id: number; event_type: string; ip: string | null;
+  email_hash: string | null; user_agent: string | null;
+  metadata: Json | null; created_at: string
 }
 
 export type UserRole = Database["public"]["Enums"]["user_role"]

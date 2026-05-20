@@ -189,7 +189,7 @@ function IncidentScreen2({ t, lang }) {
           Auto-traduit FR · pour patron
         </div>
         <div style={{ fontSize: 14, color: 'var(--dep-grey-4)', fontStyle: 'italic', direction: 'ltr', textAlign: 'left' }}>
-          « Il y a une fuite d'eau sous le lavabo au 2e étage, le parquet est abîmé »
+          « Il y a une fuite d’eau sous le lavabo au 2e étage, le parquet est abîmé »
           <DepDot tone="green" size={6} /> <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}> confiance haute</span>
         </div>
       </div>
