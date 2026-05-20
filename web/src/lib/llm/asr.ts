@@ -1,83 +1,83 @@
 /**
- * ASR (Speech-to-Text) via DashScope's paraformer model.
- * Endpoint: synchronous wav/mp3 transcription for short clips (<2 min).
- * For longer clips, switch to async batch (paraformer-v2-async).
+ * ASR (Speech-to-Text) via DashScope Qwen3-ASR-Flash multimodal endpoint.
  *
- * Audio uploaded to Supabase Storage → public signed URL → DashScope async job → poll → result.
+ * Fix 2026-05-20 : ancien paraformer-v2 / async-batch a été retiré du tier
+ * international DashScope. Migration vers qwen3-asr-flash-2026-02-10 sur
+ * l'endpoint multimodal-generation (synchrone, ~3-5s pour audio 30-90s).
+ *
+ * Audio uploaded to Supabase Storage → public signed URL → DashScope sync
+ * call → text + detected language.
  */
 
-const BASE = "https://dashscope-intl.aliyuncs.com/api/v1/services/audio/asr/transcription"
+const ENDPOINT = "https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation"
 const KEY = process.env.DASHSCOPE_API_KEY
+const MODEL = "qwen3-asr-flash-2026-02-10"
 
-export async function transcribeAudioFromUrl(audioUrl: string, languageHint?: string): Promise<{ text: string; language?: string; raw: unknown }> {
+export async function transcribeAudioFromUrl(
+  audioUrl: string,
+  languageHint?: string,
+): Promise<{ text: string; language?: string; raw: unknown }> {
   if (!KEY) throw new Error("DASHSCOPE_API_KEY not configured")
 
-  // Submit async job
-  const submit = await fetch(BASE, {
+  // Construct multimodal message. Le prompt système oriente le LLM ASR pour
+  // qu'il restitue le contenu en BTP/devis sans hallucination.
+  const systemPrompt = languageHint
+    ? `Transcrire l'audio en ${languageHint}. Conserver le vocabulaire technique BTP/électrique fidèlement.`
+    : `Transcrire l'audio dans la langue détectée (fr/en/ar/es/pt). Conserver le vocabulaire technique BTP/électrique fidèlement, sans ajouter d'interprétation.`
+
+  const body = {
+    model: MODEL,
+    input: {
+      messages: [
+        { role: "system", content: [{ text: systemPrompt }] },
+        { role: "user", content: [{ audio: audioUrl }] },
+      ],
+    },
+    parameters: {
+      asr_options: {
+        enable_lid: true,       // language detection
+        enable_itn: true,       // inverse text normalization (chiffres → "5" au lieu de "cinq")
+      },
+    },
+  }
+
+  const res = await fetch(ENDPOINT, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${KEY}`,
-      "X-DashScope-Async": "enable",
     },
-    body: JSON.stringify({
-      model: "paraformer-v2",
-      input: { file_urls: [audioUrl] },
-      parameters: {
-        language_hints: languageHint ? [languageHint] : ["fr", "en", "ar", "es"],
-        disfluency_removal_enabled: true,
-        // Build punctuation in
-      },
-    }),
+    body: JSON.stringify(body),
   })
 
-  if (!submit.ok) {
-    const err = await submit.text().catch(() => "")
-    throw new Error(`[asr-submit] ${submit.status} ${err.slice(0, 200)}`)
+  if (!res.ok) {
+    const err = await res.text().catch(() => "")
+    throw new Error(`[asr] ${res.status} ${err.slice(0, 200)}`)
   }
-  const submitData = (await submit.json()) as { output: { task_id: string } }
-  const taskId = submitData.output?.task_id
-  if (!taskId) throw new Error("[asr] no task_id returned")
 
-  // Poll
-  const start = Date.now()
-  const TIMEOUT_MS = 60_000
-  while (Date.now() - start < TIMEOUT_MS) {
-    await new Promise((r) => setTimeout(r, 1500))
-    const poll = await fetch(`https://dashscope-intl.aliyuncs.com/api/v1/tasks/${taskId}`, {
-      headers: { Authorization: `Bearer ${KEY}` },
-    })
-    if (!poll.ok) continue
-    const data = (await poll.json()) as {
-      output: {
-        task_status: "PENDING" | "RUNNING" | "SUCCEEDED" | "FAILED"
-        results?: Array<{ transcription_url?: string; transcription?: { text?: string; sentences?: Array<{ text: string }> } }>
-      }
-    }
-    const status = data.output?.task_status
-    if (status === "FAILED") throw new Error("[asr] task FAILED")
-    if (status !== "SUCCEEDED") continue
-    const result = data.output?.results?.[0]
-    // Sometimes returns transcription_url to download
-    if (result?.transcription_url) {
-      const t = await fetch(result.transcription_url)
-      if (t.ok) {
-        const j = (await t.json()) as { transcripts?: Array<{ text: string }>; properties?: { audio_language?: string } }
-        return {
-          text: j.transcripts?.map((s) => s.text).join(" ") ?? "",
-          language: j.properties?.audio_language,
-          raw: data,
+  const data = (await res.json()) as {
+    output?: {
+      choices?: Array<{
+        finish_reason?: string
+        message?: {
+          annotations?: Array<{ language?: string; emotion?: string; type?: string }>
+          content?: Array<{ text?: string }>
+          role?: string
         }
-      }
+      }>
     }
-    const inline = result?.transcription
-    if (inline) {
-      return {
-        text: inline.text ?? inline.sentences?.map((s) => s.text).join(" ") ?? "",
-        raw: data,
-      }
-    }
-    return { text: "", raw: data }
+    usage?: unknown
+    request_id?: string
   }
-  throw new Error("[asr] timeout")
+
+  const choice = data.output?.choices?.[0]
+  const textParts = choice?.message?.content ?? []
+  const text = textParts.map((c) => c.text ?? "").join("").trim()
+  const language = choice?.message?.annotations?.find((a) => a.type === "audio_info")?.language
+
+  if (!text) {
+    throw new Error("[asr] no text in response")
+  }
+
+  return { text, language, raw: data }
 }

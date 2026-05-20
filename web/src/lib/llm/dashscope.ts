@@ -173,28 +173,46 @@ export async function extractDevisFromTranscript(transcript: string, knownArticl
 
   const sys = `Tu es un assistant pour électriciens qui transforme une description vocale de chantier en lignes de devis structurées.
 ${knownList}
+L'électricien parle naturellement comme à un collègue. Tu dois EXTRAIRE l'intention métier :
+- Quels matériels (avec quantités)
+- Pour qui (nom du client, particulier ou entreprise)
+- Où (adresse chantier)
+- Combien de temps (main d'œuvre)
+- Toute info utile pour le devis (étage, conditions d'accès, urgence…)
+
 Renvoie STRICTEMENT un JSON conforme à ce schéma:
 {
-  "client_hint": "string|null",            // si nom client mentionné
-  "chantier_adresse": "string|null",       // si adresse mentionnée
-  "heures_main_oeuvre": number|null,       // heures de pose si mentionnées
-  "notes": "string|null",                  // remarques utiles non incluses dans items
+  "client_hint": "string|null",            // nom client OU raison sociale si mentionné
+  "chantier_adresse": "string|null",       // adresse ou indication de localisation
+  "heures_main_oeuvre": number|null,       // heures de pose (1 journée = 8h, 1 demi-journée = 4h)
+  "notes": "string|null",                  // toute info contextuelle utile pour le client (urgence, étage, accès chantier, contraintes, fourniture client…)
   "items": [
     {
-      "description": "string",             // libellé clair grand public (ex: 'Prise 16A étanche IP44')
+      "description": "string",             // libellé clair grand public (ex: 'Prise 16A étanche IP44 saillie')
       "quantity": number,                  // quantité numérique
-      "unit": "u|m|m2|ml|h|kg|ens",
-      "category": "string|null",           // 'Prise', 'Tableau', 'Câblage', 'Luminaire', 'Chauffage', 'Domotique', etc.
+      "unit": "u|m|m2|ml|h|kg|ens|jour",
+      "category": "string|null",           // 'Prise', 'Tableau', 'Câblage', 'Luminaire', 'Chauffage', 'Domotique', 'Sécurité', 'VMC', 'IRVE', etc.
       "suggested_article_ref": "string|null"  // si correspond à un article déjà connu
     }
   ]
 }
-Règles :
-- Identifie les quantités explicites (ex: 'cinq prises' → 5).
-- Si quantité non précisée → 1.
-- Unité par défaut: 'u' (unité). Câble → 'm'. Main d'œuvre → 'h'.
-- Reformule les descriptions en français propre (vocabulaire électricien standard NF C 15-100).
-- N'invente JAMAIS d'articles non mentionnés.`
+
+Règles d'extraction :
+- Quantités explicites (FR + langues étrangères) : 'cinq prises' / 'five sockets' / 'خمس مقابس' → 5.
+- Quantité absente → 1 par défaut.
+- Unités : 'u' (unité) | 'm' (mètre câble) | 'm2' (surface) | 'ml' (mètre linéaire goulotte) | 'h' (heure) | 'jour' (journée 8h) | 'kg' | 'ens' (ensemble forfait).
+- Demi-journée = 4h | journée = 8h | semaine = 40h.
+- Reformule en français standard électricien (NF C 15-100).
+  Exemples :
+    'différentiel quarante ampères' → 'Interrupteur différentiel 40A 30mA type AC'
+    'le tableau' → 'Tableau électrique' (sans inventer le nombre de modules)
+    'prise étanche' → 'Prise 2P+T 16A étanche IP44'
+    'cinq pris au salon' → libellé 'Prise 16A 2P+T au salon', qty=5
+- N'INVENTE JAMAIS de matériel non mentionné. Pas de 'goulotte 50cm' si l'électricien n'a pas dit goulotte.
+- Catégorie : devine intelligemment (mots-clés : 'prise', 'inter', 'va-et-vient', 'douille', 'dôme', 'spot' = Luminaire ; 'disjoncteur', 'tableau', 'différentiel' = Tableau ; 'radiateur', 'sèche-serviette', 'convecteur' = Chauffage ; 'détecteur', 'fumée', 'caméra' = Sécurité ; 'borne', 'IRVE', 'wallbox' = IRVE ; 'VMC', 'extracteur' = VMC).
+- Le client_hint peut être 'Monsieur/Madame XX' ou 'SARL YY' ou juste 'Martin' — extrait tel quel.
+- L'adresse peut être partielle : '12 rue de la Gare, Brest' ou juste 'à Brest' — extrait tel quel.
+- Notes : capture toute info COMMERCIALE utile (urgent / le matériel est fourni par le client / accès difficile escalier / fait dans la journée / chantier neuf vs rénovation / etc.).`
 
   const { text } = await dashscopeChat({
     model: "qwen-plus",

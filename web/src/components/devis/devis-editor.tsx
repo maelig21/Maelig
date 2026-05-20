@@ -55,7 +55,9 @@ function DevisEditorInner({
 }: DevisEditorProps) {
   const router = useRouter()
   const params = useSearchParams()
-  const startMicOpen = params.get("source") === "voice"
+  // Par défaut, on ouvre directement le panel vocal — c'est le mode principal de saisie.
+  // L'user peut basculer en saisie classique via le toggle en haut.
+  const skipVoiceParam = params.get("manual") === "1"
 
   const [step, setStep] = useState<0 | 1 | 2 | 3>(0)
   const [pending, startTransition] = useTransition()
@@ -71,7 +73,10 @@ function DevisEditorInner({
   const [heuresMO, setHeuresMO] = useState<number>(initialPayload?.heures_main_oeuvre ?? 0)
   const [tvaTaux, setTvaTaux] = useState<number>(initialPayload?.tva_taux ?? orgDefaults.tva_default)
   const [transcript, setTranscript] = useState<{ raw: string; corrected: string; language?: string } | null>(null)
-  const [showVoice, setShowVoice] = useState(startMicOpen)
+  // Voice prominent par défaut sauf si user a déjà des items ou client OU ?manual=1.
+  const [showVoice, setShowVoice] = useState(
+    !skipVoiceParam && !(initialPayload?.items?.length) && !(initialPayload?.client?.nom),
+  )
   const [clientSelectorOpen, setClientSelectorOpen] = useState(false)
 
   // Clarification flow : when voice returns, we show ClarifyCard BEFORE applying anything.
@@ -205,56 +210,61 @@ function DevisEditorInner({
   return (
     <div className="max-w-5xl mx-auto p-6 sm:p-10 space-y-6">
       {/* Header */}
-      <div className="flex items-end justify-between gap-3">
+      <div className="flex items-end justify-between gap-3 flex-wrap">
         <div>
           <span className="text-xs uppercase tracking-[0.18em] text-muted">Nouveau devis</span>
-          <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">Décrivez votre chantier</h1>
+          <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">
+            {showVoice ? "Parlez votre chantier" : "Décrivez votre chantier"}
+          </h1>
         </div>
-        <Button variant="ghost" onClick={() => setShowVoice((v) => !v)} className="gap-2">
-          <Mic className="h-4 w-4 text-electric" /> {showVoice ? "Saisie classique" : "Saisie vocale"}
+        <Button variant={showVoice ? "ghost" : "primary"} onClick={() => setShowVoice((v) => !v)} className="gap-2">
+          <Mic className="h-4 w-4" /> {showVoice ? "Saisie clavier" : "Repasser en vocal"}
         </Button>
       </div>
 
-      {/* Stepper */}
-      <div className="glass rounded-[var(--radius)] border border-border p-2">
-        <ol className="grid grid-cols-4">
-          {["Client", "Chantier", "Articles", "Validation"].map((label, i) => (
-            <li key={label}>
-              <button
-                onClick={() => canNext(i - 1) && setStep(i as 0 | 1 | 2 | 3)}
-                className={`flex flex-col items-center gap-1 px-2 py-2 w-full rounded-md ${
-                  step === i ? "bg-electric/10 text-electric" : "text-muted hover:text-foreground"
-                }`}
-              >
-                <span className="text-[10px] uppercase tracking-[0.16em]">Étape {i + 1}</span>
-                <span className="text-sm font-medium">{label}</span>
-              </button>
-            </li>
-          ))}
-        </ol>
-      </div>
-
-      {/* Voice panel + clarification */}
+      {/* HERO Voice (default visible, big mic button) */}
       <AnimatePresence>
         {showVoice && !pendingVoice && (
           <motion.div
-            key="voice-panel"
-            initial={{ opacity: 0, y: -8, height: 0 }}
-            animate={{ opacity: 1, y: 0, height: "auto" }}
+            key="voice-hero"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8, height: 0 }}
             className="overflow-hidden"
           >
-            <Card className="border-electric/40 glow-electric">
-              <div className="grid md:grid-cols-[auto,1fr] items-center gap-6">
-                <VoiceRecorder onResult={handleVoiceResult} />
-                <div>
-                  <CardTitle>Parlez comme à un collègue</CardTitle>
-                  <p className="mt-2 text-base text-foreground/85 leading-relaxed">
-                    <em className="text-foreground">« Trois prises 16A dans le salon, un disjoncteur différentiel 40A, et 8 heures de pose chez Madame Martin au 12 rue de la Gare à Brest. »</em>
+            <Card className="relative border-electric/50 glow-electric overflow-hidden">
+              {/* Background glow décoratif */}
+              <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-electric/20 blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-wire-blue/15 blur-3xl pointer-events-none" />
+
+              <div className="relative grid lg:grid-cols-[1fr,auto,1fr] items-center gap-8 py-6">
+                {/* Left : titre + exemple */}
+                <div className="lg:text-right space-y-3">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-electric/30 bg-electric/10 px-3 py-1 text-xs font-semibold tracking-wide text-electric uppercase">
+                    <Sparkles className="h-3 w-3" /> Méthode la plus rapide
+                  </span>
+                  <h2 className="font-display text-2xl sm:text-3xl font-bold leading-tight">
+                    Appuyez et <span className="text-electric">parlez</span><br />comme à un collègue.
+                  </h2>
+                  <p className="text-sm text-muted leading-relaxed">
+                    DEP transcrit, traduit si besoin, structure les articles, prix et heures automatiquement.
                   </p>
-                  <p className="mt-3 text-sm text-muted">
-                    <Languages className="inline h-3.5 w-3.5 text-electric mr-1 align-middle" />
-                    Vous pouvez parler en arabe, portugais, wolof, bambara… DEP traduit en français propre.
+                </div>
+
+                {/* Center : BIG MIC */}
+                <div className="flex flex-col items-center">
+                  <VoiceRecorder onResult={handleVoiceResult} />
+                </div>
+
+                {/* Right : exemple concret */}
+                <div className="space-y-3 lg:text-left">
+                  <p className="text-xs uppercase tracking-[0.16em] text-muted">Exemple</p>
+                  <blockquote className="rounded-lg border-l-4 border-electric bg-surface-2 px-4 py-3 text-sm italic text-foreground/90 leading-relaxed">
+                    « Trois prises 16A dans le salon, un disjoncteur différentiel 40A, et 8 heures de pose chez Madame Martin au 12 rue de la Gare à Brest. »
+                  </blockquote>
+                  <p className="text-xs text-muted inline-flex items-center gap-1.5">
+                    <Languages className="h-3.5 w-3.5 text-electric" />
+                    Arabe · portugais · wolof · bambara · espagnol — DEP traduit en FR propre.
                   </p>
                 </div>
               </div>
@@ -262,6 +272,30 @@ function DevisEditorInner({
           </motion.div>
         )}
 
+      </AnimatePresence>
+
+      {/* Stepper (always visible, even with voice — pour permettre saisie complémentaire) */}
+      {!showVoice && (
+        <div className="glass rounded-[var(--radius)] border border-border p-2">
+          <ol className="grid grid-cols-4">
+            {["Client", "Chantier", "Articles", "Validation"].map((label, i) => (
+              <li key={label}>
+                <button
+                  onClick={() => canNext(i - 1) && setStep(i as 0 | 1 | 2 | 3)}
+                  className={`flex flex-col items-center gap-1 px-2 py-2 w-full rounded-md ${
+                    step === i ? "bg-electric/10 text-electric" : "text-muted hover:text-foreground"
+                  }`}
+                >
+                  <span className="text-[10px] uppercase tracking-[0.16em]">Étape {i + 1}</span>
+                  <span className="text-sm font-medium">{label}</span>
+                </button>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+
+      <AnimatePresence>
         {pendingVoice && (
           <motion.div
             key="clarify-panel"
