@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
-import { supabaseAdmin } from "@/lib/supabase/admin"
 import { revalidatePath } from "next/cache"
 
 export async function POST(req: Request) {
@@ -20,26 +19,17 @@ export async function POST(req: Request) {
     if (!file.type.startsWith("image/")) return NextResponse.json({ error: "Doit être une image" }, { status: 400 })
     if (file.size > 2 * 1024 * 1024) return NextResponse.json({ error: "Max 2 Mo" }, { status: 400 })
 
-    const admin = supabaseAdmin()
-    const ext = file.name.split(".").pop() ?? "png"
-    const path = `${profile.org_id}/logo.${ext}`
-
+    // Convert to base64 data URL
     const buf = Buffer.from(await file.arrayBuffer())
+    const base64 = buf.toString("base64")
+    const dataUrl = `data:${file.type};base64,${base64}`
 
-    // Remove old logos
-    const { data: oldFiles } = await admin.storage.from("logos").list(profile.org_id, { search: "logo." })
-    if (oldFiles && oldFiles.length > 0) {
-      await admin.storage.from("logos").remove(oldFiles.map((f: { name: string }) => `${profile.org_id}/${f.name}`))
-    }
-
-    const { error: upErr } = await admin.storage.from("logos").upload(path, buf, {
-      contentType: file.type,
-      upsert: true,
-    })
+    // Store directly in orgs table (no Storage API needed)
+    const { error: upErr } = await supabase
+      .from("orgs")
+      .update({ logo_url: dataUrl, logo_base64: dataUrl })
+      .eq("id", profile.org_id)
     if (upErr) return NextResponse.json({ error: upErr.message }, { status: 500 })
-
-    const { data: pubUrl } = admin.storage.from("logos").getPublicUrl(path)
-    await admin.from("orgs").update({ logo_url: pubUrl.publicUrl }).eq("id", profile.org_id)
 
     revalidatePath("/app/parametres/logo")
     return NextResponse.json({ ok: true })
