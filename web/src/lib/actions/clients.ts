@@ -41,7 +41,8 @@ export async function saveClient(input: unknown) {
     })
     if (error) throw new Error(error.message)
   }
-  revalidatePath("/app/clients")
+  revalidatePath("/app/devis/nouveau")
+  revalidatePath("/app")
   return { ok: true }
 }
 
@@ -49,6 +50,7 @@ export async function archiveClient(id: string) {
   const supabase = await createSupabaseServerClient()
   const { error } = await supabase.from("clients").update({ archived: true }).eq("id", id)
   if (error) throw new Error(error.message)
-  revalidatePath("/app/clients")
+  revalidatePath("/app/devis/nouveau")
+  revalidatePath("/app")
   return { ok: true }
 }
