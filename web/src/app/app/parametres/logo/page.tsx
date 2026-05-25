@@ -45,6 +45,7 @@ export default async function LogoPage() {
       <p className="text-sm text-muted -mt-3">
         Votre logo apparaît en haut de chaque devis et facture.
       </p>
+      <p className="text-xs text-electric font-bold mt-1">✅ VERSION 51e7aae — DÉPLOYÉ</p>
 
       <Card>
         {/* Current logo preview */}
