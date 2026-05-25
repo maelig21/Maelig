@@ -457,21 +457,21 @@ function DevisEditorInner({
           <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">
             <CardTitle>1. Pour quel client ?</CardTitle>
             <div className="flex items-center gap-2">
-              {/* Bouton Enregistrer le client dans la base (visible si client existant sélectionné) */}
-              {client.id && client.nom?.trim() && !clientSelectorOpen && (
+              {/* Bouton Enregistrer/Créer le client dans la base */}
+              {client.nom?.trim() && !clientSelectorOpen && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={async () => {
                     try {
                       await saveClient(client)
-                      toast.success("Client mis à jour ✅")
+                      toast.success(client.id ? "Client mis à jour ✅" : "Client créé ✅")
                     } catch (e) {
                       toast.error("Erreur", { description: e instanceof Error ? e.message : String(e) })
                     }
                   }}
                 >
-                  💾 Enregistrer client
+                  {client.id ? "💾 Enregistrer" : "💾 Créer le client"}
                 </Button>
               )}
               <Button variant="ghost" size="sm" onClick={() => setClientSelectorOpen((v) => !v)}>

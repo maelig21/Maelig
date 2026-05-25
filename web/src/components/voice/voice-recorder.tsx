@@ -107,12 +107,12 @@ export function VoiceRecorder({
   // MOBILE PATH — Web Speech API seulement
   // ═══════════════════════════════════════
   async function startMobile() {
-    // Si la Web Speech API n'est pas disponible sur ce mobile → fallback getUserMedia
+    // Si la Web Speech API n'est pas disponible sur ce mobile → pas de getUserMedia
+    // (ça déclencherait l'enregistrement téléphone = exactement ce qu'on veut éviter)
     if (!live.isSupported) {
-      toast.info("Transcription directe", {
-        description: "Votre navigateur ne supporte pas la dictée vocale. On passe par l'enregistrement audio (indicateur orange possible).",
+      toast.error("Dictée vocale indisponible", {
+        description: "Votre navigateur ne supporte pas la dictée. Utilisez la saisie clavier.",
       })
-      startDesktop()
       return
     }
 
