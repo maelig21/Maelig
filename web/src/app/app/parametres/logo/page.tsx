@@ -27,17 +27,17 @@ async function uploadLogo(formData: FormData) {
 
   const admin = supabaseAdmin()
   const ext = file.name.split(".").pop() ?? "png"
-  const path = `org-logos/${profile.org_id}/logo.${ext}`
+  const path = `${profile.org_id}/logo.${ext}`
 
   const buf = Buffer.from(await file.arrayBuffer())
-  const { error: upErr } = await admin.storage.from("assets").upload(path, buf, {
+  const { error: upErr } = await admin.storage.from("logos").upload(path, buf, {
     contentType: file.type,
     upsert: true,
   })
   if (upErr) throw new Error(upErr.message)
 
   // Get public URL
-  const { data: pubUrl } = admin.storage.from("assets").getPublicUrl(path)
+  const { data: pubUrl } = admin.storage.from("logos").getPublicUrl(path)
 
   // Update org record
   await admin.from("orgs").update({ logo_url: pubUrl.publicUrl }).eq("id", profile.org_id)

@@ -102,9 +102,26 @@ export async function POST(req: Request) {
   // de téléphone. On extrait d'abord sur le brut, on corrige après pour l'affichage.
   const articleNames = (articles ?? []).map((a: { nom: string } | never) => (a as { nom: string }).nom)
   const [extracted, clarification] = await Promise.all([
-    extractDevisFromTranscript(rawText, articleNames).catch((e) => {
-      console.warn("[transcribe] extract failed:", e instanceof Error ? e.message : e)
-      return { items: [] as const }
+    // Primary: DeepSeek extraction via dashscope.ts
+    extractDevisFromTranscript(rawText, articleNames).catch(async (e) => {
+      console.warn("[transcribe] extract primary failed:", e instanceof Error ? e.message : e)
+      // Fallback: DeepSeek direct via extract.ts (more reliable endpoint)
+      try {
+        const { extractDevis } = await import("@/lib/llm/extract")
+        const fallback = await extractDevis(rawText, articleNames)
+        if (fallback.items.length > 0 || fallback.client_nom) {
+          console.log("[transcribe] fallback extract succeeded")
+          return fallback
+        }
+      } catch (e2) {
+        console.warn("[transcribe] extract fallback also failed:", e2 instanceof Error ? e2.message : e2)
+      }
+      // Last resort: return an object with notes so client fields aren't silently lost
+      return {
+        items: [],
+        notes: "Extraction temporairement indisponible — vérifiez manuellement les informations.",
+        client_note: rawText.slice(0, 500),
+      } as const
     }),
     clarifyTranscript(rawText, { knownArticles: articleNames }).catch(() => null),
   ])
