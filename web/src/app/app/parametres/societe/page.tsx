@@ -32,6 +32,8 @@ async function saveSociete(formData: FormData) {
     iban: formData.get("iban") as string,
     bic: formData.get("bic") as string,
     conditions_reglement: formData.get("conditions_reglement") as string,
+    couleur_principale: formData.get("couleur_principale") as string,
+    police: formData.get("police") as string,
   }
 
   const { error } = await supabase.from("orgs").update(data).eq("id", profile.org_id)
@@ -160,6 +162,32 @@ export default async function SocietePage() {
               placeholder="Paiement à réception de facture..."
               rows={4}
             />
+          </div>
+        </Card>
+
+        <Card>
+          <div className="flex items-center gap-2 mb-4">
+            <h3 className="font-display font-semibold">🎨 Personnalisation du devis</h3>
+          </div>
+          <p className="text-xs text-muted mb-4">Couleur principale et police utilisées sur vos devis.</p>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="couleur_principale">Couleur principale</Label>
+              <div className="flex items-center gap-2 mt-2">
+                <input id="couleur_principale" name="couleur_principale" type="color" defaultValue={org?.couleur_principale ?? "#1e40af"} className="h-10 w-10 rounded border border-border cursor-pointer" />
+                <input name="couleur_principale" type="text" defaultValue={org?.couleur_principale ?? "#1e40af"} className="flex h-11 rounded-[var(--radius)] border border-border bg-surface px-4 py-2 text-sm text-foreground font-mono w-28" />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="police">Police d'écriture</Label>
+              <select id="police" name="police" defaultValue={org?.police ?? "Inter"} className="mt-2 flex h-11 w-full rounded-[var(--radius)] border border-border bg-surface px-4 py-2 text-sm text-foreground">
+                <option value="Inter">Inter (moderne)</option>
+                <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
+                <option value="Geist">Geist</option>
+                <option value="Merriweather">Merriweather (classique)</option>
+                <option value="Courier Prime">Courier Prime (machine)</option>
+              </select>
+            </div>
           </div>
         </Card>
 

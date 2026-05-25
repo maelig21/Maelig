@@ -29,7 +29,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       .maybeSingle(),
     supabase
       .from("orgs")
-      .select("nom, adresse, ville, cp, tel, email, logo_url, siret, conditions_reglement")
+      .select("nom, adresse, ville, cp, tel, email, logo_url, siret, conditions_reglement, couleur_principale, police")
       .eq("id", profile!.org_id!)
       .maybeSingle(),
   ])
@@ -55,7 +55,13 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       </div>
 
       {/* ===== DEVIS DOCUMENT ===== */}
-      <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden print:shadow-none print:border-0">
+      <div
+        className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden print:shadow-none print:border-0"
+        style={{
+          "--devis-color": org?.couleur_principale || "#1e40af",
+          fontFamily: org?.police || "Inter",
+        } as React.CSSProperties}
+      >
         <div className="p-6 sm:p-10 space-y-8">
 
           {/* ── HEADER: Logo + Entreprise (gauche) / Client + Métadata (droite) ── */}
