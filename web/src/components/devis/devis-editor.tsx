@@ -30,6 +30,10 @@ interface ClientLite {
   prenom: string | null
   raison_sociale: string | null
   email: string | null
+  telephone: string | null
+  adresse: string | null
+  ville: string | null
+  cp: string | null
 }
 
 interface DevisEditorProps {
@@ -249,6 +253,10 @@ function DevisEditorInner({
       prenom: c.prenom ?? "",
       raison_sociale: c.raison_sociale ?? "",
       email: c.email ?? "",
+      telephone: c.telephone ?? "",
+      adresse: c.adresse ?? "",
+      ville: c.ville ?? "",
+      cp: c.cp ?? "",
     })
     setClientSelectorOpen(false)
   }
@@ -456,9 +464,14 @@ function DevisEditorInner({
                   className="text-left rounded-md border border-border bg-surface-2 px-3 py-2.5 hover:border-border-strong hover:bg-surface-3 transition-colors"
                 >
                   <div className="text-sm font-medium">
-                    {c.raison_sociale || [c.prenom, c.nom].filter(Boolean).join(" ")}
+                    {c.raison_sociale || [c.prenom, c.nom].filter(Boolean).join(" \u00b7 ")}
                   </div>
-                  <div className="text-xs text-muted">{c.email ?? "—"}</div>
+                  <div className="text-xs text-muted mt-0.5">{c.email ? c.email : "\u2014"}</div>
+                  {(c.telephone || c.adresse) && (
+                    <div className="text-[11px] text-muted-2 mt-0.5 truncate">
+                      {[c.telephone, c.adresse].filter(Boolean).join(" \u2022 ")}
+                    </div>
+                  )}
                 </button>
               ))}
             </div>

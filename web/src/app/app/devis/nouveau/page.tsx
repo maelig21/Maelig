@@ -22,7 +22,7 @@ export default async function NouveauDevisPage() {
       .limit(200),
     supabase
       .from("clients")
-      .select("id, nom, prenom, raison_sociale, email")
+      .select("id, nom, prenom, raison_sociale, email, telephone, adresse, ville, cp")
       .eq("org_id", orgId!)
       .eq("archived", false)
       .order("created_at", { ascending: false })
