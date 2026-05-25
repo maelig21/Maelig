@@ -136,9 +136,20 @@ function DevisEditorInner({
     setShowVoice(false)
     setStep(2)                       // direct vers étape Articles pour que user voit ce qui a été ajouté
     setReviewNeeded(true)             // déclenche le banner violet
-    toast.success(`${additions.length} ligne(s) ajoutées`, {
-      description: r.language && r.language !== "fr" ? `Détecté : ${r.language}, traduit en français` : undefined,
-    })
+    const rawPreview = r.raw?.slice(0, 120) || ""
+    toast.success(
+      additions.length > 0
+        ? `${additions.length} ligne(s) ajoutées`
+        : "Aucun article détecté",
+      {
+        description: rawPreview
+          ? `Transcription : « ${rawPreview}${r.raw.length > 120 ? "…" : ""} »`
+          : r.language && r.language !== "fr"
+            ? `Détecté : ${r.language}, traduit en français`
+            : undefined,
+        duration: 8000,
+      },
+    )
   }
 
   // Anciennement ClarifyCard flow — gardé pour compat mais désactivé.

@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { supabaseAdmin } from "@/lib/supabase/admin"
 import { transcribeAudioFromUrl } from "@/lib/llm/asr"
 import { correctFR, extractDevisFromTranscript } from "@/lib/llm/dashscope"
+import { extractDevisFallback } from "@/lib/llm/deepseek"
 import { clarifyTranscript } from "@/lib/llm/clarify"
 import { limitVoice, limitVoiceDaily, checkLimits, tooManyRequests } from "@/lib/ratelimit"
 import { checkMagic, safeExtFromMime } from "@/lib/security/file-magic"
@@ -111,13 +112,31 @@ export async function POST(req: Request) {
   // L'extraction sur le brut préserve les noms propres, adresses, "bis", téléphones
   // que correctFR pourrait reformuler/détruire. Bug fix 2026-05-25.
   const articleNames = (articles ?? []).map((a) => a.nom)
-  const [extracted, clarification] = await Promise.all([
-    extractDevisFromTranscript(rawText, articleNames).catch((e) => {
-      console.warn("[transcribe] extract failed:", e instanceof Error ? e.message : e)
-      return { items: [] as const }
-    }),
-    clarifyTranscript(rawText, { knownArticles: articleNames }).catch(() => null),
-  ])
+  let extracted: Awaited<ReturnType<typeof extractDevisFromTranscript>> = { items: [] as const }
+  let extractFallbackUsed = false
+  let extractError: string | null = null
+  try {
+    extracted = await extractDevisFromTranscript(rawText, articleNames)
+  } catch (e) {
+    extractError = e instanceof Error ? e.message : String(e)
+    console.warn("[transcribe] DashScope extract failed, trying DeepSeek fallback:", extractError)
+    // Fallback: DeepSeek V4 Pro (DEEPSEEK_API_KEY disponible sur Vercel)
+    try {
+      extracted = await extractDevisFallback(rawText, articleNames)
+      extractFallbackUsed = true
+    } catch (e2) {
+      console.error("[transcribe] DeepSeek fallback also failed:", e2 instanceof Error ? e2.message : e2)
+      extracted = { items: [] as const }
+    }
+  }
+
+  const [clarification, clarificationError] = await clarifyTranscript(rawText, { knownArticles: articleNames })
+    .then((r) => [r, null] as const)
+    .catch((e) => {
+      const err = e instanceof Error ? e.message : String(e)
+      console.warn("[transcribe] clarify failed:", err)
+      return [null, err] as const
+    })
 
   // Store transcription record (audit + replay debugging)
   await admin.from("audio_transcriptions").insert({
@@ -130,7 +149,9 @@ export async function POST(req: Request) {
     text_corrige: corrected,
     text_traduit: corrected,
     articles_extracts: extracted as object,
-    llm_used: "qwen3-asr-flash → qwen-turbo (correct/translate) → qwen-plus (extract)",
+    llm_used: extractFallbackUsed
+      ? "qwen3-asr-flash → qwen-turbo (correct) → deepseek-chat (extract fallback)"
+      : "qwen3-asr-flash → qwen-turbo (correct/translate) → qwen-plus (extract)",
   })
 
   return NextResponse.json({
@@ -140,6 +161,11 @@ export async function POST(req: Request) {
     language: langDetected,
     extracted,
     clarification,
+    _diagnostic: {
+      extract_error: extractError,
+      extract_fallback_used: extractFallbackUsed,
+      clarify_error: clarificationError,
+    },
   })
 }
 

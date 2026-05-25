@@ -13,6 +13,11 @@ interface Result {
   language?: string
   extracted: ExtractedDevis
   clarification?: Clarification | null
+  _diagnostic?: {
+    extract_error?: string | null
+    extract_fallback_used?: boolean
+    clarify_error?: string | null
+  }
 }
 
 export function VoiceRecorder({
@@ -121,6 +126,7 @@ export function VoiceRecorder({
         language: data.language,
         extracted: data.extracted ?? { items: [] },
         clarification: data.clarification ?? null,
+        _diagnostic: data._diagnostic,
       })
     } catch (e) {
       toast.error("Erreur réseau", { description: e instanceof Error ? e.message : String(e) })
