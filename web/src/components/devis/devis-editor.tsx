@@ -94,6 +94,11 @@ function DevisEditorInner({
       notes?: string
     }
     clarification?: Clarification | null
+    _diagnostic?: {
+      extract_error?: string | null
+      extract_fallback_used?: boolean
+      clarify_error?: string | null
+    }
   }
   const [pendingVoice, setPendingVoice] = useState<VoiceData | null>(null)
 
@@ -113,12 +118,32 @@ function DevisEditorInner({
     return true
   }
 
-  // UX 2026-05-20 : moins de friction — auto-inject tout directement.
-  // Plus de ClarifyCard intermédiaire. Un BANNER VIOLET apparaît après injection
-  // pour rappeler à l'user de relire (surtout termes techniques).
+  // UX 2026-05-25 : ClarifyCard réactivé — l'user voit ce qui a été extrait
+  // et confirme AVANT que les données soient injectées dans le formulaire.
   function handleVoiceResult(r: VoiceData) {
     setTranscript({ raw: r.raw, corrected: r.corrected, language: r.language })
-    const additions: DevisPayload["items"] = r.extracted.items.map((it) => {
+    setPendingVoice({
+      raw: r.raw,
+      corrected: r.corrected,
+      language: r.language,
+      extracted: {
+        items: r.extracted.items || [],
+        heures_main_oeuvre: r.extracted.heures_main_oeuvre,
+        chantier_adresse: r.extracted.chantier_adresse,
+        client_hint: r.extracted.client_hint,
+        notes: r.extracted.notes,
+      },
+      clarification: r.clarification ?? null,
+      _diagnostic: r._diagnostic,
+    })
+    setShowVoice(false)
+    // Pas de setStep — on laisse le ClarifyCard s'afficher
+  }
+
+  function applyPendingVoice() {
+    if (!pendingVoice) return
+    const { extracted } = pendingVoice
+    const additions: DevisPayload["items"] = (extracted.items ?? []).map((it) => {
       const match = knownArticles.find((a) => a.nom.toLowerCase() === it.description.toLowerCase())
       return {
         description: it.description,
@@ -129,38 +154,31 @@ function DevisEditorInner({
       }
     })
     setItems((prev) => [...prev, ...additions])
-    if (r.extracted.heures_main_oeuvre && !heuresMO) setHeuresMO(r.extracted.heures_main_oeuvre)
-    if (r.extracted.chantier_adresse && !chantier) setChantier(r.extracted.chantier_adresse)
-    if (r.extracted.notes && !notesClient) setNotesClient(r.extracted.notes)
-    if (r.extracted.client_hint && !client.nom) setClient((c) => ({ ...c, nom: r.extracted.client_hint! }))
-    setShowVoice(false)
-    setStep(2)                       // direct vers étape Articles pour que user voit ce qui a été ajouté
-    setReviewNeeded(true)             // déclenche le banner violet
-    const rawPreview = r.raw?.slice(0, 120) || ""
+    if (extracted.heures_main_oeuvre && !heuresMO) setHeuresMO(extracted.heures_main_oeuvre)
+    if (extracted.chantier_adresse && !chantier) setChantier(extracted.chantier_adresse)
+    if (extracted.notes && !notesClient) setNotesClient(extracted.notes)
+    if (extracted.client_hint && !client.nom) setClient((c) => ({ ...c, nom: extracted.client_hint! }))
+    setPendingVoice(null)
+    setStep(2) // vers Articles pour voir ce qui a été ajouté
+    setReviewNeeded(true)
+    const rawPreview = (pendingVoice.raw || "").slice(0, 120)
     toast.success(
       additions.length > 0
         ? `${additions.length} ligne(s) ajoutées`
         : "Aucun article détecté",
       {
         description: rawPreview
-          ? `Transcription : « ${rawPreview}${r.raw.length > 120 ? "…" : ""} »`
-          : r.language && r.language !== "fr"
-            ? `Détecté : ${r.language}, traduit en français`
-            : undefined,
+          ? `Transcription : « ${rawPreview}${((pendingVoice.raw || "").length > 120) ? "…" : ""} »`
+          : undefined,
         duration: 8000,
       },
     )
   }
 
-  // Anciennement ClarifyCard flow — gardé pour compat mais désactivé.
-  function applyPendingVoice() {
-    setPendingVoice(null)
-    setShowVoice(false)
-  }
-
   function discardPendingVoice() {
     setPendingVoice(null)
     setTranscript(null)
+    setShowVoice(true)
   }
 
   function addLine() {
