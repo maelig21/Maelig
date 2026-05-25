@@ -18,7 +18,13 @@ export async function middleware(request: NextRequest) {
           }
           response = NextResponse.next({ request: { headers: request.headers } })
           for (const { name, value, options } of toSet) {
-            response.cookies.set(name, value, options)
+            // Force les cookies de session à expirer dans 12h max
+            // Empêche les sessions dormantes de traverser les appareils
+            response.cookies.set(name, value, {
+              ...options,
+              maxAge: 12 * 60 * 60, // 12 hours en secondes
+              sameSite: "lax",
+            })
           }
         },
       },
