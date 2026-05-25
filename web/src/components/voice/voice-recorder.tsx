@@ -14,6 +14,7 @@ interface Result {
   extracted: ExtractedDevis
   clarification?: Clarification | null
   _diagnostic?: {
+    pipeline?: string
     extract_error?: string | null
     extract_fallback_used?: boolean
     clarify_error?: string | null
