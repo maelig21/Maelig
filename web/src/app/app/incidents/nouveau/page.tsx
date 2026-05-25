@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
+import { useMicPermission } from "@/lib/use-mic-permission"
 
 /**
  * Signaler une galère de chantier — UX terrain RADICALEMENT simple.
@@ -200,6 +201,7 @@ function BigButton({ Icon, label, sub, color, onClick, active }: {
 }
 
 function BigVoiceButton({ duration, onAudio }: { duration: number; onAudio: (blob: Blob, durationSec: number) => void }) {
+  const mic = useMicPermission()
   const [recording, setRecording] = useState(false)
   const [recordingTime, setRecordingTime] = useState(0)
   const mrRef = useRef<MediaRecorder | null>(null)
@@ -211,6 +213,14 @@ function BigVoiceButton({ duration, onAudio }: { duration: number; onAudio: (blo
     if (recording) {
       mrRef.current?.stop()
       return
+    }
+    // Pré-vérification permission micro (évite popup surprise)
+    if (mic.needsPrompt) {
+      const result = await mic.request()
+      if (result !== "granted") {
+        toast.error("Micro nécessaire", { description: "Autorisez l'accès au micro pour enregistrer un vocal." })
+        return
+      }
     }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } })

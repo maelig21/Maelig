@@ -1,11 +1,12 @@
 "use client"
 import { useEffect, useRef, useState } from "react"
-import { Mic, Square, Loader2, Sparkles } from "lucide-react"
+import { Mic, Square, Loader2, Sparkles, Smartphone, Monitor } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import type { ExtractedDevis } from "@/lib/llm/dashscope"
 import type { Clarification } from "@/lib/llm/clarify"
 import { useLiveTranscript } from "@/lib/use-live-transcript"
+import { useMicPermission, isMobileDevice } from "@/lib/use-mic-permission"
 
 interface Result {
   raw: string
@@ -22,8 +23,8 @@ interface Result {
 }
 
 export interface PartialResult {
-  text: string                  // texte LIVE en cours (peut changer)
-  extracted: ExtractedDevis     // extraction partielle à appliquer (merge dans parent)
+  text: string
+  extracted: ExtractedDevis
 }
 
 export function VoiceRecorder({
@@ -33,16 +34,27 @@ export function VoiceRecorder({
   large = true,
 }: {
   onResult: (r: Result) => void
-  /** Appelé pendant l'enregistrement à chaque pause (~1.5s) avec extraction partielle. */
   onPartialResult?: (p: PartialResult) => void
   className?: string
   large?: boolean
 }) {
+  const mobile = isMobileDevice()
+  const mic = useMicPermission()
+
+  // Mode mobile = Web Speech API uniquement (pas de MediaRecorder/getUserMedia)
+  // → pas d'indicateur d'enregistrement téléphone visible sur iOS/Android
   const [recording, setRecording] = useState(false)
   const [transcribing, setTranscribing] = useState(false)
   const [seconds, setSeconds] = useState(0)
   const [level, setLevel] = useState(0)
   const [extractingLive, setExtractingLive] = useState(false)
+
+  // Refs pour les timeouts (évite stale closure)
+  const recordingRef = useRef(false)
+  const mobileTickRef = useRef<number | null>(null)
+  const autoStopRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Desktop only (MediaRecorder / stream)
   const chunksRef = useRef<Blob[]>([])
   const mediaRef = useRef<MediaRecorder | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
@@ -50,22 +62,23 @@ export function VoiceRecorder({
   const tickRef = useRef<number | null>(null)
   const tStartRef = useRef<number>(0)
   const lastExtractedTextRef = useRef<string>("")
+  const mobileStartRef = useRef<number>(0)
 
   const live = useLiveTranscript({ lang: "fr-FR" })
 
+  // Cleanup
   useEffect(() => () => stopStream(), [])
 
-  // ===== STREAMING LIVE : extraction partielle à chaque pause (≥1.2s sans nouveau mot) =====
-  // Tant qu'on enregistre, on accumule le texte du browser (live.finalText + live.interim).
-  // Quand l'utilisateur fait une pause naturelle, on POST le texte cumulé à /api/voice/extract-text.
-  // Le parent reçoit l'extraction partielle via onPartialResult et met à jour les champs en live.
+  // ═══════════════════════════════════════
+  // LIVE EXTRACTION PARTIELLE (les deux modes)
+  // ═══════════════════════════════════════
   useEffect(() => {
     if (!recording || !onPartialResult || !live.isSupported) return
     const pauseMs = live.msSinceLastWord ?? 0
     if (pauseMs < 1200) return
     const fullText = (live.finalText + (live.interim ? " " + live.interim : "")).trim()
     if (!fullText || fullText.length < 8) return
-    if (fullText === lastExtractedTextRef.current) return // déjà extrait
+    if (fullText === lastExtractedTextRef.current) return
     lastExtractedTextRef.current = fullText
     setExtractingLive(true)
     fetch("/api/voice/extract-text", {
@@ -81,7 +94,6 @@ export function VoiceRecorder({
       })
       .catch(() => { /* silent */ })
       .finally(() => setExtractingLive(false))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [live.msSinceLastWord, recording, onPartialResult, live.isSupported])
 
   function stopStream() {
@@ -91,7 +103,108 @@ export function VoiceRecorder({
     tickRef.current = null
   }
 
-  async function start() {
+  // ═══════════════════════════════════════
+  // MOBILE PATH — Web Speech API seulement
+  // ═══════════════════════════════════════
+  async function startMobile() {
+    // Si la Web Speech API n'est pas disponible sur ce mobile → fallback getUserMedia
+    if (!live.isSupported) {
+      toast.info("Transcription directe", {
+        description: "Votre navigateur ne supporte pas la dictée vocale. On passe par l'enregistrement audio (indicateur orange possible).",
+      })
+      startDesktop()
+      return
+    }
+
+    // Pré-vérifie la permission micro
+    if (mic.needsPrompt) {
+      const result = await mic.request()
+      if (result !== "granted") {
+        toast.error("Micro nécessaire", {
+          description: "Autorisez l'accès au micro dans les réglages de votre téléphone.",
+        })
+        return
+      }
+    }
+
+    recordingRef.current = true
+    setRecording(true)
+    setSeconds(0)
+    mobileStartRef.current = Date.now()
+    lastExtractedTextRef.current = ""
+    live.reset()
+    live.start()
+
+    // Tick timer pour l'affichage des secondes
+    const tick = () => {
+      setSeconds(Math.floor((Date.now() - mobileStartRef.current) / 1000))
+      setLevel(Math.random() * 0.4 + 0.1) // VU mètre simulé (pas d'audio stream)
+      mobileTickRef.current = requestAnimationFrame(tick)
+    }
+    tick()
+
+    // Auto-stop à 120s (utilise recordingRef pour éviter stale closure)
+    autoStopRef.current = setTimeout(() => {
+      if (recordingRef.current) stopMobile()
+    }, 120_000)
+  }
+
+  async function stopMobile() {
+    if (mobileTickRef.current) cancelAnimationFrame(mobileTickRef.current)
+    mobileTickRef.current = null
+    if (autoStopRef.current) { clearTimeout(autoStopRef.current); autoStopRef.current = null }
+    recordingRef.current = false
+    live.stop()
+    setRecording(false)
+    setTranscribing(true)
+
+    const rawText = live.finalText.trim()
+    if (!rawText) {
+      toast.error("Aucune parole détectée", { description: "Rien n'a été transcrit. Réessayez." })
+      setTranscribing(false)
+      return
+    }
+
+    // Envoie le texte brut à l'extraction serveur (pas d'audio)
+    try {
+      const res = await fetch("/api/voice/extract-text", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: rawText }),
+      })
+      const data = await res.json()
+      if (data?.error) {
+        toast.error("Erreur d'extraction", { description: data.error })
+        return
+      }
+      onResult({
+        raw: rawText,
+        corrected: data.corrected ?? rawText,
+        language: data.language,
+        extracted: data.extracted ?? { items: [] },
+        clarification: data.clarification ?? null,
+        _diagnostic: { pipeline: "mobile-speechrec-only" },
+      })
+    } catch (e) {
+      toast.error("Erreur réseau", { description: e instanceof Error ? e.message : String(e) })
+    } finally {
+      setTranscribing(false)
+    }
+  }
+
+  // ═══════════════════════════════════════
+  // DESKTOP PATH — MediaRecorder + ASR serveur (inchangé)
+  // ═══════════════════════════════════════
+  async function startDesktop() {
+    // Pré-vérifie la permission
+    if (mic.needsPrompt) {
+      const result = await mic.request()
+      if (result !== "granted") {
+        toast.error("Micro nécessaire", { description: "Autorisez l'accès au micro." })
+        return
+      }
+    }
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
@@ -107,24 +220,23 @@ export function VoiceRecorder({
         const blob = new Blob(chunksRef.current, { type: mr.mimeType || "audio/webm" })
         chunksRef.current = []
         stopStream()
-        await upload(blob)
+        await uploadDesktop(blob)
       }
       mr.start(250)
+      recordingRef.current = true
       setRecording(true)
       tStartRef.current = Date.now()
       lastExtractedTextRef.current = ""
-      // Démarre la transcription LIVE browser en parallèle (si supporté)
       live.reset()
       live.start()
-      animate(stream)
-      // Auto-stop at 120s safeguard
-      setTimeout(() => mr.state === "recording" && stop(), 120_000)
+      animateDesktop(stream)
+      setTimeout(() => mr.state === "recording" && stopDesktop(), 120_000)
     } catch (e) {
       toast.error("Micro inaccessible", { description: e instanceof Error ? e.message : String(e) })
     }
   }
 
-  function stop() {
+  function stopDesktop() {
     if (mediaRef.current && mediaRef.current.state !== "inactive") {
       mediaRef.current.stop()
     }
@@ -132,7 +244,7 @@ export function VoiceRecorder({
     setRecording(false)
   }
 
-  function animate(stream: MediaStream) {
+  function animateDesktop(stream: MediaStream) {
     const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
     const ctx = new AC()
     const source = ctx.createMediaStreamSource(stream)
@@ -156,7 +268,7 @@ export function VoiceRecorder({
     tick()
   }
 
-  async function upload(blob: Blob) {
+  async function uploadDesktop(blob: Blob) {
     setTranscribing(true)
     try {
       const fd = new FormData()
@@ -182,12 +294,51 @@ export function VoiceRecorder({
     }
   }
 
+  // ═══════════════════════════════════════
+  // START / STOP dispatcher
+  // ═══════════════════════════════════════
+  function handleClick() {
+    if (recording) {
+      mobile ? stopMobile() : stopDesktop()
+    } else {
+      mobile ? startMobile() : startDesktop()
+    }
+  }
+
+  // ═══════════════════════════════════════
+  // RENDER
+  // ═══════════════════════════════════════
   return (
     <div className={cn("flex flex-col items-center gap-3", className)}>
+      {/* Badge mode */}
+      <span className={cn(
+        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.12em]",
+        mobile ? "bg-wire-blue/10 text-wire-blue" : "bg-electric/10 text-electric",
+      )}>
+        {mobile ? <Smartphone className="h-3 w-3" /> : <Monitor className="h-3 w-3" />}
+        Mode {mobile ? "mobile" : "desktop"}
+      </span>
+
+      {/* Permission request CTA (si pas encore accordée) */}
+      {mic.needsPrompt && !recording && !transcribing && (
+        <div className={cn(
+          "rounded-[var(--radius)] border px-4 py-2 text-xs text-center",
+          mic.status === "denied"
+            ? "border-danger/30 bg-danger/5 text-danger"
+            : "border-electric/30 bg-surface-2 text-muted",
+        )}>
+          {mic.status === "denied"
+            ? "🔇 Micro bloqué — allez dans Réglages > Safari > Microphone pour autoriser"
+            : "Appuyez sur le micro pour autoriser l'accès (une seule fois)"
+          }
+        </div>
+      )}
+
+      {/* Bouton micro principal */}
       <button
         type="button"
         disabled={transcribing}
-        onClick={recording ? stop : start}
+        onClick={handleClick}
         aria-label={recording ? "Arrêter l'enregistrement" : "Démarrer l'enregistrement"}
         className={cn(
           "relative grid place-items-center rounded-full transition-transform active:scale-95",
@@ -220,6 +371,7 @@ export function VoiceRecorder({
         )}
       </button>
 
+      {/* Timer + status */}
       <div className="text-center min-h-[2rem]">
         {recording ? (
           <p className="text-sm">
@@ -235,16 +387,19 @@ export function VoiceRecorder({
         ) : transcribing ? (
           <p className="text-sm text-muted inline-flex items-center gap-2">
             <Sparkles className="h-3.5 w-3.5 text-electric" />
-            On écoute, on corrige, on structure…
+            {mobile ? "Analyse de votre description…" : "On écoute, on corrige, on structure…"}
           </p>
         ) : (
-          <p className="text-sm text-muted">Appuyez pour décrire votre chantier.</p>
+          <p className="text-sm text-muted">
+            {mobile
+              ? "Appuyez et dictez votre chantier."
+              : "Appuyez pour décrire votre chantier."
+            }
+          </p>
         )}
       </div>
 
-      {/* PANNEAU LIVE : ce que le browser entend en direct (Web Speech API).
-          Visible pendant l'enregistrement uniquement. Donne confiance à l'user :
-          "ah oui il a bien capté ce que je viens de dire". */}
+      {/* PANNEAU LIVE : transcription en direct (Web Speech API) */}
       {recording && live.isSupported && (
         <div className="w-full max-w-xl rounded-[var(--radius)] border border-electric/40 bg-electric/5 px-4 py-3 text-left">
           <div className="text-[10px] uppercase tracking-[0.16em] text-electric mb-1.5">Vous dites</div>
@@ -263,7 +418,10 @@ export function VoiceRecorder({
       )}
       {recording && !live.isSupported && (
         <p className="text-[11px] text-muted-2 text-center">
-          (Aperçu live indisponible sur ce navigateur — la transcription complète arrivera après le stop.)
+          {mobile
+            ? "(Transcription après arrêt — votre navigateur ne supporte pas l'aperçu en direct)"
+            : "(Aperçu live indisponible sur ce navigateur — transcription complète après le stop)"
+          }
         </p>
       )}
     </div>
