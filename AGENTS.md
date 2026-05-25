@@ -1,5 +1,12 @@
 # AGENTS.md — Guide pour les agents (Claude Code, Codex, etc.)
 
+## 🔴 RÈGLE ABSOLUE — Gate Djibril Chinois
+
+AVANT toute action (terminal, patch, write_file, git, SQL, déploiement) :
+1. Charger la gate → `skill_view(name="djibril-chinois-gate")`
+2. Suivre la cascade T0→T4→T1→exec
+3. Jamais de "petite action rapide" sans cascade
+
 > Contexte de travail pour tout agent IA qui contribue au projet **DEP — Plateforme de gestion électrique**.
 
 ## Périmètre
