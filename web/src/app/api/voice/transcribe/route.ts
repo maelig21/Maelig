@@ -2,8 +2,7 @@ import { NextResponse } from "next/server"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { supabaseAdmin } from "@/lib/supabase/admin"
 import { transcribeAudioFromUrl } from "@/lib/llm/asr"
-import { extractDevis } from "@/lib/llm/extract"
-import { geminiUnderstandAudio } from "@/lib/llm/gemini-asr"
+import { correctFR, extractDevisFromTranscript } from "@/lib/llm/dashscope"
 import { clarifyTranscript } from "@/lib/llm/clarify"
 import { limitVoice, limitVoiceDaily, checkLimits, tooManyRequests } from "@/lib/ratelimit"
 import { checkMagic, safeExtFromMime } from "@/lib/security/file-magic"
@@ -81,59 +80,42 @@ export async function POST(req: Request) {
     .order("usage_count", { ascending: false })
     .limit(120)
 
-  // ===== PIPELINE MULTI-MODÈLE 2026-05-25 =====
-  // 1. PRIMARY : Gemini 2.5 Flash (audio natif → JSON structuré, gratuit)
-  //    Comprend l'audio directement, pas d'ASR séparé.
-  // 2. FALLBACK : DashScope ASR → DeepSeek extraction (si Gemini échoue)
-  // 3. Cross-challenge T1/T0 (future) : comparer les outputs des deux.
+  // ===== PIPELINE V2 (fix 2026-05-25: extraction SUR LE BRUT, correction display-only) =====
+  // 1. ASR brut (qwen3-asr-flash, $0.005/min, ~3s)
+  // 2. Extraction structurée SUR LE TEXTE BRUT ASR (sans correction — elle perd
+  //    les noms propres, les "bis" d'adresses, les numéros de téléphone)
+  // 3. Correction FR uniquement pour l'affichage (texte propre côté UI)
+  // Total : ~6-7s, coût ~$0.00003 par devis
   let rawText = ""
-  let corrected = ""
   let langDetected: string | undefined
-
-  const articleNames = (articles ?? []).map((a) => a.nom)
-  let extracted: Awaited<ReturnType<typeof extractDevis>> = { items: [] }
-  let extractError: string | null = null
-  let pipelineUsed = ""
-
-  // ÉTAPE 1.a — Essayer Gemini 2.5 Flash (audio natif)
   try {
-    const geminiResult = await geminiUnderstandAudio(audioUrl, articleNames)
-    extracted = geminiResult.extracted
-    rawText = geminiResult.rawTranscript || ""
-    corrected = rawText
-    pipelineUsed = "gemini-2.5-flash (audio natif)"
+    const tr = await transcribeAudioFromUrl(audioUrl, language)
+    rawText = tr.text
+    langDetected = tr.language
   } catch (e) {
-    // ÉTAPE 1.b — Fallback : DashScope ASR + DeepSeek extraction
-    extractError = e instanceof Error ? e.message : String(e)
-    console.warn("[transcribe] Gemini failed, fallback ASR+DeepSeek:", extractError)
-    pipelineUsed = "qwen3-asr-flash → deepseek-chat"
-
-    try {
-      const tr = await transcribeAudioFromUrl(audioUrl)
-      rawText = tr.text
-      langDetected = tr.language
-      corrected = rawText
-    } catch (e2) {
-      const msg = e2 instanceof Error ? e2.message : String(e2)
-      return NextResponse.json({ error: "asr_failed", detail: msg }, { status: 502 })
-    }
-
-    try {
-      extracted = await extractDevis(rawText, articleNames)
-    } catch (e3) {
-      extractError = (extractError || "") + " | DeepSeek: " + (e3 instanceof Error ? e3.message : String(e3))
-      console.error("[transcribe] DeepSeek also failed:", extractError)
-      extracted = { items: [] }
-    }
+    const msg = e instanceof Error ? e.message : String(e)
+    return NextResponse.json({ error: "asr_failed", detail: msg }, { status: 502 })
   }
 
-  const [clarification, clarificationError] = await clarifyTranscript(rawText, { knownArticles: articleNames })
-    .then((r) => [r, null] as const)
-    .catch((e) => {
-      const err = e instanceof Error ? e.message : String(e)
-      console.warn("[transcribe] clarify failed:", err)
-      return [null, err] as const
-    })
+  // ÉTAPE 2 — Extraction structurée SUR LE BRUT (pas de correction avant)
+  // La correction FR détruit les noms propres, les "bis" d'adresses, les numéros
+  // de téléphone. On extrait d'abord sur le brut, on corrige après pour l'affichage.
+  const articleNames = (articles ?? []).map((a: { nom: string } | never) => (a as { nom: string }).nom)
+  const [extracted, clarification] = await Promise.all([
+    extractDevisFromTranscript(rawText, articleNames).catch((e) => {
+      console.warn("[transcribe] extract failed:", e instanceof Error ? e.message : e)
+      return { items: [] as const }
+    }),
+    clarifyTranscript(rawText, { knownArticles: articleNames }).catch(() => null),
+  ])
+
+  // ÉTAPE 3 — Correction FR UNIQUEMENT pour l'affichage (pas pour l'extraction)
+  let corrected = rawText
+  try {
+    corrected = await correctFR(rawText, { orgId: profile.org_id, userId: user.id })
+  } catch (e) {
+    console.warn("[transcribe] correctFR failed, fallback rawText:", e instanceof Error ? e.message : e)
+  }
 
   // Store transcription record (audit + replay debugging)
   await admin.from("audio_transcriptions").insert({
@@ -146,7 +128,7 @@ export async function POST(req: Request) {
     text_corrige: corrected,
     text_traduit: corrected,
     articles_extracts: extracted as object,
-    llm_used: pipelineUsed,
+    llm_used: "qwen3-asr-flash → qwen-turbo (correct/translate) → qwen-plus (extract)",
   })
 
   return NextResponse.json({
@@ -156,11 +138,6 @@ export async function POST(req: Request) {
     language: langDetected,
     extracted,
     clarification,
-    _diagnostic: {
-      pipeline: pipelineUsed,
-      extract_error: extractError,
-      clarify_error: clarificationError,
-    },
   })
 }
 

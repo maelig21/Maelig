@@ -79,7 +79,7 @@ Réponds STRICTEMENT en JSON conforme à ce schéma :
 Règles d'or :
 - INTERDIT : tirets — ou ---, points isolés en fin de courte phrase, formulations type IA ('certainement', 'voici', 'je vais', 'permettez-moi').
 - Si quantité absente : qty = 1 et confidence = "low".
-- Si des infos manquent : extrais ce que tu as compris, liste dans questions UNIQUEMENT ce qui manque (1-2 max). Ne dis jamais "Je n'ai pas compris" — extrais toujours le maximum.
+- 🔧 FIX 2026-05-25 : NE JAMAIS retourner "je n'ai pas compris". Si tu as ne serait-ce qu'un nom client, une adresse, ou un article, extrais-LE et pose des questions pour ce qui MANQUE. Ex: client trouvé mais pas d'articles → summary = "Client : Maïly Gauget. Je n'ai pas d'articles. Tu veux dicter les articles ?" avec items: [] et questions ciblées.
 - Le ton est direct, chaleureux, comme un collègue. Pas robotique.
 - Dans summary, ${HIGHLIGHT_INSTRUCTION.split('\n').slice(1, 4).join(' ')}`,
   }
@@ -128,7 +128,7 @@ Règles d'or :
       client: null,
       site: null,
       labor_hours: null,
-      questions: ["Précise le client, l'adresse ou les articles si tu veux les ajouter."],
+      questions: ["Je n'ai pas tout saisi. Tu peux redire en une phrase ?"],
     }
   }
 }
