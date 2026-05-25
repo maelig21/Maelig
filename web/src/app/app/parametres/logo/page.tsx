@@ -14,32 +14,34 @@ async function uploadLogo(formData: FormData) {
   "use server"
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return
+  if (!user) return { error: "non_authentifié" }
   const { data: profile } = await supabase.from("profiles").select("org_id, role").eq("id", user.id).maybeSingle()
-  if (!profile?.org_id || (profile.role !== "owner" && profile.role !== "admin_dep")) return
+  if (!profile?.org_id || (profile.role !== "owner" && profile.role !== "admin_dep")) return { error: "non_autorisé" }
 
   const file = formData.get("logo") as File
-  if (!file || file.size === 0) return
-
-  // Validate: images only, max 2MB
-  if (!file.type.startsWith("image/")) return
-  if (file.size > 2 * 1024 * 1024) return
+  if (!file || file.size === 0) return { error: "fichier_vide" }
+  if (!file.type.startsWith("image/")) return { error: "pas_une_image" }
+  if (file.size > 2 * 1024 * 1024) return { error: "trop_gros" }
 
   const admin = supabaseAdmin()
   const ext = file.name.split(".").pop() ?? "png"
   const path = `${profile.org_id}/logo.${ext}`
 
   const buf = Buffer.from(await file.arrayBuffer())
+
+  // Remove old logo first (any extension)
+  const { data: oldFiles } = await admin.storage.from("logos").list(profile.org_id, { search: "logo." })
+  if (oldFiles && oldFiles.length > 0) {
+    await admin.storage.from("logos").remove(oldFiles.map((f: { name: string }) => `${profile.org_id}/${f.name}`))
+  }
+
   const { error: upErr } = await admin.storage.from("logos").upload(path, buf, {
     contentType: file.type,
     upsert: true,
   })
-  if (upErr) throw new Error(upErr.message)
+  if (upErr) return { error: upErr.message }
 
-  // Get public URL
   const { data: pubUrl } = admin.storage.from("logos").getPublicUrl(path)
-
-  // Update org record
   await admin.from("orgs").update({ logo_url: pubUrl.publicUrl }).eq("id", profile.org_id)
 
   revalidatePath("/app/parametres/logo")
