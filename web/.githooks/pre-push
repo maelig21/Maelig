@@ -1,0 +1,37 @@
+#!/bin/bash
+# .githooks/pre-push — Bloque le push si aucune trace cascade Djibril Chinois
+#
+# Installer avec : git config core.hooksPath .githooks
+#
+# Vérifie dans RECENT.md qu'une trace tier_dispatch (challenge/decide)
+# existe pour les 100 dernières lignes. Si absent → BLOCK.
+
+RECENT="$HOME/.hermes/memories/RECENT.md"
+SESSION_LOG="$HOME/.hermes/memories/GLOBAL_MEMORY.md"
+
+if [ ! -f "$RECENT" ]; then
+  echo "❌ BLOCKED : RECENT.md introuvable"
+  echo "   La cascade Djibril Chinois est obligatoire avant tout push."
+  echo "   → Charge la skill 'djibril-chinois-gate' et suis la procédure."
+  exit 1
+fi
+
+# Cherche une trace cascade dans les 100 dernières lignes
+  CASCADE=$(head -100 "$RECENT" | grep -c "CASCADE\|tier_dispatch.*challenge\|T0 decide\|T1 challenge\|HERMES_CALL.*challenge\|GATE" 2>/dev/null)
+
+if [ "$CASCADE" -eq 0 ]; then
+  echo ""
+  echo "  ╔══════════════════════════════════════════════════════╗"
+  echo "  ║  ❌  PUSH BLOQUÉ — CASCADE DJIBRIL CHINOIS         ║"
+  echo "  ║     absente des 100 dernières lignes de RECENT.md   ║"
+  echo "  ╠══════════════════════════════════════════════════════╣"
+  echo "  ║  1. Charge la skill : skill_view(name='djibril-     ║"
+  echo "  ║     chinois-gate')                                   ║"
+  echo "  ║  2. Suis la procédure T0 → T1 → corrections → exec ║"
+  echo "  ║  3. Relance git push                                ║"
+  echo "  ╚══════════════════════════════════════════════════════╝"
+  echo ""
+  exit 1
+fi
+
+exit 0
