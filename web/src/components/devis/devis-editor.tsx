@@ -14,6 +14,7 @@ import { VoiceRecorder } from "@/components/voice/voice-recorder"
 import { SmartTextarea } from "@/components/voice/smart-textarea"
 import { ClarifyCard } from "@/components/voice/clarify-card"
 import { saveDevis, type DevisPayload } from "@/lib/actions/devis"
+import { saveClient } from "@/lib/actions/clients"
 import { formatEUR } from "@/lib/utils"
 import type { Clarification } from "@/lib/llm/clarify"
 
@@ -205,11 +206,17 @@ function DevisEditorInner({
 
     setReviewNeeded(true)
 
+    // Toast contextuel : articles ajoutés ? infos client ? les deux ?
+    const hasClientFields = Boolean(ext.client_nom || ext.client_prenom || ext.client_telephone || ext.client_adresse)
     const rawPreview = (r.raw || "").slice(0, 120)
     toast.success(
-      additions.length > 0
-        ? `${additions.length} ligne(s) ajoutées`
-        : "Aucun article détecté",
+      additions.length > 0 && hasClientFields
+        ? `${additions.length} article(s) + client mis à jour`
+        : additions.length > 0
+          ? `${additions.length} ligne(s) ajoutées`
+          : hasClientFields
+            ? "Infos client détectées"
+            : "Aucun article détecté",
       {
         description: rawPreview
           ? `Transcription : « ${rawPreview}${r.raw.length > 120 ? "…" : ""} »`
@@ -447,11 +454,30 @@ function DevisEditorInner({
       {/* Step content */}
       {step === 0 && (
         <Card>
-          <div className="flex items-center justify-between gap-4 mb-4">
+          <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">
             <CardTitle>1. Pour quel client ?</CardTitle>
-            <Button variant="ghost" size="sm" onClick={() => setClientSelectorOpen((v) => !v)}>
+            <div className="flex items-center gap-2">
+              {/* Bouton Enregistrer le client dans la base (visible si client existant sélectionné) */}
+              {client.id && client.nom?.trim() && !clientSelectorOpen && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={async () => {
+                    try {
+                      await saveClient(client)
+                      toast.success("Client mis à jour ✅")
+                    } catch (e) {
+                      toast.error("Erreur", { description: e instanceof Error ? e.message : String(e) })
+                    }
+                  }}
+                >
+                  💾 Enregistrer client
+                </Button>
+              )}
+              <Button variant="ghost" size="sm" onClick={() => setClientSelectorOpen((v) => !v)}>
               <User className="h-4 w-4" /> {clientSelectorOpen ? "Saisir manuellement" : "Choisir un client existant"}
             </Button>
+            </div>
           </div>
           {clientSelectorOpen ? (
             <div className="grid sm:grid-cols-2 gap-2">

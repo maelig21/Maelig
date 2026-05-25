@@ -49,7 +49,7 @@ const NAV = [
   { href: "/app/devis/nouveau", label: "Créer un devis", Icon: FilePlus2, accent: true, dot: "electric" as Dot },
   { href: "/app/devis/a-valider", label: "À valider (employés)", Icon: ShieldCheck, ownerOnly: true, dot: "amber" as Dot },
   { href: "/app/devis/attente-validation", label: "En attente du client", Icon: Hourglass, dot: "blue" as Dot },
-  { href: "/app/devis/signes", label: "Signés · pas encore payés", Icon: FileCheck, dot: "purple" as Dot },
+  { href: "/app/devis/signes", label: "Signés · chantier en cours", Icon: FileCheck, dot: "purple" as Dot },
   { href: "/app/devis/factures-en-attente", label: "Factures en attente", Icon: Receipt, dot: "red" as Dot },
   { href: "/app/devis/archives", label: "Payées · abandonnées", Icon: Archive, dot: "gray" as Dot },
   { type: "section", label: "Chantiers" },

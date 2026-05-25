@@ -71,8 +71,8 @@ export const RUBRIQUES: Array<{
   },
   {
     slug: "signes",
-    label: "Signés · pas encore payés",
-    description: "Devis signés, en attente de paiement",
+    label: "Signés · chantier en cours",
+    description: "Devis signés, chantiers en cours",
     statuts: ["signe_non_paye"],
     icon: "FileCheck",
   },

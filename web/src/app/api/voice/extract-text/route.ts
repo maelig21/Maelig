@@ -49,10 +49,8 @@ export async function POST(req: Request) {
   if (text.length > MAX_TEXT_LEN) {
     return NextResponse.json({ error: "text_too_long", limit: MAX_TEXT_LEN }, { status: 413 })
   }
-  // Skip trop court : pas la peine de griller un appel LLM
-  if (text.length < 8) {
-    return NextResponse.json({ ok: true, extracted: { items: [] }, skipped: "too_short" })
-  }
+  // Même texte très court : on tente l'extraction (le prompt gère les snippets)
+  // Une simple phrase comme "Madame Martin" doit remplir les champs client
 
   // Charge les articles connus de l'org pour matcher (warmup déjà fait par /transcribe)
   const { data: articles } = await supabase

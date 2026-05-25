@@ -32,7 +32,7 @@ const NAV: NavItem[] = [
   { href: "/app/devis/nouveau", label: "Créer un devis", Icon: FilePlus2, accent: true },
   { href: "/app/devis/a-valider", label: "À valider (employés)", Icon: ShieldCheck, ownerOnly: true },
   { href: "/app/devis/attente-validation", label: "En attente du client", Icon: Hourglass },
-  { href: "/app/devis/signes", label: "Signés (pas encore payés)", Icon: FileCheck },
+  { href: "/app/devis/signes", label: "Signés (chantier en cours)", Icon: FileCheck },
   { href: "/app/devis/factures-en-attente", label: "Factures en attente", Icon: Receipt },
   { href: "/app/devis/archives", label: "Payées / abandonnées", Icon: Archive },
   { type: "section", label: "Chantiers" },

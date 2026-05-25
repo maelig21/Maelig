@@ -177,11 +177,22 @@ export function VoiceRecorder({
         toast.error("Erreur d'extraction", { description: data.error })
         return
       }
+      // Fallback client-side si le LLM n'a pas extrait les champs client
+      const extracted = data.extracted ?? { items: [] }
+      if (!extracted.client_nom && !extracted.client_hint && !extracted.client_telephone) {
+        const phoneMatch = rawText.match(/(0[1-9])([\s.-]*\d{2}){4}/)
+        if (phoneMatch) extracted.client_telephone = phoneMatch[0]
+        // Si un truc ressemble à un nom (2+ mots, pas juste des chiffres)
+        const words = rawText.replace(phoneMatch?.[0] || "", "").trim().split(/\s+/).filter(Boolean)
+        if (words.length >= 1 && !/^\d+$/.test(words[0])) {
+          extracted.client_hint = words.join(" ")
+        }
+      }
       onResult({
         raw: rawText,
         corrected: data.corrected ?? rawText,
         language: data.language,
-        extracted: data.extracted ?? { items: [] },
+        extracted,
         clarification: data.clarification ?? null,
         _diagnostic: { pipeline: "mobile-speechrec-only" },
       })

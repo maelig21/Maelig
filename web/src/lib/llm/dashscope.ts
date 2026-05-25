@@ -241,7 +241,8 @@ Règles d'extraction :
 - Catégorie : devine intelligemment (mots-clés : 'prise', 'inter', 'va-et-vient', 'douille', 'dôme', 'spot' = Luminaire ; 'disjoncteur', 'tableau', 'différentiel' = Tableau ; 'radiateur', 'sèche-serviette', 'convecteur' = Chauffage ; 'détecteur', 'fumée', 'caméra' = Sécurité ; 'borne', 'IRVE', 'wallbox' = IRVE ; 'VMC', 'extracteur' = VMC).
 - Le client_hint peut être 'Monsieur/Madame XX' ou 'SARL YY' ou juste 'Martin' — extrait tel quel.
 - L'adresse peut être partielle : '12 rue de la Gare, Brest' ou juste 'à Brest' — extrait tel quel.
-- Notes : capture toute info COMMERCIALE utile (urgent / le matériel est fourni par le client / accès difficile escalier / fait dans la journée / chantier neuf vs rénovation / etc.).`
+- Notes : capture toute info COMMERCIALE utile (urgent / le matériel est fourni par le client / accès difficile escalier / fait dans la journée / chantier neuf vs rénovation / etc.).
+- 🔧 FIX 2026-05-26 : Si le texte est COURT (juste un nom, juste un téléphone), tu DOIS quand même extraire le client_hint et/ou client_telephone. Ne retourne JAMAIS un objet vide. '06.12.34.56.78' ou '06 12 34 56 78' = client_telephone. 'Dupont' = client_hint + client_nom. 'Jean Dupont' = client_prenom + client_nom. 'Madame Martin, 06 12 34 56 78' = client_hint, client_nom, client_telephone.`
 
   const { text } = await dashscopeChat({
     model: "qwen-plus",
