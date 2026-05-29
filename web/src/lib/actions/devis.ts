@@ -178,6 +178,11 @@ export async function saveDevis(payload: DevisPayload, action: "draft" | "send" 
     }
   }
 
+  // Revalidation immédiate — le devis est enregistré dans tous les cas
+  revalidatePath("/app")
+  revalidatePath("/app/devis/attente-validation")
+  revalidatePath(`/app/devis/${devisId}`)
+
   // ── Envoi email si action=send ──
   if (action === "send") {
     try {
@@ -205,16 +210,17 @@ export async function saveDevis(payload: DevisPayload, action: "draft" | "send" 
           ...devisEnvoiTemplate(emailOpts),
         })
         await admin.from("devis").update({ date_envoi_email: new Date().toISOString() }).eq("id", devisId)
+      } else {
+        console.warn("[saveDevis] email skipped — no client email for devis", devisId)
       }
     } catch (e) {
-      console.warn("[saveDevis] email send failed:", e instanceof Error ? e.message : e)
-      // Non bloquant — le devis est sauvegardé même si l'email échoue
+      const msg = e instanceof Error ? e.message : String(e)
+      console.error("[saveDevis] email send failed:", msg)
+      // Le devis est bien enregistré, mais on remonte l'erreur pour afficher un toast au frontend
+      throw new Error(`Devis enregistré, mais l'envoi email a échoué : ${msg}`)
     }
   }
 
-  revalidatePath("/app")
-  revalidatePath("/app/devis/attente-validation")
-  revalidatePath(`/app/devis/${devisId}`)
   return { ok: true, devisId }
 }
 
@@ -245,10 +251,71 @@ export async function approveSlaveDevis(devisId: string) {
     .eq("org_id", orgId)
     .eq("statut", "en_attente_validation_patron")
   if (error) throw new Error(error.message)
-  // TODO : envoyer email client via Resend ici (templates.devisEnvoiTemplate)
+
+  // Revalidation immédiate — la validation est enregistrée dans tous les cas
   revalidatePath("/app")
   revalidatePath("/app/devis/a-valider")
   revalidatePath(`/app/devis/${devisId}`)
+
+  // ── Envoi email client (Resend) ──
+  try {
+    const { data: devis } = await supabase
+      .from("devis")
+      .select("client_id, total_ttc, numero")
+      .eq("id", devisId)
+      .maybeSingle()
+    if (devis?.client_id) {
+      const { data: org } = await supabase
+        .from("orgs")
+        .select("nom, email")
+        .eq("id", orgId)
+        .maybeSingle()
+      const { data: clientRec } = await supabase
+        .from("clients")
+        .select("email, prenom, nom")
+        .eq("id", devis.client_id)
+        .maybeSingle()
+      const clientEmail = clientRec?.email || ""
+      if (clientEmail) {
+        const signUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "https://dep-electrique.fr"}/signer/${devisId}`
+        const clientName =
+          [clientRec?.prenom, clientRec?.nom].filter(Boolean).join(" ") || "Client"
+        const numero =
+          devis.numero || `DEP-${devisId?.slice(0, 8).toUpperCase() || ""}`
+        const fmt = (n: number) =>
+          `${n.toFixed(2).replace(".", ",")} €`
+
+        const emailOpts = {
+          clientName,
+          numero,
+          totalTtc: fmt(devis.total_ttc || 0),
+          signUrl,
+          patron: "Votre artisan",
+          patronEntreprise:
+            (org as { nom?: string })?.nom || "DEP Électricité",
+        }
+        await sendEmail({
+          to: clientEmail,
+          ...devisEnvoiTemplate(emailOpts),
+        })
+        await supabaseAdmin()
+          .from("devis")
+          .update({ date_envoi_email: new Date().toISOString() })
+          .eq("id", devisId)
+      } else {
+        console.warn(
+          "[approveSlaveDevis] email skipped — no client email for devis",
+          devisId,
+        )
+      }
+    }
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    console.error("[approveSlaveDevis] email send failed:", msg)
+    // Le devis est bien validé, mais on remonte l'erreur pour afficher un toast au frontend
+    throw new Error(`Devis validé, mais l'envoi email a échoué : ${msg}`)
+  }
+
   return { ok: true }
 }
 

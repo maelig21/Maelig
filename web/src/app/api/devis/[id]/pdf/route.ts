@@ -134,10 +134,16 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     <small>Bon pour accord — signature du client (précédée de la mention &laquo; lu et approuvé &raquo;)</small>
   </div>
 
+  ${org.conditions_reglement ? `
+  <div class="box" style="margin-top:18px">
+    <strong>Conditions de règlement</strong><br>
+    <span style="white-space:pre-line">${escapeHtml(org.conditions_reglement)}</span>
+  </div>
+  ` : ""}
+
   <footer>
     Devis valable 30 jours. Acompte demandé : ${devis.acompte_pct ? devis.acompte_pct + "%" : "—"}.
     ${org.tva_intracommunautaire ? `· TVA intra : ${escapeHtml(org.tva_intracommunautaire)}` : ""}
-    · Conditions générales de vente sur demande.
   </footer>
 </div>
 <script>window.onload = () => setTimeout(() => window.print(), 200)</script>

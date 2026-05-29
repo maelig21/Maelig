@@ -40,7 +40,7 @@ L'électricien parle naturellement comme à un collègue. Tu dois EXTRAIRE l'int
 - Quels matériels (avec quantités)
 - Pour qui (nom du client, particulier ou entreprise)
 - Où (adresse chantier)
-- Combien de temps (main d'œuvre)
+- Combien de temps (en heures — main-d'œuvre / main d oeuvre / de pose → champ heures_main_oeuvre)
 - Toute info utile pour le devis (étage, conditions d'accès, urgence…)
 
 Renvoie STRICTEMENT un JSON conforme à ce schéma:
@@ -54,7 +54,7 @@ Renvoie STRICTEMENT un JSON conforme à ce schéma:
   "client_cp": "string|null",         // code postal
   "chantier_adresse": "string|null",  // adresse du chantier si différente
   "chantier_objet": "string|null",    // objet du devis (ex: 'Rénovation électrique appartement')
-  "heures_main_oeuvre": number|null,  // heures de pose
+  "heures_main_oeuvre": number|null,  // heures de main-d'œuvre / de pose
   "taux_horaire": number|null,        // taux horaire en €/h (ex: 150€ de l'heure → 150)
   "notes": "string|null",             // toute info utile (urgence, accès, fourniture client…)
   "items": [
@@ -75,7 +75,8 @@ Règles d'extraction :
 - N'invente jamais de matériel non mentionné.
 - Sépare bien le nom et prénom du client. Ex: 'Madame Martin' → client_nom: 'Martin', client_prenom: null
 - Extrais le téléphone, l'adresse, la ville et le CP séparément si mentionnés.
-- Garde les adresses EXACTEMENT comme dites : '34 bis avenue Kennedy' inchangé.`
+- Garde les adresses EXACTEMENT comme dites : '34 bis avenue Kennedy' inchangé.
+- Heures de main-d'œuvre / de pose : toute mention de durée comme 'deux heures de main-d œuvre', '3h de pose', 'main d oeuvre quatre heures' → extraire le nombre dans heures_main_oeuvre. 'une demi-journée' = 4h, 'une journée' = 8h, 'deux jours' = 16h.`
 
   const res = await fetch(`${BASE}/v1/chat/completions`, {
     method: "POST",

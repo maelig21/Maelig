@@ -170,7 +170,7 @@ L'électricien parle naturellement comme à un collègue. Tu dois EXTRAIRE l'int
 - Quels matériels (avec quantités)
 - Pour qui (nom du client, particulier ou entreprise)
 - Où (adresse chantier)
-- Combien de temps (main d'œuvre)
+- Combien de temps (en heures — main-d'œuvre / main d oeuvre / de pose → champ heures_main_oeuvre)
 - Toute info utile pour le devis (étage, conditions d'accès, urgence…)
 
 Renvoie STRICTEMENT un JSON conforme à ce schéma:
@@ -185,7 +185,7 @@ Renvoie STRICTEMENT un JSON conforme à ce schéma:
   "client_cp": "string|null",
   "chantier_adresse": "string|null",
   "chantier_objet": "string|null",
-  "heures_main_oeuvre": number|null,
+  "heures_main_oeuvre": number|null,  // heures de main-d'œuvre / de pose
   "taux_horaire": number|null,
   "notes": "string|null",
   "items": [
@@ -208,7 +208,8 @@ Règles d'extraction :
 - Si le user dicte UNIQUEMENT les infos client (nom, adresse, téléphone) sans article du tout, extrais quand même les champs client et retourne items: [] vide.
 - Si le texte est COURTS (juste un nom, juste un téléphone), extrais quand même client_hint et/ou client_telephone. '06.12.34.56.78' = client_telephone. 'Dupont' = client_hint + client_nom. 'Jean Dupont' = client_prenom + client_nom.
 - Catégorie : devine intelligemment (mots-clés : 'prise', 'inter', 'va-et-vient' = Prise/Interrupteur ; 'disjoncteur', 'tableau', 'différentiel' = Tableau ; 'radiateur', 'convecteur' = Chauffage ; 'détecteur', 'caméra' = Sécurité ; 'borne', 'IRVE' = IRVE ; 'VMC' = VMC).
-- Notes : capture toute info COMMERCIALE utile (urgent / fourniture client / accès difficile / neuf vs rénovation).`
+- Notes : capture toute info COMMERCIALE utile (urgent / fourniture client / accès difficile / neuf vs rénovation).
+- Heures de main-d'œuvre / de pose : toute mention de durée comme 'deux heures de main-d œuvre', '3h de pose', 'main d oeuvre quatre heures' → extraire le nombre dans heures_main_oeuvre. 'une demi-journée' = 4h, 'une journée' = 8h, 'deux jours' = 16h.`
 
   const { text } = await dashscopeChat({
     model: "deepseek-chat",

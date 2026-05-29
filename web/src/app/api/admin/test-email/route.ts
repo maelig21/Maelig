@@ -5,8 +5,10 @@ import { supabaseAdmin } from "@/lib/supabase/admin"
 import { limitAdminEmail, tooManyRequests, clientIp } from "@/lib/ratelimit"
 import { generateStrongPassword } from "@/lib/security/password"
 import { logAuthEvent } from "@/lib/security/audit"
+import { getAdminEmails } from "@/lib/config-reader"
 
-const ADMIN_EMAILS = ["ayouneslead@gmail.com", "djibrilmindset@gmail.com", "djibrilsylearn@gmail.com"]
+// ADMIN_EMAILS est dans app_config['dep_electrique'].admin_emails
+// NE PLUS hardcoder ici !
 
 const Body = z.object({
   recipient: z.string().email(),
@@ -19,7 +21,7 @@ export async function POST(req: Request) {
   if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 })
 
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle()
-  const isAdmin = profile?.role === "admin_dep" || ADMIN_EMAILS.includes((user.email || "").toLowerCase())
+  const isAdmin = profile?.role === "admin_dep" || (await getAdminEmails()).includes((user.email || "").toLowerCase())
   if (!isAdmin) return NextResponse.json({ error: "forbidden" }, { status: 403 })
 
   // P1-3 audit : rate limit 20/h par admin sur cet endpoint (prévention abuse)

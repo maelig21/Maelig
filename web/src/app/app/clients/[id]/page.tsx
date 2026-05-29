@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, Mail, Phone, MapPin, FileText } from "lucide-react"
+import { ArrowLeft, Mail, Phone, MapPin, FileText, Pencil } from "lucide-react"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Card, CardTitle, Badge } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -40,14 +40,28 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             {client.raison_sociale || [client.prenom, client.nom].filter(Boolean).join(" ")}
           </h1>
         </div>
-        <Button asChild>
-          <Link href={`/app/devis/nouveau?client=${client.id}`}>+ Devis pour ce client</Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`/app/clients/nouveau?id=${client.id}`}><Pencil className="h-4 w-4" /></Link>
+          </Button>
+          <Button asChild>
+            <Link href={`/app/devis/nouveau?client=${client.id}`}>+ Devis pour ce client</Link>
+          </Button>
+        </div>
       </div>
 
       <div className="grid sm:grid-cols-3 gap-4">
         <Card>
-          <CardTitle className="text-sm">Coordonnées</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm">Coordonnées</CardTitle>
+            <Link
+              href={`/app/clients/nouveau?id=${client.id}`}
+              className="grid h-7 w-7 place-items-center rounded-md border border-border bg-surface-2 hover:border-electric/40 hover:text-electric transition-colors"
+              aria-label="Modifier les coordonnées"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </Link>
+          </div>
           <ul className="mt-4 space-y-2.5 text-sm">
             {client.email && (
               <li>

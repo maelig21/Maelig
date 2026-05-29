@@ -1,12 +1,10 @@
 import { redirect } from "next/navigation"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { supabaseAdmin } from "@/lib/supabase/admin"
+import { getAdminEmails } from "@/lib/config-reader"
 
-export const ADMIN_EMAILS = [
-  "ayouneslead@gmail.com",
-  "djibrilmindset@gmail.com",
-  "djibrilsylearn@gmail.com",
-]
+// ADMIN_EMAILS est dans app_config['dep_electrique'].admin_emails
+// NE PLUS hardcoder ici — utiliser getAdminEmails()
 
 // requireAdmin gate les Server Components admin et retourne :
 // - supabase : client server-side avec session user (lecture profiles/orgs OK via RLS)
@@ -24,7 +22,7 @@ export async function requireAdmin() {
     .eq("id", user.id)
     .maybeSingle()
 
-  const isAdmin = profile?.role === "admin_dep" || ADMIN_EMAILS.includes((user.email || "").toLowerCase())
+  const isAdmin = profile?.role === "admin_dep" || (await getAdminEmails()).includes((user.email || "").toLowerCase())
   if (!isAdmin) redirect("/app")
 
   return { supabase, admin: supabaseAdmin(), user, profile }

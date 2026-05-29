@@ -16,6 +16,19 @@ const Schema = z.object({
   notes: z.string().optional(),
 })
 
+export async function getClient(id: string) {
+  const supabase = await createSupabaseServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: profile } = await supabase.from("profiles").select("org_id").eq("id", user!.id).maybeSingle()
+  const { data: client } = await supabase
+    .from("clients")
+    .select("id, nom, prenom, raison_sociale, email, telephone, adresse, cp, ville, notes")
+    .eq("id", id)
+    .eq("org_id", profile!.org_id!)
+    .maybeSingle()
+  return client ?? null
+}
+
 export async function saveClient(input: unknown) {
   const data = Schema.parse(input)
   const supabase = await createSupabaseServerClient()
@@ -42,6 +55,7 @@ export async function saveClient(input: unknown) {
     if (error) throw new Error(error.message)
   }
   revalidatePath("/app/devis/nouveau")
+  revalidatePath("/app/clients")
   revalidatePath("/app")
   return { ok: true }
 }

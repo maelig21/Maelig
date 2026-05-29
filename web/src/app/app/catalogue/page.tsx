@@ -4,6 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Card, CardTitle, CardDescription, Badge } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/app/empty-state"
+import { EditablePriceCell } from "@/components/app/editable-price-cell"
 import { formatEUR } from "@/lib/utils"
 
 export const dynamic = "force-dynamic"
@@ -70,7 +71,9 @@ export default async function Page() {
                     <td className="p-3 font-medium">{a.nom}</td>
                     <td className="p-3"><span className="text-muted">{a.categorie ?? "—"}</span></td>
                     <td className="p-3 text-muted">{a.unite}</td>
-                    <td className="p-3 text-right font-mono">{formatEUR(a.prix_unitaire_ht)}</td>
+                    <td className="p-3 text-right font-mono">
+                      <EditablePriceCell id={a.id} value={a.prix_unitaire_ht} canEdit={isOwner} />
+                    </td>
                     <td className="p-3 text-right">
                       <Badge tone={a.usage_count > 5 ? "electric" : "neutral"}>{a.usage_count}× </Badge>
                     </td>

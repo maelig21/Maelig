@@ -128,6 +128,6 @@ export async function updateArticlePrice(id: string, prix_unitaire_ht: number) {
   if (profile.role !== "owner" && profile.role !== "admin_dep") throw new Error("forbidden_slave")
   const { error } = await supabase.from("articles").update({ prix_unitaire_ht }).eq("id", id).eq("org_id", profile.org_id)
   if (error) throw new Error(error.message)
-  revalidatePath("/app/parametres/defauts")
+  revalidatePath("/app/catalogue")
   return { ok: true }
 }
