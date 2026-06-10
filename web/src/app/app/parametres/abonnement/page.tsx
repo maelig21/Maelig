@@ -29,13 +29,13 @@ export default async function AbonnementPage() {
           <div className="text-right">
             <div className="text-xs uppercase tracking-wider text-muted">Tarif</div>
             <div className="mt-1 font-display text-3xl font-bold">100€<span className="text-sm text-muted font-normal">/mois</span></div>
-            <div className="mt-1 text-xs text-muted">+ 5€/mois par esclave</div>
+            <div className="mt-1 text-xs text-muted">+ 5€/mois par employé</div>
           </div>
         </div>
         <div className="mt-6 grid sm:grid-cols-2 gap-4 text-sm">
           <Info label="Essai gratuit jusqu'au" value={org?.trial_ends_at ? formatDateFR(org.trial_ends_at) : "—"} />
           <Info label="Prochaine échéance" value={org?.current_period_end ? formatDateFR(org.current_period_end) : "—"} />
-          <Info label="Sièges esclaves" value={String(org?.slave_seats ?? 0)} />
+          <Info label="Sièges employés" value={String(org?.slave_seats ?? 0)} />
           <Info label="Stripe customer" value={org?.stripe_customer_id ?? "—"} mono />
         </div>
       </Card>
@@ -58,7 +58,7 @@ export default async function AbonnementPage() {
       )}
 
       <Card>
-        <CardTitle>Ajouter / retirer des esclaves</CardTitle>
+        <CardTitle>Ajouter / retirer des employés</CardTitle>
         <p className="mt-2 text-sm text-muted">
           Vos employés. Ils peuvent créer des devis mais pas modifier les prix du catalogue. 5€/mois par compte.
         </p>
