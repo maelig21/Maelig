@@ -36,7 +36,7 @@ export function SyncSeats({ current, disabled }: { current: number; disabled?: b
   return (
     <div className="mt-4 flex items-end gap-3">
       <div>
-        <Label>Nombre d&apos;esclaves</Label>
+        <Label>Nombre d&apos;employés</Label>
         <Input
           type="number"
           min="0"
