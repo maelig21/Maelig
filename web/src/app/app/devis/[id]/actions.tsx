@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/input"
 import { approveSlaveDevis, rejectSlaveDevis, changeDevisStatut, deleteDevis, convertDevisToFacture } from "@/lib/actions/devis"
 
-export function DevisActions({ devisId, statut }: { devisId: string; statut: string }) {
+export function DevisActions({ devisId, statut, signePar, signeLe }: { devisId: string; statut: string; signePar?: string | null; signeLe?: string | null }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [rejectMode, setRejectMode] = useState(false)
