@@ -1,0 +1,21 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "pnpm build",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "framework": "nextjs",
+  "regions": ["fra1"],
+  "functions": {
+    "src/app/api/voice/transcribe/route.ts": { "maxDuration": 60 },
+    "src/app/api/text/correct/route.ts": { "maxDuration": 20 },
+    "src/app/api/stripe/webhook/route.ts": { "maxDuration": 15 }
+  },
+  "github": {
+    "silent": true
+  },
+  "crons": [
+    {
+      "path": "/api/relances/run",
+      "schedule": "0 9 * * *"
+    }
+  ]
+}

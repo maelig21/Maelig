@@ -1,0 +1,61 @@
+# Gitleaks config — DEP audit 2026-05-20
+# Scan secrets dans le dépôt + history. Étendu avec patterns DEP spécifiques.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Allowlist DEP — keys publiques + exemples + tests"
+paths = [
+  '''.env.example''',
+  '''README.md''',
+  '''docs/.*''',
+  '''snapshots/.*''',
+]
+regexes = [
+  '''NEXT_PUBLIC_[A-Z_]+_KEY''',         # keys publiques par design
+  '''sb_publishable_[a-zA-Z0-9_-]+''',   # Supabase publishable key (anon ok dans HTML)
+]
+stopwords = [
+  "example",
+  "placeholder",
+  "your-key-here",
+  "TODO",
+]
+
+# Patterns custom DEP
+[[rules]]
+id = "supabase-service-role"
+description = "Supabase service_role key (admin Postgres)"
+regex = '''(?i)(supabase[_-]?service[_-]?role|SUPABASE_SERVICE_ROLE_KEY)\s*[:=]\s*['\"]?(eyJ[a-zA-Z0-9_-]{40,})['\"]?'''
+keywords = ["service_role", "SUPABASE_SERVICE_ROLE"]
+
+[[rules]]
+id = "stripe-live-key"
+description = "Stripe live key"
+regex = '''sk_live_[A-Za-z0-9]{20,}'''
+keywords = ["sk_live_"]
+
+[[rules]]
+id = "stripe-webhook-secret"
+description = "Stripe webhook secret"
+regex = '''whsec_[A-Za-z0-9]{30,}'''
+keywords = ["whsec_"]
+
+[[rules]]
+id = "dashscope-key"
+description = "Aliyun DashScope API key"
+regex = '''sk-[a-f0-9]{32}'''
+keywords = ["DASHSCOPE_API_KEY", "dashscope"]
+
+[[rules]]
+id = "upstash-token"
+description = "Upstash Redis token"
+regex = '''(?i)UPSTASH_REDIS_REST_TOKEN\s*[:=]\s*['\"]?[A-Za-z0-9_-]{30,}'''
+keywords = ["UPSTASH_REDIS_REST_TOKEN"]
+
+[[rules]]
+id = "sentry-dsn-with-secret"
+description = "Sentry DSN with secret"
+regex = '''https://[a-f0-9]{32}:[a-f0-9]{32}@[a-z0-9.]+\.ingest\.sentry\.io'''
+keywords = ["ingest.sentry.io"]
