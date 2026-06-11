@@ -27,7 +27,7 @@ const wrap = (inner: string) => `
     <div class="container">
       <div style="margin-bottom: 12px; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">⚡ <span style="color:#ffd500">DEP</span></div>
       <div class="card">${inner}</div>
-      <p class="muted" style="margin-top: 20px;">Email envoyé via DEP, plateforme de gestion électrique. <a style="color:#ffd500" href="https://dep-electrique.fr">dep-electrique.fr</a></p>
+      <p class="muted" style="margin-top: 20px;">Email envoyé via DEP, devis et gestion d'entreprise. <a style="color:#ffd500" href="https://dep-pro.fr">dep-pro.fr</a></p>
     </div>
   </body>
 </html>`
