@@ -20,15 +20,15 @@ const ibmMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
   title: {
-    default: "DEP — Plateforme de gestion électrique",
+    default: "DEP — Devis et gestion d'entreprise",
     template: "%s · DEP",
   },
   description:
-    "Le devis d'électricien le plus rapide du marché. Parlez, c'est facturé. DEP transcrit votre chantier en devis prêt à signer en moins de 2 minutes. Conçu pour les chefs d'entreprise qui ne veulent pas se prendre la tête.",
+    "Le devis le plus rapide du marché. Parlez, c'est facturé. DEP transcrit votre chantier en devis prêt à signer en moins de 2 minutes. Conçu pour les chefs d'entreprise qui ne veulent pas se prendre la tête.",
   keywords: [
-    "devis électricien",
+    "devis",
     "logiciel devis BTP",
-    "facturation électricien",
+    "facturation",
     "devis vocal",
     "gestion chantier",
     "DEP",
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "fr_FR",
-    title: "DEP — Le devis d'électricien le plus rapide",
+    title: "DEP — Le devis le plus rapide",
     description: "Parlez votre chantier, on s'occupe du reste. Devis + facture + relance en 1 vocal.",
     siteName: "DEP",
   },
