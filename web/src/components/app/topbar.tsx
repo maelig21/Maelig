@@ -166,7 +166,7 @@ export function MobileTopbar() {
 
               {/* Drawer footer */}
               <div className="px-5 py-4 border-t border-border">
-                <span className="text-xs text-muted-2">DEP — Gestion électrique</span>
+                <span className="text-xs text-muted-2">DEP — Gestion d'entreprise</span>
               </div>
             </motion.aside>
           </>
