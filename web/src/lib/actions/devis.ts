@@ -190,7 +190,7 @@ export async function saveDevis(payload: DevisPayload, action: "draft" | "send" 
       const { data: clientRec } = await supabase.from("clients").select("email, prenom, nom").eq("id", clientId).maybeSingle()
       const clientEmail = data.client.email || clientRec?.email || ""
       if (clientEmail) {
-        const signUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "https://dep-electrique.fr"}/signer/${devisId}`
+        const signUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "https://dep-pro.fr"}/signer/${devisId}`
         const clientName = [clientRec?.prenom, clientRec?.nom].filter(Boolean).join(" ") || data.client.nom
         const totalItems = data.items.reduce((s, it) => s + Number(it.quantite) * Number(it.prix_unitaire_ht), 0)
         const totalHT = totalItems + (data.heures_main_oeuvre || 0) * (data.taux_horaire || 0)
@@ -278,7 +278,7 @@ export async function approveSlaveDevis(devisId: string) {
         .maybeSingle()
       const clientEmail = clientRec?.email || ""
       if (clientEmail) {
-        const signUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "https://dep-electrique.fr"}/signer/${devisId}`
+        const signUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "https://dep-pro.fr"}/signer/${devisId}`
         const clientName =
           [clientRec?.prenom, clientRec?.nom].filter(Boolean).join(" ") || "Client"
         const numero =
