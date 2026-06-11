@@ -17,7 +17,7 @@ export default function CgvPage() {
         <p className="text-muted text-sm">Dernière mise à jour : 20 mai 2026</p>
 
         <h2>1. Objet</h2>
-        <p>Les présentes conditions générales régissent l&apos;utilisation de la plateforme DEP, service en ligne de gestion électrique (devis, factures, incidents chantier) édité par Maelig Goger.</p>
+        <p>Les présentes conditions générales régissent l&apos;utilisation de la plateforme DEP, service en ligne de gestion d'entreprise (devis, factures, incidents chantier) édité par Maelig Goger.</p>
 
         <h2>2. Tarification</h2>
         <p>DEP Pro : 100 € HT / mois par patron. DEP Employé : 5 € HT / mois par employé connecté. Essai gratuit 14 jours sans CB. Facturation mensuelle, résiliation à tout moment depuis l&apos;application.</p>
@@ -35,7 +35,7 @@ export default function CgvPage() {
         <p>DEP est un outil d&apos;aide à la gestion. L&apos;utilisateur reste responsable de la validité juridique et fiscale des documents émis. DEP ne peut être tenu responsable d&apos;erreurs résultant d&apos;une utilisation non conforme.</p>
 
         <h2>7. Support</h2>
-        <p>Support par email sous 24h ouvrées : <a href="mailto:support@dep-electrique.fr" className="text-electric hover:underline">support@dep-electrique.fr</a></p>
+        <p>Support par email sous 24h ouvrées : <a href="mailto:support@dep-pro.fr" className="text-electric hover:underline">support@dep-pro.fr</a></p>
 
         <h2>8. Litiges</h2>
         <p>En cas de litige, les parties s&apos;efforceront de trouver une solution amiable. À défaut, les tribunaux de Paris seront seuls compétents.</p>
