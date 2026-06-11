@@ -12,8 +12,6 @@ export default async function Page() {
   const { data: { user } } = await supabase.auth.getUser()
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", user!.id).maybeSingle()
   const { data: org } = await supabase.from("orgs").select("*").eq("id", profile!.org_id!).maybeSingle()
-
-  // Vérifie si un Gmail est déjà connecté
   const { data: mailConn } = await supabase.from("mail_connections").select("email").eq("org_id", profile!.org_id!).maybeSingle()
 
   const cards = [
@@ -72,7 +70,6 @@ export default async function Page() {
         <Button asChild><Link href="/app/parametres/abonnement">Gérer</Link></Button>
       </Card>
 
-      {/* Connexion Gmail */}
       <Card className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface-2 text-electric">
