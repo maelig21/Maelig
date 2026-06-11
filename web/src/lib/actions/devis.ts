@@ -207,6 +207,7 @@ export async function saveDevis(payload: DevisPayload, action: "draft" | "send" 
         }
         await sendEmail({
           to: clientEmail,
+          replyTo: (org as { email?: string })?.email || undefined,
           ...devisEnvoiTemplate(emailOpts),
         })
         await admin.from("devis").update({ date_envoi_email: new Date().toISOString() }).eq("id", devisId)
