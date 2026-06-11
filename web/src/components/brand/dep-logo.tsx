@@ -17,7 +17,7 @@ export function DepLogo({
     <span className={cn("inline-flex items-center gap-3", className)}>
       <Image
         src="/dep-logo.png"
-        alt="DEP — Plateforme de gestion électrique"
+        alt="DEP — Devis et gestion d'entreprise"
         width={size * 2.6}
         height={size}
         priority
@@ -28,7 +28,7 @@ export function DepLogo({
         <span className="hidden sm:flex flex-col leading-none">
           <span className="font-display font-extrabold text-lg tracking-tight">DEP</span>
           <span className="text-[10px] uppercase tracking-[0.18em] text-muted">
-            gestion électrique
+            gestion d'entreprise
           </span>
         </span>
       ) : null}
