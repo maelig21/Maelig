@@ -1,8 +1,9 @@
 import Link from "next/link"
-import { Building2, Settings as SettingsIcon, Users, CreditCard, Image as ImageIcon } from "lucide-react"
+import { Building2, Settings as SettingsIcon, Users, CreditCard, Image as ImageIcon, Mail } from "lucide-react"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Card, CardTitle, CardDescription, Badge } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { ConnectGmailButton } from "./connect-gmail"
 
 export const dynamic = "force-dynamic"
 
@@ -11,6 +12,9 @@ export default async function Page() {
   const { data: { user } } = await supabase.auth.getUser()
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", user!.id).maybeSingle()
   const { data: org } = await supabase.from("orgs").select("*").eq("id", profile!.org_id!).maybeSingle()
+
+  // Vérifie si un Gmail est déjà connecté
+  const { data: mailConn } = await supabase.from("mail_connections").select("email").eq("org_id", profile!.org_id!).maybeSingle()
 
   const cards = [
     {
@@ -28,7 +32,7 @@ export default async function Page() {
     {
       href: "/app/parametres/equipe",
       Icon: Users,
-      title: "Équipe (esclaves)",
+      title: "Équipe",
       description: "Invitez des collaborateurs. Ils peuvent créer des devis sans toucher aux prix.",
     },
     {
@@ -66,6 +70,24 @@ export default async function Page() {
           </div>
         </div>
         <Button asChild><Link href="/app/parametres/abonnement">Gérer</Link></Button>
+      </Card>
+
+      {/* Connexion Gmail */}
+      <Card className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface-2 text-electric">
+            <Mail className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="font-display font-semibold">Messagerie</div>
+            {mailConn?.email ? (
+              <div className="text-sm text-muted">Connecté : <span className="text-green-600 font-medium">{mailConn.email}</span></div>
+            ) : (
+              <div className="text-sm text-muted">Connectez votre Gmail pour envoyer les devis depuis votre adresse.</div>
+            )}
+          </div>
+        </div>
+        <ConnectGmailButton connected={!!mailConn?.email} />
       </Card>
 
       <div className="grid sm:grid-cols-2 gap-4">
