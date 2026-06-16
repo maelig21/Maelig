@@ -118,7 +118,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
               <tbody>
                 {items.map((it: any, i: number) => (
                   <tr key={i} className="border-b border-gray-100">
-                    <td className="py-2 text-gray-800">{it.designation || it.nom}</td>
+                    <td className="py-2 text-gray-800">{it.description}</td>
                     <td className="py-2 text-right text-gray-700">{it.quantite}</td>
                     <td className="py-2 text-right text-gray-700">{formatEUR(it.prix_unitaire_ht)}</td>
                     <td className="py-2 text-right text-gray-700">{formatEUR(Number(it.quantite) * Number(it.prix_unitaire_ht))}</td>
