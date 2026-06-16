@@ -610,11 +610,11 @@ function DevisEditorInner({
                 <thead className="text-xs uppercase tracking-wider text-muted">
                   <tr className="border-b border-border">
                     <th className="text-left py-2 pr-2 min-w-[180px]">Description</th>
-                    <th className="text-right py-2 px-2 w-14">Qté</th>
-                    <th className="text-left py-2 px-2 w-14">Unité</th>
-                    <th className="text-right py-2 px-2 w-20">PU HT</th>
-                    <th className="text-right py-2 px-2 w-20">Total HT</th>
-                    <th className="w-8"></th>
+                    <th className="text-right py-2 px-2 w-16">Qté</th>
+                    <th className="text-left py-2 px-2 w-16">Unité</th>
+                    <th className="text-right py-2 px-2 w-24">PU HT</th>
+                    <th className="text-right py-2 px-2 w-24">Total HT</th>
+                    <th className="w-12"></th>
                   </tr>
                 </thead>
                 <tbody>
