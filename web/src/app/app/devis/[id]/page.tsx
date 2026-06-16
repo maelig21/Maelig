@@ -192,18 +192,32 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
 
           {/* ── SIGNATURES ── */}
           <hr className="border-gray-200" />
-          <div className="grid sm:grid-cols-2 gap-8 pt-2">
-            <div>
-              <div className="text-xs uppercase tracking-wider text-gray-400 mb-2">Bon pour accord</div>
-              <div className="border-b border-gray-300 h-12 mb-1" />
-              <div className="text-xs text-gray-400">Date et signature du client</div>
+          {devis.signe_le ? (
+            <div className="rounded-xl border border-green-200 bg-green-50 p-4 flex items-start gap-3">
+              <div className="text-green-600 mt-0.5">✅</div>
+              <div>
+                <div className="text-sm font-semibold text-green-800">Devis signé électroniquement</div>
+                <div className="text-xs text-green-700 mt-1">
+                  Signé par <span className="font-medium">{[c?.prenom, c?.nom].filter(Boolean).join(" ") || c?.raison_sociale || "le client"}</span> le{" "}
+                  <span className="font-medium">{new Date(devis.signe_le).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+                </div>
+                <div className="text-xs text-green-600 mt-0.5">Référence : {devis.id}</div>
+              </div>
             </div>
-            <div className="sm:text-right">
-              <div className="text-xs uppercase tracking-wider text-gray-400 mb-2">Cachet et signature de l&apos;entreprise</div>
-              <div className="border-b border-gray-300 h-12 mb-1" />
-              <div className="text-xs text-gray-400">{org?.nom || "L'entreprise"}</div>
+          ) : (
+            <div className="grid sm:grid-cols-2 gap-8 pt-2">
+              <div>
+                <div className="text-xs uppercase tracking-wider text-gray-400 mb-2">Bon pour accord</div>
+                <div className="border-b border-gray-300 h-12 mb-1" />
+                <div className="text-xs text-gray-400">Date et signature du client</div>
+              </div>
+              <div className="sm:text-right">
+                <div className="text-xs uppercase tracking-wider text-gray-400 mb-2">Cachet et signature de l&apos;entreprise</div>
+                <div className="border-b border-gray-300 h-12 mb-1" />
+                <div className="text-xs text-gray-400">{org?.nom || "L'entreprise"}</div>
+              </div>
             </div>
-          </div>
+          )}
 
         </div>
       </div>
