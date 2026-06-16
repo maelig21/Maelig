@@ -68,7 +68,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
               <div>
                 {org?.logo_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={org.logo_url} alt="Logo" className="h-16 object-contain mb-3" />
+                  <img src={org.logo_url} alt="Logo" className="h-8 object-contain mb-3" />
                 ) : (
                   <div className="text-2xl font-bold text-gray-800 mb-3">{org?.nom || "Mon Entreprise"}</div>
                 )}
