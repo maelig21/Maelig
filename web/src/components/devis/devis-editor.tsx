@@ -269,6 +269,9 @@ function DevisEditorInner({
       ville: c.ville ?? "",
       cp: c.cp ?? "",
     })
+    // Pré-remplir l'adresse du chantier avec l'adresse du client si le champ est vide
+    const adresseClient = [c.adresse, c.cp, c.ville].filter(Boolean).join(", ")
+    if (adresseClient) setChantier((prev) => prev || adresseClient)
     setClientSelectorOpen(false)
   }
 
