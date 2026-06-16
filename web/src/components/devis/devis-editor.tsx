@@ -681,11 +681,11 @@ function DevisEditorInner({
                         </td>
                         <td className="py-2 px-2 text-right font-mono">{formatEUR(total)}</td>
                         <td className="py-2">
-                          <div className="flex flex-col gap-0.5">
-                            <button onClick={() => moveLine(i, -1)} aria-label="Monter" className="grid h-6 w-8 place-items-center rounded text-muted hover:text-foreground text-xs" title="Monter">↑</button>
-                            <button onClick={() => moveLine(i, 1)} aria-label="Descendre" className="grid h-6 w-8 place-items-center rounded text-muted hover:text-foreground text-xs" title="Descendre">↓</button>
-                            <button onClick={() => removeLine(i)} aria-label="Supprimer" className="grid h-6 w-8 place-items-center rounded text-muted hover:text-danger">
-                              <Trash2 className="h-3 w-3" />
+                          <div className="flex items-center gap-1">
+                            <button onClick={() => moveLine(i, -1)} aria-label="Monter" className="grid h-8 w-8 place-items-center rounded text-muted hover:text-foreground text-base" title="Monter">↑</button>
+                            <button onClick={() => moveLine(i, 1)} aria-label="Descendre" className="grid h-8 w-8 place-items-center rounded text-muted hover:text-foreground text-base" title="Descendre">↓</button>
+                            <button onClick={() => removeLine(i)} aria-label="Supprimer" className="grid h-8 w-8 place-items-center rounded text-muted hover:text-danger">
+                              <Trash2 className="h-4 w-4" />
                             </button>
                           </div>
                         </td>
