@@ -263,6 +263,7 @@ function DevisEditorInner({
       description: article.nom,
       unite: article.unite ?? "u",
       prix_unitaire_ht: Number(article.prix_unitaire_ht ?? 0),
+      quantite: 1,
       article_id: article.id,
     })
   }
