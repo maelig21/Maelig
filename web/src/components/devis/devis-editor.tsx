@@ -650,7 +650,15 @@ function DevisEditorInner({
                         <td className="py-2 pr-2">
                           <Input
                             value={it.description}
-                            onChange={(e) => updateLine(i, { description: e.target.value, article_id: null })}
+                            onChange={(e) => {
+                              const val = e.target.value
+                              const match = knownArticles.find((a) => a.nom === val)
+                              if (match) {
+                                selectArticle(i, match)
+                              } else {
+                                updateLine(i, { description: val, article_id: null })
+                              }
+                            }}
                             placeholder="ex: Prise 16A étanche IP44"
                             list={`articles-suggest-${i}`}
                           />
