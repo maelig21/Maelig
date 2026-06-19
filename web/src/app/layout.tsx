@@ -19,6 +19,13 @@ const ibmMono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
+  icons: {
+    icon: "/dep-logo-new.png",
+    apple: "/dep-logo-new.png",
+  },
+  openGraph: {
+    images: ["/dep-logo-new.png"],
+  },
   title: {
     default: "DEP — Devis et gestion d'entreprise",
     template: "%s · DEP",
