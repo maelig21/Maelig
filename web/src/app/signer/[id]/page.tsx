@@ -117,12 +117,18 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
               </thead>
               <tbody>
                 {items.map((it: any, i: number) => (
+                  it.is_section ? (
+                    <tr key={i} className="bg-gray-100 border-b border-gray-200">
+                      <td colSpan={4} className="py-2 px-2 font-bold text-gray-900">{it.description}</td>
+                    </tr>
+                  ) : (
                   <tr key={i} className="border-b border-gray-100">
                     <td className="py-2 text-gray-800">{it.description}</td>
                     <td className="py-2 text-right text-gray-700">{it.quantite}</td>
                     <td className="py-2 text-right text-gray-700">{formatEUR(it.prix_unitaire_ht)}</td>
                     <td className="py-2 text-right text-gray-700">{formatEUR(Number(it.quantite) * Number(it.prix_unitaire_ht))}</td>
                   </tr>
+                  )
                 ))}
                 {devis.heures_main_oeuvre > 0 && (
                   <tr className="border-b border-gray-100">
