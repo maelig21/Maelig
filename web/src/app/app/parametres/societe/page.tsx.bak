@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ArrowLeft, Save, Building2, Landmark, FileText, MapPin, Wrench } from "lucide-react"
+import { ArrowLeft, Save, Building2, Landmark, FileText, MapPin } from "lucide-react"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Card, CardTitle } from "@/components/ui/card"
 import { Input, Label, FieldError } from "@/components/ui/input"
@@ -7,21 +7,6 @@ import { Button } from "@/components/ui/button"
 import { redirect } from "next/navigation"
 
 export const dynamic = "force-dynamic"
-
-const METIERS = [
-  { id: "electricite", label: "⚡ Électricité" },
-  { id: "plomberie", label: "🔧 Plomberie" },
-  { id: "chauffage", label: "🔥 Chauffage / CVC" },
-  { id: "climatisation", label: "❄️ Climatisation" },
-  { id: "maconnerie", label: "🧱 Maçonnerie" },
-  { id: "charpente", label: "🪵 Charpente / Couverture" },
-  { id: "menuiserie", label: "🚪 Menuiserie / Fenêtres" },
-  { id: "peinture", label: "🎨 Peinture / Revêtements" },
-  { id: "carrelage", label: "🏠 Carrelage / Sol" },
-  { id: "isolation", label: "🌡️ Isolation" },
-  { id: "alarme", label: "🔒 Alarme / Sécurité" },
-  { id: "autre", label: "🔨 Autre" },
-]
 
 async function saveSociete(formData: FormData) {
   "use server"
@@ -49,7 +34,6 @@ async function saveSociete(formData: FormData) {
     conditions_reglement: formData.get("conditions_reglement") as string,
     couleur_principale: formData.get("couleur_principale") as string,
     police: formData.get("police") as string,
-    metiers: METIERS.map((m) => m.id).filter((id) => formData.get(`metier_${id}`) === "on"),
   }
 
   const { error } = await supabase.from("orgs").update(data).eq("id", profile.org_id)
@@ -63,7 +47,6 @@ export default async function SocietePage() {
   const { data: profile } = await supabase.from("profiles").select("org_id, role").eq("id", user!.id).maybeSingle()
   const { data: org } = await supabase.from("orgs").select("*").eq("id", profile!.org_id!).maybeSingle()
   const isOwner = profile?.role === "owner" || profile?.role === "admin_dep"
-  const currentMetiers: string[] = org?.metiers ?? []
 
   return (
     <div className="max-w-5xl mx-auto p-6 sm:p-10 space-y-6">
@@ -109,22 +92,6 @@ export default async function SocietePage() {
               <Label htmlFor="tva_intracommunautaire">TVA intracommunautaire</Label>
               <Input id="tva_intracommunautaire" name="tva_intracommunautaire" className="mt-2" defaultValue={org?.tva_intracommunautaire ?? ""} placeholder="FR12 345 678 789" />
             </div>
-          </div>
-        </Card>
-
-        <Card>
-          <div className="flex items-center gap-2 mb-4">
-            <Wrench className="h-4 w-4 text-electric" />
-            <h3 className="font-display font-semibold">Métiers exercés</h3>
-          </div>
-          <p className="text-xs text-muted mb-4">Sélectionnez vos métiers pour recevoir des suggestions d&apos;articles adaptées.</p>
-          <div className="grid sm:grid-cols-3 gap-3">
-            {METIERS.map((m) => (
-              <label key={m.id} className={`flex items-center gap-2 p-3 rounded-xl border cursor-pointer transition-colors ${currentMetiers.includes(m.id) ? "border-electric bg-electric/5" : "border-border hover:border-border-strong"}`}>
-                <input type="checkbox" name={`metier_${m.id}`} defaultChecked={currentMetiers.includes(m.id)} className="accent-electric" />
-                <span className="text-sm">{m.label}</span>
-              </label>
-            ))}
           </div>
         </Card>
 
