@@ -57,6 +57,8 @@ async function saveSociete(formData: FormData) {
   redirect("/app/parametres/societe?ok=1")
 }
 
+import { SavedToast } from "./saved-toast"
+
 export default async function SocietePage() {
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -70,6 +72,7 @@ export default async function SocietePage() {
       <Link href="/app/parametres" className="inline-flex items-center gap-1 text-xs text-muted hover:text-electric">
         <ArrowLeft className="h-3 w-3" /> Paramètres
       </Link>
+      <SavedToast />
       <CardTitle>Société</CardTitle>
       <p className="text-sm text-muted -mt-3">
         Ces informations apparaissent sur vos devis et factures.
