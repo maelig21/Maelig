@@ -626,7 +626,7 @@ function DevisEditorInner({
                     const total = (Number(it.quantite) || 0) * (Number(it.prix_unitaire_ht) || 0)
                     if (it.is_section) {
                       return (
-                        <tr key={i} className="border-b border-border/40 bg-muted/30">
+                        <tr key={i} className="border-b border-border/40 bg-gray-100">
                           <td colSpan={6} className="py-2 pr-2">
                             <div className="flex items-center gap-2">
                               <Input
