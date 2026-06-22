@@ -57,6 +57,7 @@ const NAV = [
   { href: "/app/incidents/nouveau", label: "Signaler un problème", Icon: AlertTriangle, employeeAccent: true, dot: "red" as Dot },
   { type: "section", label: "Ressources" },
   { href: "/app/clients", label: "Clients", Icon: Users },
+  { href: "/app/planning", label: "Planning équipe", Icon: CalendarDays },
   { href: "/app/catalogue", label: "Catalogue d'articles", Icon: PackageSearch },
   { href: "/app/parametres/equipe", label: "Mon équipe", Icon: Users },
   { type: "section", label: "Compte" },
