@@ -201,6 +201,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                   Signé par <span className="font-medium">{[c?.prenom, c?.nom].filter(Boolean).join(" ") || c?.raison_sociale || "le client"}</span> le{" "}
                   <span className="font-medium">{new Date(devis.signe_le).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
                 </div>
+                {devis.signe_email && <div className="text-xs text-green-600 mt-0.5">Email : {devis.signe_email}</div>}
+                {devis.signe_ip && <div className="text-xs text-green-600 mt-0.5">IP : {devis.signe_ip}</div>}
                 <div className="text-xs text-green-600 mt-0.5">Référence : {devis.id}</div>
               </div>
             </div>
