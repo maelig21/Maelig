@@ -63,8 +63,16 @@ export async function POST(req: Request) {
 
   const articleNames = (articles ?? []).map((a) => a.nom)
 
+  // Récupérer les métiers de l'org
+  const { data: orgData } = await supabase
+    .from("orgs")
+    .select("metiers")
+    .eq("id", profile.org_id)
+    .maybeSingle()
+  const metiers: string[] = orgData?.metiers ?? []
+
   try {
-    const extracted = await extractDevisFromTranscript(text, articleNames)
+    const extracted = await extractDevisFromTranscript(text, articleNames, metiers)
     return NextResponse.json({ ok: true, extracted })
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)

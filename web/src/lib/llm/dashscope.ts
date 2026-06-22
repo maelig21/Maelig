@@ -159,12 +159,30 @@ export interface ExtractedDevis {
  *
  * Prompt en français pour électriciens. Extrait articles, client, adresse, heures, notes.
  */
-export async function extractDevisFromTranscript(transcript: string, knownArticles: string[] = []): Promise<ExtractedDevis> {
+export async function extractDevisFromTranscript(transcript: string, knownArticles: string[] = [], metiers: string[] = []): Promise<ExtractedDevis> {
   const knownList = knownArticles.length
     ? `Articles déjà connus du catalogue (à réutiliser exactement si correspondance):\n${knownArticles.slice(0, 80).map((a) => `- ${a}`).join("\n")}\n`
     : ""
 
-  const sys = `Tu es un assistant pour électriciens qui transforme une description vocale de chantier en lignes de devis structurées.
+  const metiersLabels: Record<string, string> = {
+    electricite: "électricien (norme NF C 15-100)",
+    plomberie: "plombier",
+    chauffage: "chauffagiste / CVC",
+    climatisation: "frigoriste / climatisation",
+    maconnerie: "maçon",
+    charpente: "charpentier / couvreur",
+    menuiserie: "menuisier",
+    peinture: "peintre en bâtiment",
+    carrelage: "carreleur",
+    isolation: "isolateur",
+    alarme: "électricien alarme / sécurité",
+    autre: "artisan du bâtiment",
+  }
+  const metiersStr = metiers.length > 0
+    ? metiers.map((m) => metiersLabels[m] ?? m).join(", ")
+    : "artisan du bâtiment"
+
+  const sys = `Tu es un assistant pour ${metiersStr} qui transforme une description vocale de chantier en lignes de devis structurées.
 ${knownList}
 L'électricien parle naturellement comme à un collègue. Tu dois EXTRAIRE l'intention métier :
 - Quels matériels (avec quantités)
@@ -203,7 +221,7 @@ Règles d'extraction :
 - Quantités explicites : 'cinq prises' → 5. Quantité absente → 1.
 - Unités : 'u' | 'm' | 'm2' | 'ml' | 'h' | 'jour' | 'kg' | 'ens'
 - Demi-journée = 4h | journée = 8h | semaine = 40h.
-- Reformule en français standard électricien (NF C 15-100).
+- Reformule en français standard du métier (vocabulaire professionnel adapté).
 - N'INVENTE JAMAIS de matériel non mentionné.
 - Si le user dicte UNIQUEMENT les infos client (nom, adresse, téléphone) sans article du tout, extrais quand même les champs client et retourne items: [] vide.
 - Si le texte est COURTS (juste un nom, juste un téléphone), extrais quand même client_hint et/ou client_telephone. '06.12.34.56.78' = client_telephone. 'Dupont' = client_hint + client_nom. 'Jean Dupont' = client_prenom + client_nom.

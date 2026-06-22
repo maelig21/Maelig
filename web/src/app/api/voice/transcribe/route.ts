@@ -103,7 +103,7 @@ export async function POST(req: Request) {
   const articleNames = (articles ?? []).map((a: { nom: string } | never) => (a as { nom: string }).nom)
   const [extracted, clarification] = await Promise.all([
     // Primary: DeepSeek extraction via dashscope.ts
-    extractDevisFromTranscript(rawText, articleNames).catch(async (e) => {
+    extractDevisFromTranscript(rawText, articleNames, (await supabase.from("orgs").select("metiers").eq("id", profile.org_id).maybeSingle()).data?.metiers ?? []).catch(async (e) => {
       console.warn("[transcribe] extract primary failed:", e instanceof Error ? e.message : e)
       // Fallback: DeepSeek direct via extract.ts (more reliable endpoint)
       try {
