@@ -323,7 +323,7 @@ export function PlanningClient({
               </div>
               <div>
                 <Label>Date de fin</Label>
-                <Input className="mt-2" type="date" value={dateFin} onChange={(e) => setDateFin(e.target.value)} min={modal?.date} />
+<Input className="mt-2" type="date" value={dateFin} onChange={(e) => setDateFin(e.target.value)} />
                 <p className="text-xs text-muted mt-1">Laisser vide si même jour</p>
               </div>
               <div>
