@@ -301,12 +301,12 @@ export function PlanningClient({
       {/* Modal */}
       {modal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={closeModal}>
-          <div className="bg-surface rounded-2xl border border-border w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-surface rounded-2xl border border-border w-full max-w-md shadow-2xl flex flex-col max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between p-5 border-b border-border">
               <h3 className="font-display font-semibold">{editEntry ? "Modifier la tâche" : "Nouvelle tâche"}</h3>
               <button onClick={closeModal} className="text-muted hover:text-foreground"><X className="h-5 w-5" /></button>
             </div>
-            <div className="p-5 space-y-4">
+            <div className="p-5 space-y-4 overflow-y-auto flex-1">
               <div>
                 <Label>Titre *</Label>
                 <Input className="mt-2" value={titre} onChange={(e) => setTitre(e.target.value)} placeholder="Ex: Pose prises salon" />
