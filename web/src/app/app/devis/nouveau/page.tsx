@@ -7,8 +7,11 @@ export default async function NouveauDevisPage() {
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
   const { data: profile } = await supabase
-    .from("profiles").select("org_id").eq("id", user!.id).maybeSingle()
+    .from("profiles").select("org_id, role, permissions").eq("id", user!.id).maybeSingle()
   const orgId = profile?.org_id
+  const perms = (profile?.permissions as Record<string, boolean>) ?? {}
+  const canEditPrix = profile?.role === "owner" || profile?.role === "admin_dep" || perms.devis_prix === true
+  const canCreate = profile?.role === "owner" || profile?.role === "admin_dep" || perms.devis_create === true
 
   const [{ data: org }, { data: articles }, { data: orgMetiers }, { data: clients }] = await Promise.all([
     supabase.from("orgs").select("taux_horaire_default, tva_default").eq("id", orgId!).maybeSingle(),
@@ -53,6 +56,7 @@ export default async function NouveauDevisPage() {
 
   return (
     <DevisEditor
+      canEditPrix={canEditPrix}
       orgDefaults={{
         taux_horaire: Number(org?.taux_horaire_default ?? 45),
         tva_default: Number(org?.tva_default ?? 20),

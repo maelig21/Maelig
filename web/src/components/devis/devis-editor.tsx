@@ -42,6 +42,7 @@ interface DevisEditorProps {
   knownArticles: ArticleLite[]
   knownClients: ClientLite[]
   initialPayload?: Partial<DevisPayload>
+  canEditPrix?: boolean
 }
 
 export function DevisEditor(props: DevisEditorProps) {
@@ -57,6 +58,7 @@ function DevisEditorInner({
   knownArticles,
   knownClients,
   initialPayload,
+, canEditPrix = true
 }: DevisEditorProps) {
   const router = useRouter()
   const params = useSearchParams()
@@ -686,7 +688,7 @@ function DevisEditorInner({
                           <Input value={it.unite} onChange={(e) => updateLine(i, { unite: e.target.value })} placeholder="u" />
                         </td>
                         <td className="py-2 px-2">
-                          <Input type="number" step="0.01" min="0" value={it.prix_unitaire_ht} className="text-right" onChange={(e) => updateLine(i, { prix_unitaire_ht: Number(e.target.value) })} />
+                          <Input type="number" step="0.01" min="0" value={it.prix_unitaire_ht} className="text-right" disabled={!canEditPrix} onChange={(e) => canEditPrix && updateLine(i, { prix_unitaire_ht: Number(e.target.value) })} />
                         </td>
                         <td className="py-2 px-2 text-right font-mono">{formatEUR(total)}</td>
                         <td className="py-2">

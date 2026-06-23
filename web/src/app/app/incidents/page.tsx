@@ -28,8 +28,10 @@ const STATUT_META: Record<string, string> = {
 export default async function Page() {
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const { data: profile } = await supabase.from("profiles").select("org_id, role").eq("id", user!.id).maybeSingle()
+  const { data: profile } = await supabase.from("profiles").select("org_id, role, permissions").eq("id", user!.id).maybeSingle()
   const isOwner = profile?.role === "owner" || profile?.role === "admin_dep"
+  const perms = (profile?.permissions as Record<string, boolean>) ?? {}
+  const canSeeAllIncidents = isOwner || perms.incidents_read === true
 
   const { data: rows } = await supabase
     .from("incidents")
@@ -39,9 +41,14 @@ export default async function Page() {
     .order("ai_priorite_score", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: false })
     .limit(50)
+  // Filtre : employés sans incidents_read ne voient que leurs propres incidents
+  if (!canSeeAllIncidents) {
+    // On filtre côté JS car Supabase ne supporte pas le filtre conditionnel facilement
+  }
 
-  const ouverts = (rows ?? []).filter((r) => ["ouvert", "en_cours", "escalade"].includes(r.statut))
-  const closed = (rows ?? []).filter((r) => ["resolu", "ferme"].includes(r.statut))
+  const allRows = canSeeAllIncidents ? (rows ?? []) : (rows ?? []).filter((r: any) => r.sender?.id === user!.id)
+  const ouverts = allRows.filter((r) => ["ouvert", "en_cours", "escalade"].includes(r.statut))
+  const closed = allRows.filter((r) => ["resolu", "ferme"].includes(r.statut))
 
   // IA priorisation pour patron (top 2 actions)
   let nextActions: string[] = []
