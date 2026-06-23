@@ -12,8 +12,10 @@ export const dynamic = "force-dynamic"
 export default async function Page() {
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const { data: profile } = await supabase.from("profiles").select("org_id, role").eq("id", user!.id).maybeSingle()
+  const { data: profile } = await supabase.from("profiles").select("org_id, role, permissions").eq("id", user!.id).maybeSingle()
   const isOwner = profile?.role === "owner" || profile?.role === "admin_dep"
+  const perms = (profile?.permissions as Record<string, boolean>) ?? {}
+  const canEditCatalogue = isOwner || perms.catalogue_write === true
 
   const { data: articles } = await supabase
     .from("articles")
@@ -34,7 +36,7 @@ export default async function Page() {
             Mémoire automatique. Chaque article saisi ressort à votre prochain devis.
           </CardDescription>
         </div>
-        {isOwner && (
+        {canEditCatalogue && (
           <Button asChild>
             <Link href="/app/catalogue/nouveau"><Plus className="h-4 w-4" /> Ajouter</Link>
           </Button>
@@ -72,7 +74,7 @@ export default async function Page() {
                     <td className="p-3"><span className="text-muted">{a.categorie ?? "—"}</span></td>
                     <td className="p-3 text-muted">{a.unite}</td>
                     <td className="p-3 text-right font-mono">
-                      <EditablePriceCell id={a.id} value={a.prix_unitaire_ht} canEdit={isOwner} />
+                      <EditablePriceCell id={a.id} value={a.prix_unitaire_ht} canEdit={canEditCatalogue} />
                     </td>
                     <td className="p-3 text-right">
                       <Badge tone={a.usage_count > 5 ? "electric" : "neutral"}>{a.usage_count}× </Badge>
