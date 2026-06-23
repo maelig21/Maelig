@@ -77,3 +77,61 @@ export function InviteForm() {
     </div>
   )
 }
+
+const PERMISSIONS = [
+  { id: "devis_create", label: "Créer des devis" },
+  { id: "devis_prix", label: "Modifier les prix" },
+  { id: "planning_write", label: "Gérer le planning" },
+  { id: "incidents_read", label: "Voir les problèmes chantier" },
+  { id: "catalogue_write", label: "Modifier le catalogue" },
+]
+
+export function PermissionsEditor({ memberId, permissions }: { memberId: string; permissions: Record<string, boolean> }) {
+  const [perms, setPerms] = useState<Record<string, boolean>>(permissions)
+  const [pending, startTransition] = useTransition()
+  const [saved, setSaved] = useState(false)
+
+  function toggle(id: string) {
+    setPerms((p) => ({ ...p, [id]: !p[id] }))
+    setSaved(false)
+  }
+
+  function save() {
+    startTransition(async () => {
+      const res = await fetch(`/api/membres/${memberId}/permissions`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ permissions: perms }),
+      })
+      const data = await res.json()
+      if (data.ok) setSaved(true)
+      else toast.error("Erreur sauvegarde permissions")
+    })
+  }
+
+  return (
+    <div className="mt-4 border-t border-border pt-4">
+      <div className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Permissions</div>
+      <div className="space-y-2">
+        {PERMISSIONS.map((p) => (
+          <label key={p.id} className="flex items-center justify-between gap-2 cursor-pointer">
+            <span className="text-sm">{p.label}</span>
+            <button
+              onClick={() => toggle(p.id)}
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${perms[p.id] ? "bg-electric" : "bg-border"}`}
+            >
+              <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${perms[p.id] ? "translate-x-4" : "translate-x-1"}`} />
+            </button>
+          </label>
+        ))}
+      </div>
+      <button
+        onClick={save}
+        disabled={pending}
+        className="mt-3 text-xs text-electric hover:underline disabled:opacity-50"
+      >
+        {saved ? "✓ Sauvegardé" : "Sauvegarder"}
+      </button>
+    </div>
+  )
+}

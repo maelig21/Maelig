@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/app/empty-state"
 import { initials } from "@/lib/utils"
 import { getLangue } from "@/lib/langues"
-import { InviteForm } from "./client"
+import { InviteForm, PermissionsEditor } from "./client"
 
 export const dynamic = "force-dynamic"
 
@@ -22,7 +22,7 @@ export default async function Page() {
 
   const { data: members } = await supabase
     .from("profiles")
-    .select("id, full_name, email, telephone, role, langue_maternelle, titre_poste, avatar_url, created_at")
+    .select("id, full_name, email, telephone, role, langue_maternelle, titre_poste, avatar_url, created_at, permissions")
     .eq("org_id", me!.org_id!)
     .order("role", { ascending: true })
     .order("created_at", { ascending: true })
@@ -107,6 +107,9 @@ export default async function Page() {
                     </ul>
                   </div>
                 </div>
+                {isOwner && !isOwnerCard && (
+                  <PermissionsEditor memberId={m.id} permissions={m.permissions as Record<string, boolean> ?? {}} />
+                )}
               </Card>
             )
           })}
