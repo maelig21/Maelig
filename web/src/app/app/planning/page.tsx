@@ -13,7 +13,7 @@ export default async function PlanningPage() {
       .from("profiles")
       .select("id, full_name, role, avatar_url")
       .eq("org_id", profile!.org_id!)
-      .in("role", ["owner", "slave", "admin_dep"])
+      .not("role", "is", null)
       .order("prenom"),
     supabase
       .from("devis")
