@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input, Label } from "@/components/ui/input"
 import { Card, CardTitle } from "@/components/ui/card"
 
-type Employe = { id: string; prenom: string | null; nom: string; role: string; avatar_url?: string | null }
+type Employe = { id: string; full_name: string | null; role: string; avatar_url?: string | null }
 type DevisSigne = { id: string; objet: string | null; clients: { nom: string | null; prenom: string | null; raison_sociale: string | null } | null }
 type PlanningEntry = {
   id: string
@@ -222,10 +222,10 @@ export function PlanningClient({
                 <td className="py-3 px-3">
                   <div className="flex items-center gap-2">
                     <div className="h-8 w-8 rounded-full bg-electric/10 flex items-center justify-center text-electric font-bold text-sm shrink-0">
-                      {(emp.prenom?.[0] ?? emp.nom[0]).toUpperCase()}
+                      {(emp.full_name?.[0] ?? "?").toUpperCase()}
                     </div>
                     <div className="text-sm font-medium truncate max-w-[80px]">
-                      {emp.prenom ?? emp.nom}
+                      {emp.full_name ?? "Employé"}
                     </div>
                   </div>
                 </td>

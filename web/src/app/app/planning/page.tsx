@@ -11,7 +11,7 @@ export default async function PlanningPage() {
   const [{ data: employes }, { data: devisSigne }] = await Promise.all([
     supabase
       .from("profiles")
-      .select("id, prenom, nom, role, avatar_url")
+      .select("id, full_name, role, avatar_url")
       .eq("org_id", profile!.org_id!)
       .in("role", ["owner", "slave", "admin_dep"])
       .order("prenom"),
