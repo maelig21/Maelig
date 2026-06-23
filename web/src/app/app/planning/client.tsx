@@ -83,6 +83,7 @@ export function PlanningClient({
   const [devisId, setDevisId] = useState("")
   const [statut, setStatut] = useState("planifie")
   const [dateFin, setDateFin] = useState("")
+  const [employesIds, setEmployesIds] = useState<string[]>([])
 
   const jours = Array.from({ length: 7 }, (_, i) => addDays(semaine, i))
 
@@ -111,6 +112,7 @@ export function PlanningClient({
       setDevisId(entry.devis_id ?? "")
       setStatut(entry.statut)
       setDateFin(entry.date_fin ?? "")
+      setEmployesIds([entry.employe_id])
     } else {
       setEditEntry(null)
       setTitre("")
@@ -121,6 +123,7 @@ export function PlanningClient({
       setDevisId("")
       setStatut("planifie")
       setDateFin("")
+      setEmployesIds([modal?.employeId ?? ""])
     }
     setModal({ employeId, date })
   }
@@ -133,6 +136,7 @@ export function PlanningClient({
   async function save() {
     if (!modal || !titre.trim()) return
     startTransition(async () => {
+      const ids = editEntry ? [modal.employeId] : (employesIds.length > 0 ? employesIds : [modal.employeId])
       const body = {
         id: editEntry?.id,
         employe_id: modal.employeId,
@@ -146,18 +150,26 @@ export function PlanningClient({
         statut,
         date_fin: dateFin || modal.date,
       }
-      const res = await fetch("/api/planning", {
-        method: editEntry ? "PUT" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      })
-      const data = await res.json()
-      if (data.ok) {
-        toast.success(editEntry ? "Planning mis à jour" : "Tâche ajoutée")
-        closeModal()
-        loadEntries()
+      if (editEntry) {
+        const res = await fetch("/api/planning", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        })
+        const data = await res.json()
+        if (data.ok) { toast.success("Planning mis à jour"); closeModal(); loadEntries() }
+        else toast.error("Erreur", { description: data.error })
       } else {
-        toast.error("Erreur", { description: data.error })
+        const results = await Promise.all(ids.map((empId) =>
+          fetch("/api/planning", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...body, employe_id: empId }),
+          }).then((r) => r.json())
+        ))
+        const errors = results.filter((r) => !r.ok)
+        if (errors.length === 0) { toast.success(`Tâche ajoutée pour ${ids.length} employé(s)`); closeModal(); loadEntries() }
+        else toast.error("Erreur partielle", { description: errors[0].error })
       }
     })
   }
