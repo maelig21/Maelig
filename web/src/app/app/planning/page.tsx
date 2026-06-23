@@ -14,7 +14,7 @@ export default async function PlanningPage() {
       .select("id, full_name, role, avatar_url")
       .eq("org_id", profile!.org_id!)
       .not("role", "is", null)
-      .order("prenom"),
+      .order("full_name"),
     supabase
       .from("devis")
       .select("id, objet, clients(nom, prenom, raison_sociale)")
