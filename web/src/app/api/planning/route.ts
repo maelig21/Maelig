@@ -14,8 +14,8 @@ export async function GET(req: NextRequest) {
     .from("planning")
     .select("*")
     .eq("org_id", profile!.org_id!)
-    .gte("date", debut!)
     .lte("date", fin!)
+    .or(`date_fin.gte.${debut},date_fin.is.null,date.gte.${debut}`)
     .order("heure_debut")
 
   return NextResponse.json({ entries: entries ?? [] })
@@ -41,6 +41,7 @@ export async function POST(req: NextRequest) {
       notes: body.notes || null,
       couleur: body.couleur ?? "blue",
       statut: body.statut ?? "planifie",
+      date_fin: body.date_fin || null,
       created_by: user.id,
     })
     .select()
@@ -68,6 +69,7 @@ export async function PUT(req: NextRequest) {
       notes: body.notes || null,
       couleur: body.couleur ?? "blue",
       statut: body.statut ?? "planifie",
+      date_fin: body.date_fin || null,
     })
     .eq("id", body.id)
     .eq("org_id", profile!.org_id!)

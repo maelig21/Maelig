@@ -13,6 +13,7 @@ type PlanningEntry = {
   employe_id: string
   devis_id: string | null
   date: string
+  date_fin: string | null
   heure_debut: string | null
   heure_fin: string | null
   titre: string
@@ -81,6 +82,7 @@ export function PlanningClient({
   const [couleur, setCouleur] = useState("blue")
   const [devisId, setDevisId] = useState("")
   const [statut, setStatut] = useState("planifie")
+  const [dateFin, setDateFin] = useState("")
 
   const jours = Array.from({ length: 7 }, (_, i) => addDays(semaine, i))
 
@@ -108,6 +110,7 @@ export function PlanningClient({
       setCouleur(entry.couleur)
       setDevisId(entry.devis_id ?? "")
       setStatut(entry.statut)
+      setDateFin(entry.date_fin ?? "")
     } else {
       setEditEntry(null)
       setTitre("")
@@ -117,6 +120,7 @@ export function PlanningClient({
       setCouleur("blue")
       setDevisId("")
       setStatut("planifie")
+      setDateFin("")
     }
     setModal({ employeId, date })
   }
@@ -140,6 +144,7 @@ export function PlanningClient({
         couleur,
         devis_id: devisId || null,
         statut,
+        date_fin: dateFin || modal.date,
       }
       const res = await fetch("/api/planning", {
         method: editEntry ? "PUT" : "POST",
@@ -172,7 +177,12 @@ export function PlanningClient({
   }
 
   const entriesForCell = (employeId: string, date: string) =>
-    entries.filter((e) => e.employe_id === employeId && e.date === date)
+    entries.filter((e) => {
+      if (e.employe_id !== employeId) return false
+      const debut = e.date
+      const fin = e.date_fin ?? e.date
+      return date >= debut && date <= fin
+    })
 
   const semaineLabel = `${jours[0].toLocaleDateString("fr-FR", { day: "numeric", month: "long" })} — ${jours[6].toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}`
 
@@ -310,6 +320,11 @@ export function PlanningClient({
                   <Label>Fin</Label>
                   <Input className="mt-2" type="time" value={heureFin} onChange={(e) => setHeureFin(e.target.value)} />
                 </div>
+              </div>
+              <div>
+                <Label>Date de fin</Label>
+                <Input className="mt-2" type="date" value={dateFin} onChange={(e) => setDateFin(e.target.value)} min={modal?.date} />
+                <p className="text-xs text-muted mt-1">Laisser vide si même jour</p>
               </div>
               <div>
                 <Label>Chantier associé</Label>
