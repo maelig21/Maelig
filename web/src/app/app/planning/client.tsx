@@ -61,11 +61,13 @@ export function PlanningClient({
   devisSigne,
   orgId,
   currentUserId,
+  canWrite,
 }: {
   employes: Employe[]
   devisSigne: DevisSigne[]
   orgId: string
   currentUserId: string
+  canWrite: boolean
 }) {
   const [semaine, setSemaine] = useState(() => getMonday(new Date()))
   const [entries, setEntries] = useState<PlanningEntry[]>([])
@@ -102,6 +104,7 @@ export function PlanningClient({
   }
 
   function openModal(employeId: string, date: string, entry?: PlanningEntry) {
+    if (!canWrite) return
     if (entry) {
       setEditEntry(entry)
       setTitre(entry.titre)
@@ -284,7 +287,7 @@ export function PlanningClient({
                         >
                           <Plus className="h-3 w-3 text-muted" />
                         </button>
-                        {cellEntries.length === 0 && (
+                        {cellEntries.length === 0 && canWrite && (
                           <button
                             onClick={() => openModal(emp.id, dateStr)}
                             className="w-full h-[52px] rounded border border-dashed border-border/40 hover:border-electric/50 hover:bg-electric/5 transition-colors flex items-center justify-center"
@@ -292,7 +295,7 @@ export function PlanningClient({
                             <Plus className="h-4 w-4 text-muted/60" />
                           </button>
                         )}
-                        {cellEntries.length > 0 && (
+                        {cellEntries.length > 0 && canWrite && (
                           <button
                             onClick={() => openModal(emp.id, dateStr)}
                             className="w-full h-6 rounded border border-dashed border-border/40 hover:border-electric/50 hover:bg-electric/5 transition-colors flex items-center justify-center"
