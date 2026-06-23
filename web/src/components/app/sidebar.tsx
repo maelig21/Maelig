@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   AlertTriangle,
   Shield,
+  CalendarDays,
 } from "lucide-react"
 import { DepLogo } from "@/components/brand/dep-logo"
 import { cn, initials } from "@/lib/utils"
