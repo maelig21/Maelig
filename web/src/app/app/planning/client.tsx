@@ -259,9 +259,17 @@ export function PlanningClient({
                         {cellEntries.length === 0 && (
                           <button
                             onClick={() => openModal(emp.id, dateStr)}
-                            className="w-full h-[52px] rounded border border-dashed border-border/30 hover:border-electric/50 hover:bg-electric/5 transition-colors flex items-center justify-center"
+                            className="w-full h-[52px] rounded border border-dashed border-border/40 hover:border-electric/50 hover:bg-electric/5 transition-colors flex items-center justify-center"
                           >
-                            <Plus className="h-4 w-4 text-muted/40" />
+                            <Plus className="h-4 w-4 text-muted/60" />
+                          </button>
+                        )}
+                        {cellEntries.length > 0 && (
+                          <button
+                            onClick={() => openModal(emp.id, dateStr)}
+                            className="w-full h-6 rounded border border-dashed border-border/40 hover:border-electric/50 hover:bg-electric/5 transition-colors flex items-center justify-center"
+                          >
+                            <Plus className="h-3 w-3 text-muted/60" />
                           </button>
                         )}
                       </div>
