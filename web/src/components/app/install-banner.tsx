@@ -20,8 +20,8 @@ export function InstallBanner() {
     if (localStorage.getItem("dep_install_dismissed")) return
 
     if (ios) {
-      // Sur iOS, afficher après 3 secondes
-      setTimeout(() => setShow(true), 3000)
+      // Sur iOS, afficher après 1 seconde
+      setTimeout(() => setShow(true), 1000)
     } else {
       // Sur Android/Chrome, écouter l'événement beforeinstallprompt
       window.addEventListener("beforeinstallprompt", (e: Event) => {
