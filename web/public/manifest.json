@@ -1,0 +1,22 @@
+{
+  "name": "DEP - Devis et gestion d'entreprise",
+  "short_name": "DEP",
+  "description": "Créez vos devis et gérez votre entreprise",
+  "start_url": "/app",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1e40af",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/dep-logo-new.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/dep-logo-new.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

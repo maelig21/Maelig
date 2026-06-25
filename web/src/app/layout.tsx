@@ -23,6 +23,7 @@ export const metadata: Metadata = {
     icon: "/dep-logo-new.png",
     apple: "/dep-logo-new.png",
   },
+  manifest: "/manifest.json",
   openGraph: {
     images: ["/dep-logo-new.png"],
   },
