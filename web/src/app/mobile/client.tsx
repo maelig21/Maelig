@@ -134,15 +134,35 @@ export function MobileHome({
       </div>
 
       {/* Installer l'app */}
-      <div className="mx-4 mb-4 bg-blue-50 border border-blue-200 rounded-2xl p-4 flex items-center gap-3">
-        <div className="text-2xl">📲</div>
-        <div className="flex-1">
+      <div className="mx-4 mb-4 bg-blue-50 border border-blue-200 rounded-2xl p-4 space-y-3">
+        <div className="flex items-center gap-2">
+          <div className="text-2xl">📲</div>
           <div className="text-sm font-bold text-blue-900">Installer DEP sur votre téléphone</div>
-          <div className="text-xs text-blue-600 mt-0.5">
-            iPhone : appuyez sur <strong>□↑</strong> → "Sur l'écran d'accueil"
+        </div>
+        <div className="space-y-2">
+          <div className="text-xs font-semibold text-blue-800">Sur iPhone (Safari) :</div>
+          <div className="flex items-start gap-2 text-xs text-blue-700">
+            <span className="bg-blue-200 rounded-full w-4 h-4 flex items-center justify-center font-bold shrink-0">1</span>
+            <span>Appuyez sur l&apos;icône <strong>□↑</strong> en bas de Safari</span>
           </div>
-          <div className="text-xs text-blue-600">
-            Android : menu <strong>⋮</strong> → "Ajouter à l'écran d'accueil"
+          <div className="flex items-start gap-2 text-xs text-blue-700">
+            <span className="bg-blue-200 rounded-full w-4 h-4 flex items-center justify-center font-bold shrink-0">2</span>
+            <span>Faites défiler et appuyez sur <strong>"Sur l'écran d'accueil"</strong></span>
+          </div>
+          <div className="flex items-start gap-2 text-xs text-blue-700">
+            <span className="bg-blue-200 rounded-full w-4 h-4 flex items-center justify-center font-bold shrink-0">3</span>
+            <span>Appuyez sur <strong>"Ajouter"</strong> — c'est fait ! ✅</span>
+          </div>
+        </div>
+        <div className="space-y-2">
+          <div className="text-xs font-semibold text-blue-800">Sur Android (Chrome) :</div>
+          <div className="flex items-start gap-2 text-xs text-blue-700">
+            <span className="bg-blue-200 rounded-full w-4 h-4 flex items-center justify-center font-bold shrink-0">1</span>
+            <span>Appuyez sur le menu <strong>⋮</strong> en haut à droite</span>
+          </div>
+          <div className="flex items-start gap-2 text-xs text-blue-700">
+            <span className="bg-blue-200 rounded-full w-4 h-4 flex items-center justify-center font-bold shrink-0">2</span>
+            <span>Appuyez sur <strong>"Ajouter à l'écran d'accueil"</strong> — c'est fait ! ✅</span>
           </div>
         </div>
       </div>
