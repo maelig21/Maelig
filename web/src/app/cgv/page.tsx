@@ -20,7 +20,7 @@ export default function CgvPage() {
         <p>Les présentes conditions générales régissent l&apos;utilisation de la plateforme DEP, service en ligne de gestion d'entreprise (devis, factures, incidents chantier) édité par Maelig Goger.</p>
 
         <h2>2. Tarification</h2>
-        <p>DEP Pro : 100 € HT / mois par patron. DEP Employé : 5 € HT / mois par employé connecté. Essai gratuit 14 jours sans CB. Facturation mensuelle, résiliation à tout moment depuis l&apos;application.</p>
+        <p>DEP Pro : 100 € HT / mois par patron. DEP Employé : 10 € HT / mois par employé connecté. Essai gratuit 14 jours sans CB. Facturation mensuelle, résiliation à tout moment depuis l&apos;application.</p>
 
         <h2>3. Données personnelles</h2>
         <p>Les données sont hébergées en France (OVH Roubaix), chiffrées AES-256 au repos et TLS 1.3 en transit. Voir <Link href="/confidentialite" className="text-electric hover:underline">notre politique de confidentialité</Link>.</p>

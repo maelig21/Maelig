@@ -50,7 +50,7 @@ export default async function Page() {
             <div className="flex-1">
               <h3 className="font-display font-semibold">Inviter un collaborateur</h3>
               <p className="mt-1 text-sm text-muted">
-                +5 €/mois par compte. Il pourra créer des devis sans toucher aux prix. DEP traduira ses messages dans votre langue.
+                +10 €/mois par compte. Il pourra créer des devis sans toucher aux prix. DEP traduira ses messages dans votre langue.
               </p>
               <InviteForm />
             </div>
