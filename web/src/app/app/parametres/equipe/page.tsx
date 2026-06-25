@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/app/empty-state"
 import { initials } from "@/lib/utils"
 import { getLangue } from "@/lib/langues"
-import { InviteForm, PermissionsEditor } from "./client"
+import { InviteForm, PermissionsEditor, RemoveButton } from "./client"
 
 export const dynamic = "force-dynamic"
 
@@ -108,7 +108,12 @@ export default async function Page() {
                   </div>
                 </div>
                 {isOwner && !isOwnerCard && (
-                  <PermissionsEditor memberId={m.id} permissions={m.permissions as Record<string, boolean> ?? {}} />
+                  <>
+                    <PermissionsEditor memberId={m.id} permissions={m.permissions as Record<string, boolean> ?? {}} />
+                    <div className="mt-3 flex justify-end">
+                      <RemoveButton memberId={m.id} memberName={m.full_name ?? m.email} />
+                    </div>
+                  </>
                 )}
               </Card>
             )

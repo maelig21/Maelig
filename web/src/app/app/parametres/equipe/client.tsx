@@ -135,3 +135,38 @@ export function PermissionsEditor({ memberId, permissions }: { memberId: string;
     </div>
   )
 }
+
+export function RemoveButton({ memberId, memberName }: { memberId: string; memberName: string }) {
+  const [pending, startTransition] = useTransition()
+  const [confirm, setConfirm] = useState(false)
+
+  function remove() {
+    startTransition(async () => {
+      const { removeSlave } = await import("@/lib/actions/team")
+      try {
+        await removeSlave(memberId)
+        toast.success(`${memberName} retiré de l'équipe`)
+      } catch (e) {
+        toast.error("Erreur", { description: e instanceof Error ? e.message : String(e) })
+      }
+    })
+  }
+
+  if (confirm) {
+    return (
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-muted">Confirmer ?</span>
+        <button onClick={remove} disabled={pending} className="text-xs text-red-600 hover:underline disabled:opacity-50">
+          {pending ? "Suppression..." : "Oui, retirer"}
+        </button>
+        <button onClick={() => setConfirm(false)} className="text-xs text-muted hover:underline">Annuler</button>
+      </div>
+    )
+  }
+
+  return (
+    <button onClick={() => setConfirm(true)} className="text-xs text-red-500 hover:underline">
+      Retirer de l&apos;équipe
+    </button>
+  )
+}
