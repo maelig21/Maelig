@@ -29,7 +29,7 @@ export async function inviteSlave(input: unknown) {
   const { data: invite, error: inviteErr } = await (admin.auth as any).admin.inviteUserByEmail(
     data.email,
     {
-      redirectTo: `${baseUrl}/app`,
+      redirectTo: `${baseUrl}/accepter-invitation`,
       data: {
         full_name: data.full_name,
         invited_org_id: profile.org_id,
