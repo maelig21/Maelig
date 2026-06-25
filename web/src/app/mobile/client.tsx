@@ -1,6 +1,7 @@
 "use client"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useEffect } from "react"
 import { createBrowserClient } from "@supabase/ssr"
 import { InstallBanner } from "@/components/app/install-banner"
 import {
@@ -16,6 +17,16 @@ type Tile = {
   permission?: string
 }
 
+function useIsInstalled() {
+  const [installed, setInstalled] = useState(false)
+  useEffect(() => {
+    const isStandalone = window.matchMedia("(display-mode: standalone)").matches
+    const isIosStandalone = (window.navigator as any).standalone === true
+    setInstalled(isStandalone || isIosStandalone)
+  }, [])
+  return installed
+}
+
 export function MobileHome({
   userName,
   isOwner,
@@ -26,6 +37,7 @@ export function MobileHome({
   permissions: Record<string, boolean>
 }) {
   const router = useRouter()
+  const isInstalled = useIsInstalled()
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -134,7 +146,7 @@ export function MobileHome({
       </div>
 
       {/* Installer l'app */}
-      <div className="mx-4 mb-4 bg-blue-50 border border-blue-200 rounded-2xl p-4 space-y-3">
+      {!isInstalled && <div className="mx-4 mb-4 bg-blue-50 border border-blue-200 rounded-2xl p-4 space-y-3">
         <div className="flex items-center gap-2">
           <div className="text-2xl">📲</div>
           <div className="text-sm font-bold text-blue-900">Installer DEP sur votre téléphone</div>
@@ -165,7 +177,7 @@ export function MobileHome({
             <span>Appuyez sur <strong>"Ajouter à l'écran d'accueil"</strong> — c'est fait ! ✅</span>
           </div>
         </div>
-      </div>
+      </div>}
       <InstallBanner />
     </div>
   )
