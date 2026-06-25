@@ -58,7 +58,7 @@ function DevisEditorInner({
   knownArticles,
   knownClients,
   initialPayload,
-, canEditPrix = true
+  canEditPrix = true,
 }: DevisEditorProps) {
   const router = useRouter()
   const params = useSearchParams()
