@@ -2,6 +2,7 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { createBrowserClient } from "@supabase/ssr"
+import { InstallBanner } from "@/components/app/install-banner"
 import {
   FilePlus2, AlertTriangle, Users, CalendarDays,
   FileCheck, Receipt, Settings, LogOut, PackageSearch
@@ -136,6 +137,7 @@ export function MobileHome({
       <div className="text-center py-3 text-xs text-gray-400">
         dep-pro.fr
       </div>
+      <InstallBanner />
     </div>
   )
 }
