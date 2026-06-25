@@ -1,7 +1,7 @@
 "use client"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useEffect } from "react"
+import { useState, useEffect } from "react"
 import { createBrowserClient } from "@supabase/ssr"
 import { InstallBanner } from "@/components/app/install-banner"
 import {
