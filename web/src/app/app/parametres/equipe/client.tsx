@@ -81,7 +81,8 @@ export function InviteForm() {
 const PERMISSIONS = [
   { id: "devis_create", label: "Créer des devis" },
   { id: "devis_prix", label: "Modifier les prix" },
-  { id: "planning_write", label: "Gérer le planning" },
+  { id: "planning_write", label: "Modifier le planning" },
+  { id: "planning_read_all", label: "Voir le planning de toute l'équipe" },
   { id: "incidents_read", label: "Voir les problèmes chantier" },
   { id: "catalogue_write", label: "Modifier le catalogue" },
 ]

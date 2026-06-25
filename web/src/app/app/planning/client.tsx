@@ -62,16 +62,19 @@ export function PlanningClient({
   orgId,
   currentUserId,
   canWrite,
+  canSeeAll,
 }: {
   employes: Employe[]
   devisSigne: DevisSigne[]
   orgId: string
   currentUserId: string
   canWrite: boolean
+  canSeeAll: boolean
 }) {
   const [semaine, setSemaine] = useState(() => getMonday(new Date()))
   const [entries, setEntries] = useState<PlanningEntry[]>([])
   const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState("")
   const [modal, setModal] = useState<{ employeId: string; date: string } | null>(null)
   const [editEntry, setEditEntry] = useState<PlanningEntry | null>(null)
   const [pending, startTransition] = useTransition()
@@ -88,6 +91,16 @@ export function PlanningClient({
   const [employesIds, setEmployesIds] = useState<string[]>([])
 
   const jours = Array.from({ length: 7 }, (_, i) => addDays(semaine, i))
+
+  // Filtrer employés selon permissions
+  const employesFiltres = canSeeAll
+    ? employes
+    : employes.filter((e) => e.id === currentUserId)
+
+  // Recherche de tâches
+  const searchResults = search.trim().length > 1
+    ? entries.filter((e) => e.titre.toLowerCase().includes(search.toLowerCase()))
+    : []
 
   useEffect(() => {
     loadEntries()
@@ -222,6 +235,47 @@ export function PlanningClient({
         </div>
       </div>
 
+      {/* Barre de recherche */}
+      <div className="mb-4 relative">
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Rechercher une tâche..."
+          className="w-full h-10 rounded-xl border border-border bg-surface px-4 pr-10 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-electric"
+        />
+        {search && (
+          <button onClick={() => setSearch("")} className="absolute right-3 top-2.5 text-muted hover:text-foreground">✕</button>
+        )}
+      </div>
+
+      {/* Résultats de recherche */}
+      {search.trim().length > 1 && (
+        <div className="mb-4 space-y-2">
+          {searchResults.length === 0 ? (
+            <div className="text-sm text-muted p-3">Aucune tâche trouvée</div>
+          ) : (
+            searchResults.map((entry) => {
+              const emp = employes.find((e) => e.id === entry.employe_id)
+              const c = getCouleur(entry.couleur)
+              return (
+                <button
+                  key={entry.id}
+                  onClick={() => openModal(entry.employe_id, entry.date, entry)}
+                  className={`w-full text-left rounded-xl px-3 py-2 border ${c.bg} ${c.border} ${c.text}`}
+                >
+                  <div className="font-semibold text-sm">{entry.titre}</div>
+                  <div className="text-xs opacity-70 mt-0.5">
+                    {emp?.full_name ?? "?"} · {new Date(entry.date).toLocaleDateString("fr-FR")}
+                    {entry.heure_debut && ` · ${entry.heure_debut.slice(0,5)}`}
+                  </div>
+                </button>
+              )
+            })
+          )}
+        </div>
+      )}
+
       {/* Debug */}
       {employes.length === 0 && (
         <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-xl text-sm text-yellow-800">
@@ -248,7 +302,7 @@ export function PlanningClient({
             </tr>
           </thead>
           <tbody>
-            {employes.map((emp) => (
+            {employesFiltres.map((emp) => (
               <tr key={emp.id} className="border-b border-border/50">
                 <td className="py-3 px-3">
                   <div className="flex items-center gap-2">

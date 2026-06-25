@@ -10,6 +10,7 @@ export default async function PlanningPage() {
 
   const perms = (profile?.permissions as Record<string, boolean>) ?? {}
   const canWrite = profile?.role === "owner" || profile?.role === "admin_dep" || perms.planning_write === true
+  const canSeeAll = profile?.role === "owner" || profile?.role === "admin_dep" || perms.planning_read_all === true
 
   const [{ data: employes }, { data: devisSigne }] = await Promise.all([
     supabase
@@ -34,6 +35,7 @@ export default async function PlanningPage() {
       orgId={profile!.org_id!}
       currentUserId={user!.id}
       canWrite={canWrite}
+      canSeeAll={canSeeAll}
     />
   )
 }
