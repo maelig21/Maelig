@@ -133,9 +133,18 @@ export function MobileHome({
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="text-center py-3 text-xs text-gray-400">
-        dep-pro.fr
+      {/* Installer l'app */}
+      <div className="mx-4 mb-4 bg-blue-50 border border-blue-200 rounded-2xl p-4 flex items-center gap-3">
+        <div className="text-2xl">📲</div>
+        <div className="flex-1">
+          <div className="text-sm font-bold text-blue-900">Installer DEP sur votre téléphone</div>
+          <div className="text-xs text-blue-600 mt-0.5">
+            iPhone : appuyez sur <strong>□↑</strong> → "Sur l'écran d'accueil"
+          </div>
+          <div className="text-xs text-blue-600">
+            Android : menu <strong>⋮</strong> → "Ajouter à l'écran d'accueil"
+          </div>
+        </div>
       </div>
       <InstallBanner />
     </div>
