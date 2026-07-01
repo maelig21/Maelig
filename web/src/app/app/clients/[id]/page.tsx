@@ -4,6 +4,7 @@ import { ArrowLeft, Mail, Phone, MapPin, FileText, Pencil } from "lucide-react"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Card, CardTitle, Badge } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { DeleteClientButton } from "./delete-button"
 import { STATUT_META } from "@/lib/devis-status"
 import { formatEUR, formatDateFR } from "@/lib/utils"
 import type { DevisStatut } from "@/lib/supabase/database.types"
@@ -44,6 +45,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           <Button variant="outline" size="sm" asChild>
             <Link href={`/app/clients/nouveau?id=${client.id}`}><Pencil className="h-4 w-4" /></Link>
           </Button>
+          <DeleteClientButton clientId={client.id} clientName={client.raison_sociale || [client.prenom, client.nom].filter(Boolean).join(" ")} />
           <Button asChild>
             <Link href={`/app/devis/nouveau?client=${client.id}`}>+ Devis pour ce client</Link>
           </Button>
