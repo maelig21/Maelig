@@ -66,7 +66,7 @@ const NAV = [
   { href: "/app/admin", label: "Admin DEP", Icon: Shield, adminOnly: true },
 ] as const
 
-export function Sidebar({ profile, org, counts }: { profile: ProfileLite | null; org: OrgLite | null; counts?: { aValider?: number; incidents?: number } }) {
+export function Sidebar({ profile, org, counts }: { profile: ProfileLite | null; org: OrgLite | null; counts?: { aValider?: number; incidents?: number; planning?: number } }) {
   const path = usePathname()
   return (
     <aside className="hidden lg:flex flex-col w-72 shrink-0 border-r border-border bg-surface/40 backdrop-blur-md">
@@ -109,6 +109,7 @@ export function Sidebar({ profile, org, counts }: { profile: ProfileLite | null;
               {navItem.dot && !navItem.accent && !navItem.employeeAccent && (() => {
                 const count = navItem.href === "/app/devis/a-valider" ? counts?.aValider
                   : navItem.href === "/app/incidents" ? counts?.incidents
+                  : navItem.href === "/app/planning" ? counts?.planning
                   : null
                 if (count !== null && count !== undefined && count === 0) return null
                 return (

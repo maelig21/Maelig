@@ -31,12 +31,16 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // Compteurs pour les notifications
   const counts = { aValider: 0, incidents: 0 }
   if (profile?.org_id && (profile?.role === "owner" || profile?.role === "admin_dep")) {
-    const [{ count: aValider }, { count: incidents }] = await Promise.all([
+    const now = new Date()
+    const hier = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString()
+    const [{ count: aValider }, { count: incidents }, { count: planning }] = await Promise.all([
       supabase.from("devis").select("*", { count: "exact", head: true }).eq("org_id", profile.org_id).eq("statut", "en_attente_validation"),
       supabase.from("incidents").select("*", { count: "exact", head: true }).eq("org_id", profile.org_id).eq("statut", "ouvert"),
+      supabase.from("planning").select("*", { count: "exact", head: true }).eq("org_id", profile.org_id).gte("created_at", hier),
     ])
     counts.aValider = aValider ?? 0
     counts.incidents = incidents ?? 0
+    counts.planning = planning ?? 0
   }
 
   return (
