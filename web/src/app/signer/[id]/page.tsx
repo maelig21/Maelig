@@ -118,8 +118,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
               <tbody>
                 {items.map((it: any, i: number) => (
                   it.is_section ? (
-                    <tr key={i} className="bg-gray-100 border-b border-gray-200">
-                      <td colSpan={4} className="py-2 px-2 font-bold text-gray-900">{it.description}</td>
+                    <tr key={i} className="bg-gray-200 border-b border-gray-300">
+                      <td colSpan={4} className="py-3 px-4 font-bold text-sm uppercase tracking-wider text-gray-600">{it.description}</td>
                     </tr>
                   ) : (
                   <tr key={i} className="border-b border-gray-100">

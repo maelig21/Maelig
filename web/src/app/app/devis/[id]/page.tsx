@@ -137,8 +137,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                 {items.map((it: any) => {
                   if (it.is_section === true) {
                     return (
-                      <tr key={it.id} className="bg-gray-100">
-                        <td colSpan={5} className="py-3 px-2 font-bold text-base text-gray-900 border-b border-gray-200">{it.description}</td>
+                      <tr key={it.id} className="bg-gray-200">
+                        <td colSpan={5} className="py-3 px-4 font-bold text-sm uppercase tracking-wider text-gray-600 border-b border-gray-300">{it.description}</td>
                       </tr>
                     )
                   }
