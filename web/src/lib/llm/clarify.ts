@@ -40,10 +40,10 @@ export async function clarifyTranscript(
   contextHints?: { knownArticles?: string[]; knownClients?: string[]; orgId?: string; userId?: string },
 ): Promise<Clarification> {
   const input = text.slice(0, 4000)
-  const cacheKey = hashLLMInput("qwen-plus", "clarify", input)
+  const cacheKey = hashLLMInput("deepseek-v4-flash", "clarify", input)
   const cached = await llmCacheGet<Clarification>(cacheKey)
   if (cached?.items) {
-    void trackLLMUsage({ org_id: contextHints?.orgId, user_id: contextHints?.userId, model: "qwen-plus", task: "clarify", cache_hit: true, cost_eur: 0 })
+    void trackLLMUsage({ org_id: contextHints?.orgId, user_id: contextHints?.userId, model: "deepseek-v4-flash", task: "clarify", cache_hit: true, cost_eur: 0 })
     return cached
   }
 
@@ -87,7 +87,7 @@ Règles d'or :
 
   const t0 = Date.now()
   const { text: out, inputTokens, outputTokens } = await dashscopeChat({
-    model: "qwen-plus",
+    model: "deepseek-v4-flash",
     temperature: 0.15,
     json: true,
     messages: [sys, user],
@@ -112,11 +112,11 @@ Règles d'or :
       labor_hours: typeof j.labor_hours === "number" ? j.labor_hours : null,
       questions: Array.isArray(j.questions) ? j.questions.slice(0, 3).map(String) : [],
     }
-    const cost = estimateCostEUR("qwen-plus", inputTokens, outputTokens)
-    void llmCachePut({ hash: cacheKey, model: "qwen-plus", task: "clarify", input_preview: input.slice(0, 200), output: result, cost_saved_eur: cost })
+    const cost = estimateCostEUR("deepseek-v4-flash", inputTokens, outputTokens)
+    void llmCachePut({ hash: cacheKey, model: "deepseek-v4-flash", task: "clarify", input_preview: input.slice(0, 200), output: result, cost_saved_eur: cost })
     void trackLLMUsage({
       org_id: contextHints?.orgId, user_id: contextHints?.userId,
-      model: "qwen-plus", task: "clarify", cache_hit: false,
+      model: "deepseek-v4-flash", task: "clarify", cache_hit: false,
       input_tokens: inputTokens, output_tokens: outputTokens,
       duration_ms: Date.now() - t0, cost_eur: cost,
     })

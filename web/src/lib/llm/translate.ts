@@ -1,5 +1,5 @@
 /**
- * Traduction multilingue via DashScope qwen-turbo.
+ * Traduction multilingue via DashScope deepseek-v4-flash.
  * Spécialisé BTP / chantiers : vocabulaire technique électrique préservé,
  * style direct, sans em-dash (— interdit par doctrine).
  */
@@ -86,14 +86,14 @@ export async function translateMessage(text: string, from: string, to: string): 
 
 /**
  * Routing modèle :
- * - darija dialectal + berbère + langues subsahariennes : qwen-plus (meilleur sur dialectes)
- * - Europe + portugais + turc : qwen-turbo (4× moins cher, qualité suffisante)
+ * - darija dialectal + berbère + langues subsahariennes : deepseek-v4-flash (meilleur sur dialectes)
+ * - Europe + portugais + turc : deepseek-v4-flash (4× moins cher, qualité suffisante)
  */
 function pickModel(target: { is_dialectal?: boolean; use_nllb_pipeline?: boolean; code: string }): string {
   if (target.is_dialectal || target.use_nllb_pipeline || ["kab", "shi", "rif"].includes(target.code)) {
-    return "qwen-plus"
+    return "deepseek-v4-flash"
   }
-  return "qwen-turbo"
+  return "deepseek-v4-flash"
 }
 
 /**
@@ -113,13 +113,13 @@ export async function translateMany(text: string, fromLang: string, targets: str
 }
 
 /**
- * Détection rapide de la langue d'un texte (qwen-turbo en mode classification).
+ * Détection rapide de la langue d'un texte (deepseek-v4-flash en mode classification).
  * Retourne un code de notre table LANGUES (ou 'fr' par défaut).
  */
 export async function detectLanguage(text: string): Promise<string> {
   if (!text?.trim()) return "fr"
   const { text: out } = await dashscopeChat({
-    model: "qwen-turbo",
+    model: "deepseek-v4-flash",
     temperature: 0,
     messages: [
       {

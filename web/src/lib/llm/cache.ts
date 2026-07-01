@@ -118,16 +118,16 @@ export async function trackLLMUsage(rec: LLMUsageRecord): Promise<void> {
 /**
  * Calcule un coût en € à partir des tokens, pour un modèle donné.
  * Prix DashScope intl (mai 2026) :
- *  - qwen-turbo  : $0.033 / 1M input, $0.10 / 1M output
- *  - qwen-plus   : $0.40 / 1M input, $1.20 / 1M output
+ *  - deepseek-v4-flash  : $0.033 / 1M input, $0.10 / 1M output
+ *  - deepseek-v4-flash   : $0.40 / 1M input, $1.20 / 1M output
  *  - qwen-max    : $1.60 / 1M input, $6.40 / 1M output
  *  - paraformer-v2 : $0.0008 / sec
  * EUR ≈ USD * 0.93 (approximation)
  */
 export function estimateCostEUR(model: string, inputTokens: number, outputTokens: number, audioSeconds = 0): number {
   const prices: Record<string, { input: number; output: number }> = {
-    "qwen-turbo": { input: 0.033, output: 0.10 },
-    "qwen-plus": { input: 0.40, output: 1.20 },
+    "deepseek-v4-flash": { input: 0.033, output: 0.10 },
+    "deepseek-v4-flash": { input: 0.40, output: 1.20 },
     "qwen-max": { input: 1.60, output: 6.40 },
     "qwen3.6-max": { input: 1.60, output: 6.40 },
     "deepseek-v4-pro": { input: 0.27, output: 1.10 },

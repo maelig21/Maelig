@@ -60,16 +60,16 @@ MARQUAGE confiance dans ai_resume : entoure de ‹ et › les mots dont tu doute
 
   const t0 = Date.now()
   const { text, inputTokens, outputTokens } = await dashscopeChat({
-    model: "qwen-plus",
+    model: "deepseek-v4-flash",
     temperature: 0.2,
     json: true,
     messages: [sys, user],
   })
   void trackLLMUsage({
-    model: "qwen-plus", task: "analyze_incident", cache_hit: false,
+    model: "deepseek-v4-flash", task: "analyze_incident", cache_hit: false,
     input_tokens: inputTokens, output_tokens: outputTokens,
     duration_ms: Date.now() - t0,
-    cost_eur: estimateCostEUR("qwen-plus", inputTokens, outputTokens),
+    cost_eur: estimateCostEUR("deepseek-v4-flash", inputTokens, outputTokens),
   })
 
   try {
@@ -125,7 +125,7 @@ Format actions : 1 phrase, verbe à l'infinitif ou impératif, max 80 caractère
 INTERDIT : tirets — ou ---, listes longues, conseils vagues, formulations IA.`,
   }
   const { text } = await dashscopeChat({
-    model: "qwen-turbo",
+    model: "deepseek-v4-flash",
     temperature: 0.3,
     json: true,
     messages: [sys, { role: "user", content: list }],

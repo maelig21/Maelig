@@ -78,13 +78,13 @@ export async function correctFR(
 ): Promise<string> {
   const text = raw.slice(0, 4000)
   const useHighlights = opts.useHighlights !== false
-  const cacheKey = hashLLMInput("qwen-turbo", useHighlights ? "correct_fr_hl" : "correct_fr", text)
+  const cacheKey = hashLLMInput("deepseek-v4-flash", useHighlights ? "correct_fr_hl" : "correct_fr", text)
 
   const cached = await llmCacheGet<{ corrected: string }>(cacheKey)
   if (cached?.corrected) {
     void trackLLMUsage({
       org_id: opts.orgId, user_id: opts.userId,
-      model: "qwen-turbo", task: "correct_fr",
+      model: "deepseek-v4-flash", task: "correct_fr",
       cache_hit: true, cost_eur: 0,
     })
     return cleanText(cached.corrected)
