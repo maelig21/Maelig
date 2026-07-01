@@ -5,6 +5,7 @@ import { Card, CardTitle, CardDescription, Badge } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/app/empty-state"
 import { EditablePriceCell } from "@/components/app/editable-price-cell"
+import { DeleteArticleButton } from "@/components/app/delete-article-button"
 import { formatEUR } from "@/lib/utils"
 
 export const dynamic = "force-dynamic"
