@@ -66,7 +66,7 @@ const NAV = [
   { href: "/app/admin", label: "Admin DEP", Icon: Shield, adminOnly: true },
 ] as const
 
-export function Sidebar({ profile, org }: { profile: ProfileLite | null; org: OrgLite | null }) {
+export function Sidebar({ profile, org, counts }: { profile: ProfileLite | null; org: OrgLite | null; counts?: { aValider?: number; incidents?: number } }) {
   const path = usePathname()
   return (
     <aside className="hidden lg:flex flex-col w-72 shrink-0 border-r border-border bg-surface/40 backdrop-blur-md">
@@ -106,15 +106,22 @@ export function Sidebar({ profile, org }: { profile: ProfileLite | null; org: Or
             >
               <navItem.Icon className={cn("h-4 w-4", navItem.accent && "text-black", navItem.employeeAccent && "text-wire-red")} />
               <span className="truncate flex-1">{navItem.label}</span>
-              {navItem.dot && !navItem.accent && !navItem.employeeAccent && (
-                <span
-                  aria-hidden="true"
-                  className={cn(
-                    "ml-auto h-2.5 w-2.5 shrink-0 rounded-full ring-2 ring-background",
-                    DOT_CLASS[navItem.dot],
-                  )}
-                />
-              )}
+              {navItem.dot && !navItem.accent && !navItem.employeeAccent && (() => {
+                const count = navItem.href === "/app/devis/a-valider" ? counts?.aValider
+                  : navItem.href === "/app/incidents" ? counts?.incidents
+                  : null
+                if (count !== null && count !== undefined && count === 0) return null
+                return (
+                  <span className="ml-auto flex items-center gap-1">
+                    {count !== null && count !== undefined && count > 0 && (
+                      <span className="text-[10px] font-bold bg-wire-red text-white rounded-full px-1.5 py-0.5 min-w-[18px] text-center">{count}</span>
+                    )}
+                    {(count === null || count === undefined) && (
+                      <span aria-hidden="true" className={cn("h-2.5 w-2.5 shrink-0 rounded-full ring-2 ring-background", DOT_CLASS[navItem.dot])} />
+                    )}
+                  </span>
+                )
+              })()}
             </Link>
           )
         })}
