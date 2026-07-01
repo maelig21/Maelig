@@ -37,7 +37,7 @@ export function DeleteClientButton({ clientId, clientName }: { clientId: string;
 
   return (
     <Button variant="outline" size="sm" onClick={() => setConfirm(true)} className="text-red-500 border-red-200 hover:bg-red-50">
-      <Trash2 className="h-4 w-4" />
+      <Trash2 className="h-4 w-4" /> <span className="hidden sm:inline">Supprimer</span>
     </Button>
   )
 }

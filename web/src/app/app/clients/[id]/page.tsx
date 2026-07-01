@@ -43,7 +43,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" asChild>
-            <Link href={`/app/clients/nouveau?id=${client.id}`}><Pencil className="h-4 w-4" /></Link>
+            <Link href={`/app/clients/nouveau?id=${client.id}`}><Pencil className="h-4 w-4" /> <span className="hidden sm:inline">Modifier</span></Link>
           </Button>
           <DeleteClientButton clientId={client.id} clientName={client.raison_sociale || [client.prenom, client.nom].filter(Boolean).join(" ")} />
           <Button asChild>
