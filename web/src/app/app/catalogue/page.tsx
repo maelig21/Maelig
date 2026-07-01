@@ -65,6 +65,7 @@ export default async function Page() {
                   <th className="text-left p-3">Unité</th>
                   <th className="text-right p-3">PU HT</th>
                   <th className="text-right p-3">Utilisé</th>
+                  {canEditCatalogue && <th className="p-3"></th>}
                 </tr>
               </thead>
               <tbody>
@@ -79,6 +80,11 @@ export default async function Page() {
                     <td className="p-3 text-right">
                       <Badge tone={a.usage_count > 5 ? "electric" : "neutral"}>{a.usage_count}× </Badge>
                     </td>
+                  {canEditCatalogue && (
+                    <td className="p-3 text-right">
+                      <DeleteArticleButton articleId={a.id} />
+                    </td>
+                  )}
                   </tr>
                 ))}
               </tbody>
