@@ -608,8 +608,8 @@ function DevisEditorInner({
               </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm table-fixed">
+            <div className="overflow-x-auto -mx-2 px-2">
+              <table className="w-full text-sm min-w-[600px]">
                 <thead className="text-xs uppercase tracking-wider text-muted">
                   <tr className="border-b border-border">
                     <th className="text-left py-2 pr-2 min-w-[180px]">Description</th>
