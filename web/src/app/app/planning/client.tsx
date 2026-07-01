@@ -139,7 +139,7 @@ export function PlanningClient({
       setDevisId("")
       setStatut("planifie")
       setDateFin("")
-      setEmployesIds([modal?.employeId ?? ""])
+      setEmployesIds(modal?.employeId ? [modal.employeId] : [])
     }
     setModal({ employeId, date })
   }
