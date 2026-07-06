@@ -6,6 +6,7 @@ import { Input, Label } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { redirect } from "next/navigation"
 import { seedDefaultArticles, updateArticlePrice } from "@/lib/actions/articles"
+import { SavedToast } from "../societe/saved-toast"
 
 export const dynamic = "force-dynamic"
 
@@ -50,6 +51,7 @@ export default async function DefautsPage(props: { searchParams: Promise<Record<
       <Link href="/app/parametres" className="inline-flex items-center gap-1 text-xs text-muted hover:text-electric">
         <ArrowLeft className="h-3 w-3" /> Paramètres
       </Link>
+      <SavedToast />
       <CardTitle>Défauts devis</CardTitle>
       <p className="text-sm text-muted -mt-3">
         Valeurs pré-remplies à chaque nouveau devis. Gagnez des secondes.
