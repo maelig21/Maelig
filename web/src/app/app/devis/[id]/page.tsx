@@ -135,7 +135,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                   <tr><td colSpan={5} className="py-8 text-center text-gray-400">Aucune ligne</td></tr>
                 )}
                 {items.map((it: any) => {
-                  if (it.is_section === true) {
+                  if (it.is_section === true || (it.is_section !== false && Number(it.prix_unitaire_ht) === 0 && Number(it.quantite) === 1 && !it.articles)) {
                     return (
                       <tr key={it.id} className="bg-gray-200">
                         <td colSpan={5} className="py-3 px-4 font-bold text-sm uppercase tracking-wider text-gray-600 border-b border-gray-300">{it.description}</td>
