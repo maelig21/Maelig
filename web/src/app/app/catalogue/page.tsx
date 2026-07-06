@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { redirect } from "next/navigation"
 import { PackageSearch, Plus, BrainCircuit } from "lucide-react"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Card, CardTitle, CardDescription, Badge } from "@/components/ui/card"
@@ -6,11 +7,13 @@ import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/app/empty-state"
 import { EditablePriceCell } from "@/components/app/editable-price-cell"
 import { DeleteArticleButton } from "@/components/app/delete-article-button"
+import { seedDefaultArticles } from "@/lib/actions/articles"
 import { formatEUR } from "@/lib/utils"
 
 export const dynamic = "force-dynamic"
 
-export default async function Page() {
+export default async function Page({ searchParams }: { searchParams?: Promise<{ catalogue?: string }> }) {
+  const sp = await searchParams
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
   const { data: profile } = await supabase.from("profiles").select("org_id, role, permissions").eq("id", user!.id).maybeSingle()
@@ -43,6 +46,26 @@ export default async function Page() {
           </Button>
         )}
       </div>
+
+      {canEditCatalogue && (
+        <div className="flex items-center gap-3">
+          <form action={async () => {
+            "use server"
+            const result = await seedDefaultArticles()
+            if (result.note) redirect("/app/catalogue?catalogue=exists")
+            else redirect("/app/catalogue?catalogue=ok")
+          }}>
+            <Button variant="outline" type="submit">📦 Générer le catalogue par défaut</Button>
+          </form>
+        </div>
+      )}
+
+      {sp?.catalogue === "ok" && (
+        <p className="text-xs text-success">✅ Articles ajoutés au catalogue.</p>
+      )}
+      {sp?.catalogue === "exists" && (
+        <p className="text-xs text-muted">ℹ️ Articles déjà présents.</p>
+      )}
 
       {(!articles || articles.length === 0) ? (
         <EmptyState

@@ -152,33 +152,7 @@ export default async function DefautsPage(props: { searchParams: Promise<Record<
 
       {/* Catalogue par défaut */}
       {isOwner && (
-        <Card>
-          <div className="flex items-center gap-2 mb-4">
-            <h3 className="font-display font-semibold">📦 Catalogue par défaut</h3>
-          </div>
-          <p className="text-sm text-muted mb-4">
-            Générez 45 articles d'électricité courants (prises, interrupteurs, disjoncteurs, câbles, luminaires…)
-            avec prix basiques modifiables. Ces articles seront disponibles dans tous vos devis.
-          </p>
-          <form
-            action={async () => {
-              "use server"
-              const result = await seedDefaultArticles()
-              if (result.note) redirect("/app/parametres/defauts?catalogue=exists")
-              else redirect("/app/parametres/defauts?catalogue=ok")
-            }}
-          >
-            <Button variant="outline" type="submit">
-              Générer le catalogue
-            </Button>
-          </form>
-          {searchParams?.catalogue === "ok" && (
-            <p className="mt-2 text-xs text-success">✅ 45 articles ajoutés au catalogue.</p>
-          )}
-          {searchParams?.catalogue === "exists" && (
-            <p className="mt-2 text-xs text-muted">ℹ️ Articles déjà présents (aucun doublon).</p>
-          )}
-        </Card>
+
       )}
 
       {/* Liste des articles avec prix modifiables */}
