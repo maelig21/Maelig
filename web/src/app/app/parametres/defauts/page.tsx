@@ -150,11 +150,6 @@ export default async function DefautsPage(props: { searchParams: Promise<Record<
         <p className="text-sm text-warning">Seul le propriétaire peut modifier ces réglages.</p>
       )}
 
-      {/* Catalogue par défaut */}
-      {isOwner && (
-
-      )}
-
       {/* Liste des articles avec prix modifiables */}
       {isOwner && articles && articles.length > 0 && (
         <Card>
