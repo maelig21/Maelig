@@ -276,12 +276,7 @@ export function PlanningClient({
         </div>
       )}
 
-      {/* Debug */}
-      {employes.length === 0 && (
-        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-xl text-sm text-yellow-800">
-          Aucun employé trouvé dans votre organisation.
-        </div>
-      )}
+
       {/* Grille */}
       <div className="overflow-x-auto">
         <table className="w-full border-collapse min-w-[700px]">
