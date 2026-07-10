@@ -117,7 +117,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
               </thead>
               <tbody>
                 {items.map((it: any, i: number) => (
-                  it.is_section ? (
+                  (it.is_section === true || (Number(it.prix_unitaire_ht) === 0 && Number(it.quantite) === 1 && !it.description?.match(/^\d/))) ? (
                     <tr key={i} className="bg-gray-200 border-b border-gray-300">
                       <td colSpan={4} className="py-3 px-4 font-bold text-sm uppercase tracking-wider text-gray-600">{it.description}</td>
                     </tr>
