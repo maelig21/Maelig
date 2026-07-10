@@ -608,7 +608,54 @@ function DevisEditorInner({
               </div>
             </div>
 
-            <div className="overflow-x-auto -mx-2 px-2">
+            {/* Vue carte mobile */}
+            <div className="sm:hidden space-y-2 mb-2">
+              {items.map((it, i) => {
+                const total = (Number(it.quantite) || 0) * (Number(it.prix_unitaire_ht) || 0)
+                if (it.is_section) {
+                  return (
+                    <div key={i} className="bg-electric/10 rounded-xl px-3 py-2 flex items-center justify-between">
+                      <Input value={it.description} onChange={(e) => updateLine(i, { description: e.target.value })} placeholder="Nom de la section" className="font-bold bg-transparent border-none p-0 h-auto" />
+                      <div className="flex gap-1">
+                        <button onClick={() => moveLine(i, -1)} className="text-muted p-1">↑</button>
+                        <button onClick={() => moveLine(i, 1)} className="text-muted p-1">↓</button>
+                        <button onClick={() => removeLine(i)} className="text-danger p-1"><Trash2 className="h-3 w-3" /></button>
+                      </div>
+                    </div>
+                  )
+                }
+                return (
+                  <div key={i} className="border border-border rounded-xl p-3 space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <Input value={it.description} onChange={(e) => { const val = e.target.value; const match = knownArticles.find((a) => a.nom === val); if (match) { selectArticle(i, match) } else { updateLine(i, { description: val, article_id: null }) } }} placeholder="Description" className="flex-1 h-8 text-sm" list={`articles-${i}`} />
+                      <div className="flex gap-1 shrink-0">
+                        <button onClick={() => moveLine(i, -1)} className="text-muted p-1 text-xs">↑</button>
+                        <button onClick={() => moveLine(i, 1)} className="text-muted p-1 text-xs">↓</button>
+                        <button onClick={() => removeLine(i)} className="text-danger p-1"><Trash2 className="h-3 w-3" /></button>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>
+                        <div className="text-xs text-muted mb-1">Qté</div>
+                        <Input type="number" min="0" value={it.quantite} onChange={(e) => updateLine(i, { quantite: Number(e.target.value) })} className="h-8 text-sm text-right" />
+                      </div>
+                      <div>
+                        <div className="text-xs text-muted mb-1">PU HT</div>
+                        <Input type="number" step="0.01" min="0" value={it.prix_unitaire_ht} disabled={!canEditPrix} onChange={(e) => canEditPrix && updateLine(i, { prix_unitaire_ht: Number(e.target.value) })} className="h-8 text-sm text-right" />
+                      </div>
+                      <div>
+                        <div className="text-xs text-muted mb-1">Total HT</div>
+                        <div className="h-8 flex items-center justify-end text-sm font-medium">{formatEUR(total)}</div>
+                      </div>
+                    </div>
+                    <datalist id={`articles-${i}`}>{knownArticles.map((a) => <option key={a.id} value={a.nom} data-id={a.id} label={`${formatEUR(a.prix_unitaire_ht ?? 0)}`} />)}</datalist>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Vue tableau desktop */}
+            <div className="hidden sm:block overflow-x-auto -mx-2 px-2">
               <table className="w-full text-sm min-w-[600px]">
                 <thead className="text-xs uppercase tracking-wider text-muted">
                   <tr className="border-b border-border">
@@ -705,6 +752,7 @@ function DevisEditorInner({
                   })}
                 </tbody>
               </table>
+            </div>
             </div>
           </Card>
 
