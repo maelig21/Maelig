@@ -1,0 +1,21 @@
+name: Relances automatiques
+
+on:
+  schedule:
+    - cron: '0 8 * * *'  # Tous les jours à 8h UTC (9h Paris)
+  workflow_dispatch:  # Permet de lancer manuellement
+
+jobs:
+  relances:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Envoyer les relances
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://dep-pro.fr/api/relances/run)
+          echo "Status: $response"
+          if [ "$response" != "200" ]; then
+            echo "Erreur: statut HTTP $response"
+            exit 1
+          fi
