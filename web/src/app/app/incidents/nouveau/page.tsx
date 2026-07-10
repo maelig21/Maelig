@@ -19,6 +19,8 @@ import { useMicPermission } from "@/lib/use-mic-permission"
  *
  * Sur mobile : capture="environment" pour ouvrir directement la caméra arrière.
  */
+export const dynamic = "force-dynamic"
+
 export default function Page() {
   const router = useRouter()
   const [pending, startTransition] = useTransition()

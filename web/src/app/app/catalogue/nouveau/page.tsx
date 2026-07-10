@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button"
 import { Input, Label, Textarea } from "@/components/ui/input"
 import { saveArticle } from "@/lib/actions/articles"
 
+export const dynamic = "force-dynamic"
+
 export default function NouveauArticlePage() {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
