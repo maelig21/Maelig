@@ -18,7 +18,7 @@ const DS_KEY = process.env.DEEPSEEK_API_KEY
 export type ChatMessage = { role: "system" | "user" | "assistant"; content: string }
 
 export async function dashscopeChat({
-  model = "deepseek-chat",
+  model = "deepseek-v4-flash",
   messages,
   temperature = 0.2,
   json = false,
@@ -107,7 +107,7 @@ export async function correctFR(
 
   try {
     const result = await dashscopeChat({
-      model: "deepseek-chat",
+      model: "deepseek-v4-flash",
       messages: prompt,
       temperature: 0.05,
     })
@@ -116,7 +116,7 @@ export async function correctFR(
     await llmCachePut(cacheKey, { corrected })
     void trackLLMUsage({
       org_id: opts.orgId, user_id: opts.userId,
-      model: "deepseek-chat", task: "correct_fr",
+      model: "deepseek-v4-flash", task: "correct_fr",
       input_tokens: result.inputTokens,
       output_tokens: result.outputTokens,
       cost_eur: estimateCostEUR("deepseek-chat", result.inputTokens, result.outputTokens),
@@ -230,7 +230,7 @@ Règles d'extraction :
 - Heures de main-d'œuvre / de pose : toute mention de durée comme 'deux heures de main-d œuvre', '3h de pose', 'main d oeuvre quatre heures' → extraire le nombre dans heures_main_oeuvre. 'une demi-journée' = 4h, 'une journée' = 8h, 'deux jours' = 16h.`
 
   const { text } = await dashscopeChat({
-    model: "deepseek-chat",
+    model: "deepseek-v4-flash",
     temperature: 0.1,
     json: true,
     messages: [
