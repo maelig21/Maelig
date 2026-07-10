@@ -1,6 +1,7 @@
 "use client"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useState, useEffect } from "react"
 import {
   LayoutDashboard,
   FilePlus2,
@@ -20,6 +21,14 @@ const BOTTOM_ITEMS = [
 
 export function BottomNav() {
   const path = usePathname()
+  const [counts, setCounts] = useState({ incidents: 0 })
+
+  useEffect(() => {
+    fetch("/api/notifications/counts")
+      .then((r) => r.json())
+      .then((d) => setCounts(d))
+      .catch(() => {})
+  }, [path])
 
   return (
     <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-border bg-background/95 backdrop-blur-md safe-area-bottom pb-safe-bottom px-2">
@@ -40,7 +49,12 @@ export function BottomNav() {
                 : "text-muted-2 hover:text-muted",
             )}
           >
-            <Icon className={cn("h-5 w-5 shrink-0", isActive && "drop-shadow-[0_0_8px_rgba(245,197,24,0.4)]")} />
+            <div className="relative">
+              <Icon className={cn("h-5 w-5 shrink-0", isActive && "drop-shadow-[0_0_8px_rgba(245,197,24,0.4)]")} />
+              {href === "/app/incidents" && counts.incidents > 0 && (
+                <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">{counts.incidents}</span>
+              )}
+            </div>
             <span className="text-[10px] font-medium leading-tight truncate max-w-full">
               {label}
             </span>
