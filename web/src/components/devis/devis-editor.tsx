@@ -753,7 +753,6 @@ function DevisEditorInner({
                 </tbody>
               </table>
             </div>
-            </div>
           </Card>
 
           <Card>
