@@ -9,13 +9,24 @@ jobs:
   relances:
     runs-on: ubuntu-latest
     steps:
-      - name: Envoyer les relances
+      - name: Relances factures impayées
         run: |
           response=$(curl -s -o /dev/null -w "%{http_code}" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             https://dep-pro.fr/api/relances/run)
-          echo "Status: $response"
+          echo "Factures status: $response"
           if [ "$response" != "200" ]; then
-            echo "Erreur: statut HTTP $response"
+            echo "Erreur factures: statut HTTP $response"
+            exit 1
+          fi
+
+      - name: Relances devis non signés
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://dep-pro.fr/api/relances/devis)
+          echo "Devis status: $response"
+          if [ "$response" != "200" ]; then
+            echo "Erreur devis: statut HTTP $response"
             exit 1
           fi
