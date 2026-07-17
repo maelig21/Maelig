@@ -36,6 +36,21 @@ export async function saveArticle(input: unknown) {
     const { error } = await supabase.from("articles").insert({ ...payload, org_id: profile.org_id })
     if (error) throw new Error(error.message)
   }
+  // Ajouter au catalogue commun si métier connu
+  const { data: orgData } = await supabase.from("orgs").select("metiers").eq("id", profile.org_id).maybeSingle()
+  const metiers: string[] = (orgData?.metiers as string[]) ?? []
+  if (metiers.length > 0 && !data.id) {
+    // Prendre le premier métier comme catégorie
+    const metier = metiers[0]
+    await supabase.from("articles_catalogue").upsert({
+      nom: data.nom,
+      unite: data.unite || "u",
+      metier,
+      usage_count: 1,
+    }, { onConflict: "nom,metier", ignoreDuplicates: false })
+      .select()
+  }
+
   revalidatePath("/app/catalogue")
   return { ok: true }
 }
