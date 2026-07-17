@@ -70,22 +70,7 @@ export default async function Page() {
         <Button asChild><Link href="/app/parametres/abonnement">Gérer</Link></Button>
       </Card>
 
-      <Card className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface-2 text-electric">
-            <Mail className="h-5 w-5" />
-          </div>
-          <div>
-            <div className="font-display font-semibold">Messagerie</div>
-            {mailConn?.email ? (
-              <div className="text-sm text-muted">Connecté : <span className="text-green-600 font-medium">{mailConn.email}</span></div>
-            ) : (
-              <div className="text-sm text-muted">Connectez votre Gmail pour envoyer les devis depuis votre adresse.</div>
-            )}
-          </div>
-        </div>
-        <ConnectGmailButton connected={!!mailConn?.email} />
-      </Card>
+
 
       <div className="grid sm:grid-cols-2 gap-4">
         {cards.map(({ href, Icon, title, description }) => (
