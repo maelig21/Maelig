@@ -12,8 +12,9 @@ import { formatEUR } from "@/lib/utils"
 
 export const dynamic = "force-dynamic"
 
-export default async function Page({ searchParams }: { searchParams?: Promise<{ catalogue?: string }> }) {
+export default async function Page({ searchParams }: { searchParams?: Promise<{ catalogue?: string; metier?: string }> }) {
   const sp = await searchParams
+  const metierFiltre = sp?.metier ?? "tout"
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
   const { data: profile } = await supabase.from("profiles").select("org_id, role, permissions").eq("id", user!.id).maybeSingle()
@@ -21,13 +22,29 @@ export default async function Page({ searchParams }: { searchParams?: Promise<{ 
   const perms = (profile?.permissions as Record<string, boolean>) ?? {}
   const canEditCatalogue = isOwner || perms.catalogue_write === true
 
-  const { data: articles } = await supabase
+  const { data: org } = await supabase.from("orgs").select("metiers").eq("id", profile!.org_id!).maybeSingle()
+  const metiers: string[] = (org?.metiers as string[]) ?? []
+
+  const METIERS_LABELS: Record<string, string> = {
+    electricite: "⚡ Électricité", plomberie: "🔧 Plomberie", chauffage: "🔥 Chauffage",
+    climatisation: "❄️ Climatisation", maconnerie: "🧱 Maçonnerie", charpente: "🪵 Charpente",
+    menuiserie: "🚪 Menuiserie", peinture: "🎨 Peinture", carrelage: "🏠 Carrelage",
+    isolation: "🌡️ Isolation", alarme: "🔒 Alarme", autre: "🔨 Autre",
+  }
+
+  let articlesQuery = supabase
     .from("articles")
     .select("*")
     .eq("org_id", profile!.org_id!)
     .eq("archived", false)
     .order("usage_count", { ascending: false })
     .order("last_used_at", { ascending: false, nullsFirst: false })
+
+  if (metierFiltre !== "tout") {
+    articlesQuery = articlesQuery.eq("categorie", metierFiltre)
+  }
+
+  const { data: articles } = await articlesQuery
     .limit(500)
 
   return (
@@ -46,6 +63,20 @@ export default async function Page({ searchParams }: { searchParams?: Promise<{ 
           </Button>
         )}
       </div>
+
+      {/* Filtres par métier */}
+      {metiers.length > 1 && (
+        <div className="flex gap-2 flex-wrap">
+          <Link href="/app/catalogue" className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${metierFiltre === "tout" ? "bg-electric text-black" : "bg-surface-2 text-muted hover:text-foreground"}`}>
+            Tous
+          </Link>
+          {metiers.map((m) => (
+            <Link key={m} href={`/app/catalogue?metier=${m}`} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${metierFiltre === m ? "bg-electric text-black" : "bg-surface-2 text-muted hover:text-foreground"}`}>
+              {METIERS_LABELS[m] ?? m}
+            </Link>
+          ))}
+        </div>
+      )}
 
       {canEditCatalogue && (
         <div className="flex items-center gap-3">
