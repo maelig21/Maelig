@@ -235,11 +235,11 @@ function DevisEditorInner({
   }
 
   function addLine() {
-    setItems((p) => [...p, { description: "", quantite: 1, unite: "u", prix_unitaire_ht: 0 }])
+    setItems((p) => [...p, { description: "", quantite: 1, unite: "u", prix_unitaire_ht: 0, notes: "" }])
   }
 
   function addSection() {
-    setItems((p) => [...p, { description: "", quantite: 1, unite: "", prix_unitaire_ht: 0, is_section: true }])
+    setItems((p) => [...p, { description: "", quantite: 1, unite: "", prix_unitaire_ht: 0, is_section: true, notes: "" }])
   }
 
   function updateLine(idx: number, patch: Partial<DevisPayload["items"][number]>) {
@@ -649,6 +649,16 @@ function DevisEditorInner({
                       </div>
                     </div>
                     <datalist id={`articles-${i}`}>{knownArticles.map((a) => <option key={a.id} value={a.nom} data-id={a.id} label={`${formatEUR(a.prix_unitaire_ht ?? 0)}`} />)}</datalist>
+                    {!it.is_section && (
+                      <div>
+                        <Input
+                          value={it.notes ?? ""}
+                          onChange={(e) => updateLine(i, { notes: e.target.value })}
+                          placeholder="📝 Précisions (optionnel)..."
+                          className="h-8 text-xs text-muted"
+                        />
+                      </div>
+                    )}
                   </div>
                 )
               })}
@@ -719,6 +729,12 @@ function DevisEditorInner({
                           {it.article_id && (
                             <Badge tone="electric" className="mt-1">mémoire</Badge>
                           )}
+                          <Input
+                            value={it.notes ?? ""}
+                            onChange={(e) => updateLine(i, { notes: e.target.value })}
+                            placeholder="📝 Précisions..."
+                            className="mt-1 h-7 text-xs border-dashed"
+                          />
                           {/* Quick picker */}
                           {!it.article_id && it.description.length >= 2 && (
                             <ArticlePicker
