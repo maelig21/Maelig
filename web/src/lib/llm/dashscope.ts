@@ -135,6 +135,7 @@ export interface ExtractedItem {
   unit: "u" | "m" | "m2" | "ml" | "h" | "kg" | "ens"
   category?: string
   suggested_article_ref?: string
+  is_section?: boolean
 }
 
 export interface ExtractedDevis {
@@ -212,12 +213,14 @@ Renvoie STRICTEMENT un JSON conforme à ce schéma:
       "quantity": number,
       "unit": "u|m|m2|ml|h|kg|ens|jour",
       "category": "string|null",
-      "suggested_article_ref": "string|null"
+      "suggested_article_ref": "string|null",
+    "is_section": "boolean (true si c'est une section/pièce, false sinon)"
     }
   ]
 }
 
 Règles d'extraction :
+- Si le user mentionne une pièce (salon, chambre, cuisine, salle de bain, garage, bureau, couloir, entrée, WC, cave, grenier, terrasse...), crée une section (is_section: true, description: nom de la pièce en majuscules, quantite: 1, prix_unitaire_ht: 0) AVANT les articles de cette pièce.
 - Quantités explicites : 'cinq prises' → 5. Quantité absente → 1.
 - Unités : 'u' | 'm' | 'm2' | 'ml' | 'h' | 'jour' | 'kg' | 'ens'
 - Demi-journée = 4h | journée = 8h | semaine = 40h.
@@ -271,6 +274,7 @@ function sanitizeItem(it: Partial<ExtractedItem>): ExtractedItem {
       : "u"),
     category: it.category || undefined,
     suggested_article_ref: it.suggested_article_ref || undefined,
+    is_section: it.is_section === true,
   }
 }
 
