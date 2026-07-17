@@ -104,19 +104,44 @@ export async function seedDefaultArticles() {
   if (!profile?.org_id) throw new Error("no_org")
   if (profile.role !== "owner" && profile.role !== "admin_dep") throw new Error("forbidden_slave")
 
-  // Insère seulement les nouveaux (unique index lower(nom) + org_id)
-  const toInsert = DEFAULT_ARTICLES.map((a) => ({ ...a, org_id: profile.org_id! }))
+  // Récupérer les métiers de l'org
+  const { data: org } = await supabase.from("orgs").select("metiers").eq("id", profile.org_id).maybeSingle()
+  const metiers: string[] = (org?.metiers as string[]) ?? []
+
+  // Articles par défaut (électricité)
+  let toInsert = DEFAULT_ARTICLES.map((a) => ({ ...a, org_id: profile.org_id! }))
+
+  // Ajouter les articles du catalogue commun selon les métiers
+  if (metiers.length > 0) {
+    const metiersNonElec = metiers.filter((m) => m !== "electricite")
+    if (metiersNonElec.length > 0) {
+      const { data: catalogueArticles } = await supabase
+        .from("articles_catalogue")
+        .select("nom, unite, metier")
+        .in("metier", metiersNonElec)
+      const extraArticles = (catalogueArticles ?? []).map((a) => ({
+        nom: a.nom,
+        unite: a.unite ?? "u",
+        prix_unitaire_ht: 0,
+        categorie: a.metier,
+        org_id: profile.org_id!,
+      }))
+      toInsert = [...toInsert, ...extraArticles]
+    }
+  }
+
+  // Insère seulement les nouveaux
   const { data: existing } = await supabase.from("articles").select("nom").eq("org_id", profile.org_id)
   const existingNames = new Set((existing ?? []).map((e) => e.nom.toLowerCase()))
   const newOnes = toInsert.filter((a) => !existingNames.has(a.nom.toLowerCase()))
 
-  if (newOnes.length === 0) return { ok: true, inserted: 0, total: DEFAULT_ARTICLES.length, note: "Tous déjà présents" }
+  if (newOnes.length === 0) return { ok: true, inserted: 0, total: toInsert.length, note: "Tous déjà présents" }
 
   const { error } = await supabase.from("articles").insert(newOnes)
   if (error) throw new Error(error.message)
 
-  revalidatePath("/app/parametres/defauts")
-  return { ok: true, inserted: newOnes.length, total: DEFAULT_ARTICLES.length }
+  revalidatePath("/app/catalogue")
+  return { ok: true, inserted: newOnes.length, total: toInsert.length }
 }
 
 export async function updateArticlePrice(id: string, prix_unitaire_ht: number) {
