@@ -144,7 +144,10 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                   }
                   return (
                     <tr key={it.id} className="border-b border-gray-100">
-                      <td className="py-2.5 text-gray-700">{it.description}</td>
+                      <td className="py-2.5 text-gray-700">
+                        {it.description}
+                        {it.notes && <div className="text-xs text-gray-400 mt-0.5 italic">{it.notes}</div>}
+                      </td>
                       <td className="py-2.5 text-right font-mono text-gray-800">{it.quantite}</td>
                       <td className="py-2.5 text-right text-gray-500">{it.unite}</td>
                       <td className="py-2.5 text-right font-mono text-gray-800">{formatEUR(it.prix_unitaire_ht)}</td>
