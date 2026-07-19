@@ -40,8 +40,27 @@ export default async function Page({ searchParams }: { searchParams?: Promise<{ 
     .order("usage_count", { ascending: false })
     .order("last_used_at", { ascending: false, nullsFirst: false })
 
+  const METIER_CATEGORIES: Record<string, string[]> = {
+    electricite: ["Prise", "Interrupteur", "Tableau", "Câblage", "Éclairage", "IRVE", "VMC", "Sécurité", "Alarme", "Domotique"],
+    plomberie: ["plomberie", "Robinet", "WC", "Lavabo", "Douche", "Baignoire", "Tuyauterie", "Chauffe-eau"],
+    chauffage: ["chauffage", "Radiateur", "Chaudière", "Plancher", "VMC", "Thermostat"],
+    climatisation: ["climatisation", "Climatiseur", "Gainable"],
+    maconnerie: ["maconnerie", "Béton", "Parpaing", "Enduit"],
+    charpente: ["charpente", "Tuile", "Charpente", "Couverture"],
+    menuiserie: ["menuiserie", "Porte", "Fenêtre", "Volet", "Parquet"],
+    peinture: ["peinture", "Peinture", "Enduit", "Revêtement"],
+    carrelage: ["carrelage", "Carrelage", "Faïence"],
+    isolation: ["isolation", "Isolation", "Laine"],
+    alarme: ["alarme", "Alarme", "Caméra", "Interphone"],
+  }
+
   if (metierFiltre !== "tout") {
-    articlesQuery = articlesQuery.eq("categorie", metierFiltre)
+    const cats = METIER_CATEGORIES[metierFiltre]
+    if (cats) {
+      articlesQuery = articlesQuery.in("categorie", cats)
+    } else {
+      articlesQuery = articlesQuery.eq("categorie", metierFiltre)
+    }
   }
 
   const { data: articles } = await articlesQuery
