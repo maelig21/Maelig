@@ -48,8 +48,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     <div className="max-w-5xl mx-auto p-4 sm:p-8">
       {/* Back + Status */}
       <div className="flex items-center justify-between mb-6">
-        <Link href="/app" className="inline-flex items-center gap-1 text-xs text-muted hover:text-electric">
-          <ArrowLeft className="h-3 w-3" /> Tableau de bord
+        <Link href={devis.statut === "brouillon" ? `/app/devis/nouveau?id=${devis.id}` : "/app"} className="inline-flex items-center gap-1 text-xs text-muted hover:text-electric">
+          <ArrowLeft className="h-3 w-3" /> Retour
         </Link>
         <Badge tone={meta.tone}>{meta.label}</Badge>
       </div>
