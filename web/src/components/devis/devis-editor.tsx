@@ -144,6 +144,16 @@ function DevisEditorInner({
 
     // ── Articles ──
     const additions: DevisPayload["items"] = (r.extracted.items ?? []).map((it) => {
+      if (it.is_section) {
+        return {
+          description: it.description.toUpperCase(),
+          quantite: 1,
+          unite: "",
+          prix_unitaire_ht: 0,
+          article_id: null,
+          is_section: true,
+        }
+      }
       const match = knownArticles.find((a) => a.nom.toLowerCase() === it.description.toLowerCase())
       return {
         description: it.description,
@@ -151,6 +161,7 @@ function DevisEditorInner({
         unite: it.unit,
         prix_unitaire_ht: match?.prix_unitaire_ht ?? 0,
         article_id: match?.id ?? null,
+        is_section: false,
       }
     })
     if (additions.length > 0) setItems((prev) => [...prev, ...additions])
