@@ -39,7 +39,29 @@ export async function inviteSlave(input: unknown) {
       },
     },
   )
-  if (inviteErr) throw new Error(inviteErr.message)
+  if (inviteErr) {
+    // Si l'utilisateur existe déjà, on met juste à jour son profil
+    if (inviteErr.message.includes("already been registered")) {
+      const { data: existingUser } = await admin.auth.admin.listUsers()
+      const user = existingUser?.users?.find((u) => u.email === data.email)
+      if (user) {
+        await admin.from("profiles").upsert({
+          id: user.id,
+          org_id: profile.org_id,
+          role: "slave",
+          full_name: data.full_name,
+          email: data.email,
+          telephone: data.telephone ?? null,
+          langue_maternelle: data.langue_maternelle,
+          titre_poste: data.titre_poste ?? null,
+          invited_by: user.id,
+        } as never)
+        revalidatePath("/app/parametres/equipe")
+        return { ok: true }
+      }
+    }
+    throw new Error(inviteErr.message)
+  }
 
   // 2) If user already exists, update their profile to slave
   const userId = invite?.user?.id
