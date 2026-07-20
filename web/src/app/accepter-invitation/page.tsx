@@ -19,17 +19,39 @@ export default function AccepterInvitationPage() {
   )
 
   useEffect(() => {
-    // Supabase injecte le token dans le hash de l'URL
-    const hash = window.location.hash
-    if (hash.includes("access_token") || hash.includes("type=invite")) {
-      setReady(true)
-    } else {
-      // Peut-être déjà connecté via le lien
-      supabase.auth.getSession().then(({ data }) => {
-        if (data.session) setReady(true)
-        else router.push("/connexion")
-      })
+    async function handleInvite() {
+      const hash = window.location.hash
+      
+      if (hash.includes("access_token")) {
+        // Extraire les params du hash
+        const params = new URLSearchParams(hash.substring(1))
+        const accessToken = params.get("access_token")
+        const refreshToken = params.get("refresh_token")
+        
+        if (accessToken && refreshToken) {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          })
+          if (error) {
+            toast.error("Lien invalide ou expiré", { description: error.message })
+            router.push("/connexion")
+            return
+          }
+          setReady(true)
+          return
+        }
+      }
+
+      // Vérifier si déjà connecté
+      const { data } = await supabase.auth.getSession()
+      if (data.session) {
+        setReady(true)
+      } else {
+        router.push("/connexion")
+      }
     }
+    handleInvite()
   }, [])
 
   async function submit() {
