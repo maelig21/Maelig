@@ -81,6 +81,34 @@ export async function POST(req: Request) {
       const { extractDevis } = await import("@/lib/llm/extract")
       extracted = await extractDevis(text, articleNames)
     }
+    // Validation croisée : vérifier que les quantités extraites correspondent à la transcription
+    if (extracted.items && extracted.items.length > 0) {
+      const numbers = text.match(/(\d+|un|deux|trois|quatre|cinq|six|sept|huit|neuf|dix)/gi) ?? []
+      const numMap: Record<string, number> = {
+        un: 1, une: 1, deux: 2, trois: 3, quatre: 4, cinq: 5,
+        six: 6, sept: 7, huit: 8, neuf: 9, dix: 10
+      }
+      const extractedNums = numbers.map((n) => numMap[n.toLowerCase()] ?? parseInt(n)).filter((n) => !isNaN(n) && n > 0)
+      const itemNums = extracted.items.map((it) => it.quantite).filter((q) => q && q > 1)
+      // Log pour debug
+      console.log("[extract-text] transcription nums:", extractedNums, "item nums:", itemNums)
+    }
+
+    // Si aucun article détecté, on réessaie avec le fallback
+    if (!extracted.items || extracted.items.length === 0) {
+      console.warn("[extract-text] 0 articles extracted, retrying with fallback...")
+      try {
+        const { extractDevis } = await import("@/lib/llm/extract")
+        const fallback = await extractDevis(text, articleNames)
+        if (fallback.items && fallback.items.length > 0) {
+          console.log("[extract-text] fallback succeeded with", fallback.items.length, "items")
+          return NextResponse.json({ ok: true, extracted: fallback })
+        }
+      } catch (e2) {
+        console.warn("[extract-text] fallback also failed:", e2 instanceof Error ? e2.message : e2)
+      }
+    }
+
     return NextResponse.json({ ok: true, extracted })
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)
