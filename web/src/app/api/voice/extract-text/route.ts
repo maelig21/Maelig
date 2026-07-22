@@ -72,7 +72,15 @@ export async function POST(req: Request) {
   const metiers: string[] = orgData?.metiers ?? []
 
   try {
-    const extracted = await extractDevisFromTranscript(text, articleNames, metiers)
+    let extracted
+    try {
+      extracted = await extractDevisFromTranscript(text, articleNames, metiers)
+    } catch (e) {
+      console.warn("[extract-text] DeepSeek failed, trying fallback:", e instanceof Error ? e.message : e)
+      // Fallback via extract.ts
+      const { extractDevis } = await import("@/lib/llm/extract")
+      extracted = await extractDevis(text, articleNames)
+    }
     return NextResponse.json({ ok: true, extracted })
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)
