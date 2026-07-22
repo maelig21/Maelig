@@ -283,7 +283,8 @@ export function VoiceRecorder({
     setTranscribing(true)
     try {
       const fd = new FormData()
-      fd.append("audio", blob, `chantier-${Date.now()}.webm`)
+      const ext = mr.mimeType?.includes("mp4") ? "mp4" : mr.mimeType?.includes("ogg") ? "ogg" : "webm"
+      fd.append("audio", blob, `chantier-${Date.now()}.${ext}`)
       const res = await fetch("/api/voice/transcribe", { method: "POST", body: fd })
       const data = (await res.json()) as Partial<Result> & { error?: string; detail?: string }
       if (!res.ok || data.error) {
