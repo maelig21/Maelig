@@ -45,6 +45,12 @@ export default async function Page() {
       title: "Défauts (TVA, taux horaire, relances)",
       description: "Vos préférences par défaut pour gagner des secondes à chaque devis.",
     },
+    {
+      href: "/app/parametres/apparence",
+      Icon: ImageIcon,
+      title: "Apparence du devis",
+      description: "Personnalisez la mise en page, couleurs, logo et style de vos devis.",
+    },
   ]
 
   return (
