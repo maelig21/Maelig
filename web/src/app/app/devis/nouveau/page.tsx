@@ -3,7 +3,8 @@ import { DevisEditor } from "@/components/devis/devis-editor"
 
 export const dynamic = "force-dynamic"
 
-export default async function NouveauDevisPage() {
+export default async function NouveauDevisPage({ searchParams }: { searchParams?: Promise<{ id?: string; client?: string }> }) {
+  const sp = await searchParams
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
   const { data: profile } = await supabase
@@ -54,6 +55,53 @@ export default async function NouveauDevisPage() {
       .map((a) => ({ id: a.id, nom: a.nom, prix_unitaire_ht: null, unite: a.unite, usage_count: 0 }))
   }
 
+  // Si un ID de devis est passé, charger le devis existant pour édition
+  let initialPayload = undefined
+  if (sp?.id) {
+    const { data: existingDevis } = await supabase
+      .from("devis")
+      .select("*, clients(*), devis_items(*)")
+      .eq("id", sp.id)
+      .eq("org_id", orgId!)
+      .maybeSingle()
+
+    if (existingDevis) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const c = existingDevis.clients as any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const its = (existingDevis.devis_items as any[]) ?? []
+      initialPayload = {
+        id: existingDevis.id,
+        client: c ? {
+          id: c.id,
+          nom: c.nom ?? "",
+          prenom: c.prenom ?? "",
+          raison_sociale: c.raison_sociale ?? "",
+          email: c.email ?? "",
+          telephone: c.telephone ?? "",
+          adresse: c.adresse ?? "",
+          ville: c.ville ?? "",
+          cp: c.cp ?? "",
+        } : undefined,
+        objet: existingDevis.objet ?? "",
+        chantier_adresse: existingDevis.chantier_adresse ?? "",
+        notes_client: existingDevis.notes_client ?? "",
+        taux_horaire: Number(existingDevis.taux_horaire ?? 45),
+        heures_main_oeuvre: Number(existingDevis.heures_main_oeuvre ?? 0),
+        tva_taux: Number(existingDevis.tva_taux ?? 20),
+        items: its.map((it) => ({
+          description: it.description,
+          quantite: Number(it.quantite),
+          unite: it.unite ?? "u",
+          prix_unitaire_ht: Number(it.prix_unitaire_ht ?? 0),
+          article_id: it.article_id ?? null,
+          is_section: it.is_section === true,
+          notes: it.notes ?? "",
+        })),
+      }
+    }
+  }
+
   return (
     <DevisEditor
       canEditPrix={canEditPrix}
@@ -63,6 +111,7 @@ export default async function NouveauDevisPage() {
       }}
       knownArticles={[...(articles ?? []), ...catalogueArticles]}
       knownClients={clients ?? []}
+      initialPayload={initialPayload}
     />
   )
 }
