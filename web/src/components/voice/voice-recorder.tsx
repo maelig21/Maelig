@@ -154,11 +154,15 @@ export function VoiceRecorder({
     mobileTickRef.current = null
     if (autoStopRef.current) { clearTimeout(autoStopRef.current); autoStopRef.current = null }
     recordingRef.current = false
+
+    // Capturer le texte AVANT de stopper (live.stop() peut effacer finalText de façon async)
+    const capturedText = (live.finalText + (live.interim ? " " + live.interim : "")).trim()
+
     live.stop()
     setRecording(false)
     setTranscribing(true)
 
-    const rawText = live.finalText.trim()
+    const rawText = capturedText
     if (!rawText) {
       toast.error("Aucune parole détectée", { description: "Rien n'a été transcrit. Réessayez." })
       setTranscribing(false)
