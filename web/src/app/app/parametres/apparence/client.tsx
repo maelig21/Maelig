@@ -41,7 +41,7 @@ const DEFAULT_SETTINGS: Settings = {
   afficher_logo: true,
 }
 
-const LOGO_TAILLES = { petit: "h-8", moyen: "h-14", grand: "h-20" }
+const LOGO_TAILLES = { petit: 32, moyen: 56, grand: 80 }
 const MARGES = { petites: "p-4", normales: "p-8", grandes: "p-12" }
 const POLICES = ["Inter", "Plus Jakarta Sans", "Geist", "Merriweather", "Courier Prime"]
 
@@ -232,7 +232,7 @@ export function AppearanceEditor({
                 <div className={s.header_disposition === "centre" ? "text-center" : ""}>
                   {s.afficher_logo && orgLogoUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={orgLogoUrl} alt="Logo" className={`${logoSize} object-contain`} />
+                    <img src={orgLogoUrl} alt="Logo" style={{ height: logoSize }} className="object-contain" />
                   ) : (
                     <div className="text-xl font-bold text-gray-800">{orgNom}</div>
                   )}
