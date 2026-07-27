@@ -18,15 +18,50 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect("/verifier-email")
   }
 
-  const { data: profile } = await supabase
+  let { data: profile } = await supabase
     .from("profiles")
     .select("full_name, email, role, org_id")
     .eq("id", user.id)
     .maybeSingle()
 
+  // Si l'utilisateur n'a pas d'org (nouvelle inscription), on lui en crée une avec 14 jours d'essai
+  if (profile && !profile.org_id) {
+    const companyName = (user.user_metadata?.company as string) || (user.user_metadata?.full_name as string) || "Mon Entreprise"
+    const trialEnd = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
+
+    const { data: newOrg, error: orgErr } = await supabase
+      .from("orgs")
+      .insert({
+        nom: companyName,
+        email: user.email,
+        subscription_status: "trialing",
+        trial_ends_at: trialEnd,
+      })
+      .select("id")
+      .single()
+
+    if (!orgErr && newOrg) {
+      await supabase.from("profiles").update({ org_id: newOrg.id, role: "owner" }).eq("id", user.id)
+      // Recharger le profil avec le nouvel org_id
+      const { data: updatedProfile } = await supabase
+        .from("profiles")
+        .select("full_name, email, role, org_id")
+        .eq("id", user.id)
+        .maybeSingle()
+      profile = updatedProfile
+    }
+  }
+
   const { data: org } = profile?.org_id
     ? await supabase.from("orgs").select("nom, subscription_status, trial_ends_at, logo_url").eq("id", profile.org_id).maybeSingle()
     : { data: null }
+
+  // Blocage si essai expiré et pas d'abonnement actif
+  const trialExpired = org?.trial_ends_at && new Date(org.trial_ends_at) < new Date()
+  const hasActiveSubscription = org?.subscription_status === "active" || org?.subscription_status === "trialing"
+  if (trialExpired && !hasActiveSubscription && profile?.role !== "admin_dep") {
+    redirect("/app/parametres/abonnement?expired=1")
+  }
 
   // Compteurs pour les notifications
   const counts = { aValider: 0, incidents: 0 }
