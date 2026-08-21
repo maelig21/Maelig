@@ -54,6 +54,11 @@ export function FactureActions({ factureId, statut, devisId }: { factureId: stri
       <Button onClick={() => call(marquerPayee, "Facture marquée comme payée !")} disabled={pending}>
         <Check className="h-4 w-4" /> Marquer comme payée
       </Button>
+      <Button variant="secondary" asChild>
+        <a href={`/api/factures/${factureId}/facturx`} download title="Format conforme réforme facturation électronique 2027">
+          📄 Télécharger Factur-X
+        </a>
+      </Button>
       <Button variant="secondary" onClick={() => call(marquerAbandonnee, "Facture abandonnée")} disabled={pending}>
         <X className="h-4 w-4" /> Abandonner
       </Button>
