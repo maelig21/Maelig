@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
-import { buildFacturXXml, embedFacturXInPdf } from "@/lib/facturx/generate"
+import { generateFacturXPdf } from "@/lib/facturx/generate"
 
 export const runtime = "nodejs"
 export const maxDuration = 30
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   if (!UUID_RE.test(id)) return NextResponse.json({ error: "invalid_id" }, { status: 400 })
 
@@ -40,10 +40,19 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   if (items.length === 0) return NextResponse.json({ error: "no_items" }, { status: 400 })
 
   try {
-    const xml = buildFacturXXml({
+    // Récupérer le PDF classique déjà généré
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? new URL(req.url).origin
+    const pdfRes = await fetch(`${baseUrl}/api/factures/${id}/pdf`, {
+      headers: { cookie: req.headers.get("cookie") ?? "" },
+    })
+    if (!pdfRes.ok) {
+      return NextResponse.json({ error: "pdf_generation_failed" }, { status: 500 })
+    }
+    const pdfBuffer = Buffer.from(await pdfRes.arrayBuffer())
+
+    const facturXPdf = await generateFacturXPdf(pdfBuffer, {
       numero: facture.numero ?? id.slice(0, 8),
       dateEmission: facture.date_emission ?? new Date().toISOString().slice(0, 10),
-      dateEcheance: facture.date_echeance ?? undefined,
       vendeur: {
         nom: org?.nom ?? "",
         siret: org?.siret,
@@ -70,21 +79,6 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       totalHT: Number(facture.total_ht),
       totalTVA: Number(facture.tva_montant),
       totalTTC: Number(facture.total_ttc),
-    })
-
-    // Récupérer le PDF classique déjà généré (endpoint existant)
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? new URL(_req.url).origin
-    const pdfRes = await fetch(`${baseUrl}/api/factures/${id}/pdf`, {
-      headers: { cookie: _req.headers.get("cookie") ?? "" },
-    })
-    if (!pdfRes.ok) {
-      return NextResponse.json({ error: "pdf_generation_failed" }, { status: 500 })
-    }
-    const pdfBuffer = Buffer.from(await pdfRes.arrayBuffer())
-
-    const facturXPdf = await embedFacturXInPdf(pdfBuffer, xml, {
-      author: org?.nom ?? "DEP",
-      title: `Facture ${facture.numero ?? id.slice(0, 8)}`,
     })
 
     return new NextResponse(new Uint8Array(facturXPdf), {
