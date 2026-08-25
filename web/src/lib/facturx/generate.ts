@@ -44,21 +44,16 @@ export async function generateFacturXPdf(pdfBuffer: Buffer, data: FacturXInvoice
     ? [{ id: data.vendeur.siret, schemeId: "SIRET" as const }]
     : []
 
-  // Regrouper les lignes par taux de TVA pour le vatBreakdown
-  const parTaux = new Map<number, { base: number; tva: number }>()
-  for (const l of data.lignes) {
-    const lineTotal = l.quantite * l.prixUnitaireHT
-    const existing = parTaux.get(l.tvaTaux) ?? { base: 0, tva: 0 }
-    existing.base += lineTotal
-    existing.tva += lineTotal * (l.tvaTaux / 100)
-    parTaux.set(l.tvaTaux, existing)
-  }
-  const vatBreakdown = Array.from(parTaux.entries()).map(([percent, { base, tva }]) => ({
-    taxAmount: Number(tva.toFixed(2)),
-    taxableAmount: Number(base.toFixed(2)),
+  // Un seul taux de TVA global (cas standard artisan France) — on utilise
+  // directement les totaux de la facture comme source de vérité pour garantir
+  // la cohérence exigée par la règle BR-CO-14 (taxTotal = Σ vatBreakdown.taxAmount).
+  const tauxPrincipal = data.lignes[0]?.tvaTaux ?? 20
+  const vatBreakdown = [{
+    taxAmount: Number(data.totalTVA.toFixed(2)),
+    taxableAmount: Number(data.totalHT.toFixed(2)),
     categoryCode: "S" as const,
-    ratePercent: percent,
-  }))
+    ratePercent: tauxPrincipal,
+  }]
 
   const result = await embedFacturX({
     pdf: pdfBuffer,
