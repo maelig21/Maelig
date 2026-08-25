@@ -54,10 +54,10 @@ export async function generateFacturXPdf(pdfBuffer: Buffer, data: FacturXInvoice
     parTaux.set(l.tvaTaux, existing)
   }
   const vatBreakdown = Array.from(parTaux.entries()).map(([percent, { base, tva }]) => ({
-    calculatedAmount: Number(tva.toFixed(2)),
-    basisAmount: Number(base.toFixed(2)),
+    taxAmount: Number(tva.toFixed(2)),
+    taxableAmount: Number(base.toFixed(2)),
     categoryCode: "S" as const,
-    percent,
+    ratePercent: percent,
   }))
 
   const result = await embedFacturX({
