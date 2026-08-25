@@ -7,7 +7,7 @@ import { embedFacturX, DocumentTypeCode, Profile } from "@stackforge-eu/factur-x
 
 export type FacturXInvoiceData = {
   numero: string
-  dateEmission: string // YYYY-MM-DD
+  dateEmission: string
   vendeur: {
     nom: string
     siret?: string | null
@@ -37,16 +37,28 @@ export type FacturXInvoiceData = {
   devise?: string
 }
 
-/**
- * Génère le PDF Factur-X complet (XML CII embarqué + métadonnées PDF/A-3)
- * à partir d'un PDF classique déjà rendu et des données de facture.
- */
 export async function generateFacturXPdf(pdfBuffer: Buffer, data: FacturXInvoiceData): Promise<Buffer> {
   const taxReg = data.vendeur.tvaIntracom
     ? [{ id: data.vendeur.tvaIntracom, schemeId: "VA" as const }]
     : data.vendeur.siret
     ? [{ id: data.vendeur.siret, schemeId: "SIRET" as const }]
     : []
+
+  // Regrouper les lignes par taux de TVA pour le vatBreakdown
+  const parTaux = new Map<number, { base: number; tva: number }>()
+  for (const l of data.lignes) {
+    const lineTotal = l.quantite * l.prixUnitaireHT
+    const existing = parTaux.get(l.tvaTaux) ?? { base: 0, tva: 0 }
+    existing.base += lineTotal
+    existing.tva += lineTotal * (l.tvaTaux / 100)
+    parTaux.set(l.tvaTaux, existing)
+  }
+  const vatBreakdown = Array.from(parTaux.entries()).map(([percent, { base, tva }]) => ({
+    calculatedAmount: Number(tva.toFixed(2)),
+    basisAmount: Number(base.toFixed(2)),
+    categoryCode: "S" as const,
+    percent,
+  }))
 
   const result = await embedFacturX({
     pdf: pdfBuffer,
@@ -80,14 +92,18 @@ export async function generateFacturXPdf(pdfBuffer: Buffer, data: FacturXInvoice
         name: l.description,
         quantity: l.quantite,
         unitPrice: l.prixUnitaireHT,
-        vatCategory: { percent: l.tvaTaux },
+        lineTotal: Number((l.quantite * l.prixUnitaireHT).toFixed(2)),
+        vatCategory: { percent: l.tvaTaux, categoryCode: "S" as const },
       })),
       totals: {
         currency: data.devise ?? "EUR",
-        taxBasisTotal: data.totalHT,
-        taxTotal: data.totalTVA,
-        grandTotal: data.totalTTC,
+        lineTotal: Number(data.totalHT.toFixed(2)),
+        taxBasisTotal: Number(data.totalHT.toFixed(2)),
+        taxTotal: Number(data.totalTVA.toFixed(2)),
+        grandTotal: Number(data.totalTTC.toFixed(2)),
+        duePayableAmount: Number(data.totalTTC.toFixed(2)),
       },
+      vatBreakdown,
     },
     profile: Profile.BASIC_WL,
   })
