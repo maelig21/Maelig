@@ -5,6 +5,7 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { formatEUR, formatDateFR } from "@/lib/utils"
 import { jsPDF } from "jspdf"
+import { LIBERATION_SANS_REGULAR, LIBERATION_SANS_BOLD } from "@/lib/facturx/embedded-fonts"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -38,16 +39,25 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   const items = ((devis.devis_items as any[]) ?? []).filter((it) => !it.is_section)
 
   const doc = new jsPDF({ unit: "mm", format: "a4" })
+
+  // Embarque Liberation Sans (conforme PDF/A-3, requis pour Factur-X) —
+  // remplace Helvetica qui n'est jamais réellement embarquée par jsPDF.
+  doc.addFileToVFS("LiberationSans-Regular.ttf", LIBERATION_SANS_REGULAR)
+  doc.addFont("LiberationSans-Regular.ttf", "LiberationSans", "normal")
+  doc.addFileToVFS("LiberationSans-Bold.ttf", LIBERATION_SANS_BOLD)
+  doc.addFont("LiberationSans-Bold.ttf", "LiberationSans", "bold")
+  doc.setFont("LiberationSans", "normal")
+
   const pageWidth = doc.internal.pageSize.getWidth()
   const marginX = 20
   let y = 20
 
   // En-tête entreprise
   doc.setFontSize(14)
-  doc.setFont("helvetica", "bold")
+  doc.setFont("LiberationSans", "bold")
   doc.text(org.nom ?? "", marginX, y)
   doc.setFontSize(9)
-  doc.setFont("helvetica", "normal")
+  doc.setFont("LiberationSans", "normal")
   y += 6
   if (org.adresse) { doc.text(org.adresse, marginX, y); y += 4 }
   if (org.cp || org.ville) { doc.text(`${org.cp ?? ""} ${org.ville ?? ""}`, marginX, y); y += 4 }
@@ -55,19 +65,19 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
   // Titre + numéro (à droite)
   doc.setFontSize(22)
-  doc.setFont("helvetica", "bold")
+  doc.setFont("LiberationSans", "bold")
   doc.text("FACTURE", pageWidth - marginX, 20, { align: "right" })
   doc.setFontSize(9)
-  doc.setFont("helvetica", "normal")
+  doc.setFont("LiberationSans", "normal")
   doc.text(`N° ${facture.numero ?? ""}`, pageWidth - marginX, 27, { align: "right" })
   doc.text(formatDateFR(facture.date_emission ?? ""), pageWidth - marginX, 32, { align: "right" })
 
   y = Math.max(y, 40) + 6
 
   // Client
-  doc.setFont("helvetica", "bold")
+  doc.setFont("LiberationSans", "bold")
   doc.text("Facturé à :", marginX, y)
-  doc.setFont("helvetica", "normal")
+  doc.setFont("LiberationSans", "normal")
   y += 5
   doc.text(client.raison_sociale || [client.prenom, client.nom].filter(Boolean).join(" ") || "", marginX, y)
   y += 4
@@ -76,7 +86,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   y += 8
 
   // Tableau des lignes
-  doc.setFont("helvetica", "bold")
+  doc.setFont("LiberationSans", "bold")
   doc.setFontSize(9)
   doc.text("Désignation", marginX, y)
   doc.text("Qté", pageWidth - marginX - 55, y, { align: "right" })
@@ -87,7 +97,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   doc.line(marginX, y, pageWidth - marginX, y)
   y += 5
 
-  doc.setFont("helvetica", "normal")
+  doc.setFont("LiberationSans", "normal")
   for (const it of items) {
     if (y > 260) { doc.addPage(); y = 20 }
     const desc = doc.splitTextToSize(String(it.description ?? ""), 100)
@@ -110,7 +120,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   doc.text("TVA", totalsX, y)
   doc.text(formatEUR(facture.tva_montant), pageWidth - marginX, y, { align: "right" })
   y += 5
-  doc.setFont("helvetica", "bold")
+  doc.setFont("LiberationSans", "bold")
   doc.setFontSize(11)
   doc.text("Total TTC", totalsX, y)
   doc.text(formatEUR(facture.total_ttc), pageWidth - marginX, y, { align: "right" })
