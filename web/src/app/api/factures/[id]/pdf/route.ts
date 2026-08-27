@@ -1,12 +1,14 @@
 /**
- * Facture PDF — vrai PDF binaire via Puppeteer (nécessaire pour Factur-X).
+ * Facture PDF — vrai PDF binaire via jsPDF (pas de navigateur headless,
+ * fiable sur Vercel contrairement à puppeteer/chromium).
  */
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { formatEUR, formatDateFR } from "@/lib/utils"
+import { jsPDF } from "jspdf"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
-export const maxDuration = 30
+export const maxDuration = 20
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -35,82 +37,90 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const items = ((devis.devis_items as any[]) ?? []).filter((it) => !it.is_section)
 
-  const html = `<!doctype html>
-<html lang="fr">
-<head>
-<meta charset="utf-8" />
-<style>
-  body { font-family: Inter, Arial, sans-serif; color: #18181b; padding: 40px; }
-  .header { display: flex; justify-content: space-between; margin-bottom: 24px; }
-  .title { font-size: 28px; font-weight: 800; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 20px; }
-  th { text-align: left; border-bottom: 2px solid #333; padding: 8px 4px; }
-  td { padding: 6px 4px; border-bottom: 1px solid #eee; }
-  .right { text-align: right; }
-  .totals { margin-top: 16px; width: 250px; margin-left: auto; font-size: 13px; }
-  .totals div { display: flex; justify-content: space-between; padding: 4px 0; }
-  .grand { font-weight: 800; font-size: 16px; border-top: 2px solid #333; padding-top: 8px; }
-</style>
-</head>
-<body>
-  <div class="header">
-    <div>
-      <div style="font-weight:700; font-size:18px;">${org.nom ?? ""}</div>
-      <div style="font-size:12px; color:#666;">${org.adresse ?? ""}</div>
-      <div style="font-size:12px; color:#666;">${org.cp ?? ""} ${org.ville ?? ""}</div>
-      ${org.siret ? `<div style="font-size:12px; color:#666;">SIRET : ${org.siret}</div>` : ""}
-    </div>
-    <div style="text-align:right;">
-      <div class="title">FACTURE</div>
-      <div style="font-size:12px; color:#666;">N° ${facture.numero ?? ""}</div>
-      <div style="font-size:12px; color:#666;">${formatDateFR(facture.date_emission ?? "")}</div>
-    </div>
-  </div>
+  const doc = new jsPDF({ unit: "mm", format: "a4" })
+  const pageWidth = doc.internal.pageSize.getWidth()
+  const marginX = 20
+  let y = 20
 
-  <div style="font-size:13px; margin-bottom:16px;">
-    <strong>Facturé à :</strong> ${client.raison_sociale || [client.prenom, client.nom].filter(Boolean).join(" ")}<br/>
-    ${client.adresse ?? ""}
-  </div>
+  // En-tête entreprise
+  doc.setFontSize(14)
+  doc.setFont("helvetica", "bold")
+  doc.text(org.nom ?? "", marginX, y)
+  doc.setFontSize(9)
+  doc.setFont("helvetica", "normal")
+  y += 6
+  if (org.adresse) { doc.text(org.adresse, marginX, y); y += 4 }
+  if (org.cp || org.ville) { doc.text(`${org.cp ?? ""} ${org.ville ?? ""}`, marginX, y); y += 4 }
+  if (org.siret) { doc.text(`SIRET : ${org.siret}`, marginX, y); y += 4 }
 
-  <table>
-    <thead>
-      <tr><th>Désignation</th><th class="right">Qté</th><th class="right">PU HT</th><th class="right">Total HT</th></tr>
-    </thead>
-    <tbody>
-      ${items.map((it) => `<tr><td>${it.description}</td><td class="right">${it.quantite}</td><td class="right">${formatEUR(it.prix_unitaire_ht)}</td><td class="right">${formatEUR(it.total_ht)}</td></tr>`).join("")}
-    </tbody>
-  </table>
+  // Titre + numéro (à droite)
+  doc.setFontSize(22)
+  doc.setFont("helvetica", "bold")
+  doc.text("FACTURE", pageWidth - marginX, 20, { align: "right" })
+  doc.setFontSize(9)
+  doc.setFont("helvetica", "normal")
+  doc.text(`N° ${facture.numero ?? ""}`, pageWidth - marginX, 27, { align: "right" })
+  doc.text(formatDateFR(facture.date_emission ?? ""), pageWidth - marginX, 32, { align: "right" })
 
-  <div class="totals">
-    <div><span>Total HT</span><span>${formatEUR(facture.total_ht)}</span></div>
-    <div><span>TVA</span><span>${formatEUR(facture.tva_montant)}</span></div>
-    <div class="grand"><span>Total TTC</span><span>${formatEUR(facture.total_ttc)}</span></div>
-  </div>
-</body>
-</html>`
+  y = Math.max(y, 40) + 6
 
-  try {
-    const chromium = (await import("@sparticuz/chromium")).default
-    const puppeteer = await import("puppeteer-core")
+  // Client
+  doc.setFont("helvetica", "bold")
+  doc.text("Facturé à :", marginX, y)
+  doc.setFont("helvetica", "normal")
+  y += 5
+  doc.text(client.raison_sociale || [client.prenom, client.nom].filter(Boolean).join(" ") || "", marginX, y)
+  y += 4
+  if (client.adresse) { doc.text(client.adresse, marginX, y); y += 4 }
 
-    const browser = await puppeteer.launch({
-      args: chromium.args,
-      executablePath: await chromium.executablePath(),
-      headless: true,
-    })
-    const page = await browser.newPage()
-    await page.setContent(html, { waitUntil: "networkidle0" })
-    const pdfBuffer = await page.pdf({ format: "A4", printBackground: true })
-    await browser.close()
+  y += 8
 
-    return new Response(new Uint8Array(pdfBuffer), {
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `inline; filename="facture-${facture.numero ?? id.slice(0, 8)}.pdf"`,
-      },
-    })
-  } catch (e) {
-    console.error("[facture pdf] puppeteer failed:", e)
-    return new Response(html, { headers: { "Content-Type": "text/html" } })
+  // Tableau des lignes
+  doc.setFont("helvetica", "bold")
+  doc.setFontSize(9)
+  doc.text("Désignation", marginX, y)
+  doc.text("Qté", pageWidth - marginX - 55, y, { align: "right" })
+  doc.text("PU HT", pageWidth - marginX - 30, y, { align: "right" })
+  doc.text("Total HT", pageWidth - marginX, y, { align: "right" })
+  y += 2
+  doc.setLineWidth(0.3)
+  doc.line(marginX, y, pageWidth - marginX, y)
+  y += 5
+
+  doc.setFont("helvetica", "normal")
+  for (const it of items) {
+    if (y > 260) { doc.addPage(); y = 20 }
+    const desc = doc.splitTextToSize(String(it.description ?? ""), 100)
+    doc.text(desc, marginX, y)
+    doc.text(String(it.quantite ?? ""), pageWidth - marginX - 55, y, { align: "right" })
+    doc.text(formatEUR(it.prix_unitaire_ht), pageWidth - marginX - 30, y, { align: "right" })
+    doc.text(formatEUR(it.total_ht), pageWidth - marginX, y, { align: "right" })
+    y += 5 * (Array.isArray(desc) ? desc.length : 1) + 1
   }
+
+  y += 4
+  doc.line(marginX, y, pageWidth - marginX, y)
+  y += 8
+
+  // Totaux
+  const totalsX = pageWidth - marginX - 60
+  doc.text("Total HT", totalsX, y)
+  doc.text(formatEUR(facture.total_ht), pageWidth - marginX, y, { align: "right" })
+  y += 5
+  doc.text("TVA", totalsX, y)
+  doc.text(formatEUR(facture.tva_montant), pageWidth - marginX, y, { align: "right" })
+  y += 5
+  doc.setFont("helvetica", "bold")
+  doc.setFontSize(11)
+  doc.text("Total TTC", totalsX, y)
+  doc.text(formatEUR(facture.total_ttc), pageWidth - marginX, y, { align: "right" })
+
+  const pdfBuffer = Buffer.from(doc.output("arraybuffer"))
+
+  return new Response(new Uint8Array(pdfBuffer), {
+    headers: {
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `inline; filename="facture-${facture.numero ?? id.slice(0, 8)}.pdf"`,
+    },
+  })
 }
