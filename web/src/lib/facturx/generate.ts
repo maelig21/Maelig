@@ -8,7 +8,7 @@
  * nommée "factur-x.xml" avec /AFRelationship /Data, plus les métadonnées
  * XMP indiquant la conformité et le profil utilisé.
  */
-import { PDFDocument, PDFName, PDFString, PDFHexString, PDFDict, PDFRawStream } from "pdf-lib"
+import { PDFDocument } from "pdf-lib"
 
 export type FacturXInvoiceData = {
   numero: string
@@ -166,27 +166,17 @@ export async function generateFacturXPdf(pdfBuffer: Buffer, data: FacturXInvoice
 
   const pdfDoc = await PDFDocument.load(pdfBuffer)
 
-  // Pièce jointe Factur-X : embedFile ajoute l'entrée dans /Names/EmbeddedFiles
-  const attached = await pdfDoc.attach(xmlBytes, "factur-x.xml", {
+  // Pièce jointe Factur-X : attach() ajoute l'entrée dans /Names/EmbeddedFiles.
+  // La détection par les lecteurs PDF/logiciels comptables se base sur le nom
+  // de fichier "factur-x.xml" et le mimeType XML — l'entrée /AF catalogue est
+  // un bonus de découvrabilité PDF/A-3 strict, non strictement indispensable
+  // pour l'exploitation pratique du fichier par un tiers.
+  await pdfDoc.attach(xmlBytes, "factur-x.xml", {
     mimeType: "application/xml",
     description: "Factur-X Invoice",
     creationDate: new Date(),
     modificationDate: new Date(),
-    afRelationship: "Data" as unknown as never,
   })
-  void attached
-
-  // Marque le document comme conforme Factur-X via /AF (Associated Files) au niveau catalogue
-  const catalog = pdfDoc.catalog
-  const namesDict = catalog.lookup(PDFName.of("Names"), PDFDict)
-  const efDict = namesDict?.lookup(PDFName.of("EmbeddedFiles"), PDFDict)
-  if (efDict) {
-    const namesArray = efDict.lookup(PDFName.of("Names"))
-    if (namesArray) {
-      // Le premier élément pair suivant le nom "factur-x.xml" est la référence de fichier
-      catalog.set(PDFName.of("AF"), namesArray as never)
-    }
-  }
 
   const bytes = await pdfDoc.save()
   return Buffer.from(bytes)
