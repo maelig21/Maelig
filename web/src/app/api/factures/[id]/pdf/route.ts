@@ -1,10 +1,11 @@
 /**
- * Facture PDF — vrai PDF binaire via jsPDF (pas de navigateur headless,
- * fiable sur Vercel contrairement à puppeteer/chromium).
+ * Facture PDF — vrai PDF binaire via PDFKit avec polices correctement
+ * embarquées (contrairement à jsPDF qui référence toujours les 14 polices
+ * standard PDF même quand on n'en utilise aucune — incompatible PDF/A-3).
  */
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { formatEUR, formatDateFR } from "@/lib/utils"
-import { jsPDF } from "jspdf"
+import PDFDocument from "pdfkit"
 import { LIBERATION_SANS_REGULAR, LIBERATION_SANS_BOLD } from "@/lib/facturx/embedded-fonts"
 
 export const runtime = "nodejs"
@@ -38,94 +39,93 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const items = ((devis.devis_items as any[]) ?? []).filter((it) => !it.is_section)
 
-  const doc = new jsPDF({ unit: "mm", format: "a4" })
+  const regularBuf = Buffer.from(LIBERATION_SANS_REGULAR, "base64")
+  const boldBuf = Buffer.from(LIBERATION_SANS_BOLD, "base64")
 
-  // Embarque Liberation Sans (conforme PDF/A-3, requis pour Factur-X) —
-  // remplace Helvetica qui n'est jamais réellement embarquée par jsPDF.
-  doc.addFileToVFS("LiberationSans-Regular.ttf", LIBERATION_SANS_REGULAR)
-  doc.addFont("LiberationSans-Regular.ttf", "LiberationSans", "normal")
-  doc.addFileToVFS("LiberationSans-Bold.ttf", LIBERATION_SANS_BOLD)
-  doc.addFont("LiberationSans-Bold.ttf", "LiberationSans", "bold")
-  doc.setFont("LiberationSans", "normal")
+  const pdfBuffer: Buffer = await new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ size: "A4", margin: 50, autoFirstPage: true, pdfVersion: "1.7" })
+    const chunks: Buffer[] = []
+    doc.on("data", (c) => chunks.push(c))
+    doc.on("end", () => resolve(Buffer.concat(chunks)))
+    doc.on("error", reject)
 
-  const pageWidth = doc.internal.pageSize.getWidth()
-  const marginX = 20
-  let y = 20
+    doc.registerFont("LibSans", regularBuf)
+    doc.registerFont("LibSans-Bold", boldBuf)
+    doc.font("LibSans")
 
-  // En-tête entreprise
-  doc.setFontSize(14)
-  doc.setFont("LiberationSans", "bold")
-  doc.text(org.nom ?? "", marginX, y)
-  doc.setFontSize(9)
-  doc.setFont("LiberationSans", "normal")
-  y += 6
-  if (org.adresse) { doc.text(org.adresse, marginX, y); y += 4 }
-  if (org.cp || org.ville) { doc.text(`${org.cp ?? ""} ${org.ville ?? ""}`, marginX, y); y += 4 }
-  if (org.siret) { doc.text(`SIRET : ${org.siret}`, marginX, y); y += 4 }
+    const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right
+    const startX = doc.page.margins.left
 
-  // Titre + numéro (à droite)
-  doc.setFontSize(22)
-  doc.setFont("LiberationSans", "bold")
-  doc.text("FACTURE", pageWidth - marginX, 20, { align: "right" })
-  doc.setFontSize(9)
-  doc.setFont("LiberationSans", "normal")
-  doc.text(`N° ${facture.numero ?? ""}`, pageWidth - marginX, 27, { align: "right" })
-  doc.text(formatDateFR(facture.date_emission ?? ""), pageWidth - marginX, 32, { align: "right" })
+    // En-tête entreprise (gauche)
+    doc.font("LibSans-Bold").fontSize(14).text(org.nom ?? "", startX, 50)
+    doc.font("LibSans").fontSize(9)
+    if (org.adresse) doc.text(org.adresse)
+    if (org.cp || org.ville) doc.text(`${org.cp ?? ""} ${org.ville ?? ""}`)
+    if (org.siret) doc.text(`SIRET : ${org.siret}`)
 
-  y = Math.max(y, 40) + 6
+    // Titre + numéro (droite)
+    doc.font("LibSans-Bold").fontSize(22).text("FACTURE", startX, 50, { width: pageWidth, align: "right" })
+    doc.font("LibSans").fontSize(9)
+    doc.text(`N° ${facture.numero ?? ""}`, { width: pageWidth, align: "right" })
+    doc.text(formatDateFR(facture.date_emission ?? ""), { width: pageWidth, align: "right" })
 
-  // Client
-  doc.setFont("LiberationSans", "bold")
-  doc.text("Facturé à :", marginX, y)
-  doc.setFont("LiberationSans", "normal")
-  y += 5
-  doc.text(client.raison_sociale || [client.prenom, client.nom].filter(Boolean).join(" ") || "", marginX, y)
-  y += 4
-  if (client.adresse) { doc.text(client.adresse, marginX, y); y += 4 }
+    doc.moveDown(2)
 
-  y += 8
+    // Client
+    doc.font("LibSans-Bold").fontSize(10).text("Facturé à :")
+    doc.font("LibSans").fontSize(9)
+    doc.text(client.raison_sociale || [client.prenom, client.nom].filter(Boolean).join(" ") || "")
+    if (client.adresse) doc.text(client.adresse)
 
-  // Tableau des lignes
-  doc.setFont("LiberationSans", "bold")
-  doc.setFontSize(9)
-  doc.text("Désignation", marginX, y)
-  doc.text("Qté", pageWidth - marginX - 55, y, { align: "right" })
-  doc.text("PU HT", pageWidth - marginX - 30, y, { align: "right" })
-  doc.text("Total HT", pageWidth - marginX, y, { align: "right" })
-  y += 2
-  doc.setLineWidth(0.3)
-  doc.line(marginX, y, pageWidth - marginX, y)
-  y += 5
+    doc.moveDown(1.5)
 
-  doc.setFont("LiberationSans", "normal")
-  for (const it of items) {
-    if (y > 260) { doc.addPage(); y = 20 }
-    const desc = doc.splitTextToSize(String(it.description ?? ""), 100)
-    doc.text(desc, marginX, y)
-    doc.text(String(it.quantite ?? ""), pageWidth - marginX - 55, y, { align: "right" })
-    doc.text(formatEUR(it.prix_unitaire_ht), pageWidth - marginX - 30, y, { align: "right" })
-    doc.text(formatEUR(it.total_ht), pageWidth - marginX, y, { align: "right" })
-    y += 5 * (Array.isArray(desc) ? desc.length : 1) + 1
-  }
+    // Tableau — en-têtes
+    const colDesc = startX
+    const colQty = startX + pageWidth - 170
+    const colPu = startX + pageWidth - 110
+    const colTotal = startX + pageWidth - 50
+    let y = doc.y
 
-  y += 4
-  doc.line(marginX, y, pageWidth - marginX, y)
-  y += 8
+    doc.font("LibSans-Bold").fontSize(9)
+    doc.text("Désignation", colDesc, y)
+    doc.text("Qté", colQty, y, { width: 40, align: "right" })
+    doc.text("PU HT", colPu, y, { width: 60, align: "right" })
+    doc.text("Total HT", colTotal, y, { width: 60, align: "right" })
+    y += 14
+    doc.moveTo(startX, y).lineTo(startX + pageWidth, y).lineWidth(0.5).stroke()
+    y += 8
 
-  // Totaux
-  const totalsX = pageWidth - marginX - 60
-  doc.text("Total HT", totalsX, y)
-  doc.text(formatEUR(facture.total_ht), pageWidth - marginX, y, { align: "right" })
-  y += 5
-  doc.text("TVA", totalsX, y)
-  doc.text(formatEUR(facture.tva_montant), pageWidth - marginX, y, { align: "right" })
-  y += 5
-  doc.setFont("LiberationSans", "bold")
-  doc.setFontSize(11)
-  doc.text("Total TTC", totalsX, y)
-  doc.text(formatEUR(facture.total_ttc), pageWidth - marginX, y, { align: "right" })
+    doc.font("LibSans").fontSize(9)
+    for (const it of items) {
+      if (y > 720) { doc.addPage(); y = 50 }
+      const desc = String(it.description ?? "")
+      const descHeight = doc.heightOfString(desc, { width: colQty - colDesc - 10 })
+      doc.text(desc, colDesc, y, { width: colQty - colDesc - 10 })
+      doc.text(String(it.quantite ?? ""), colQty, y, { width: 40, align: "right" })
+      doc.text(formatEUR(it.prix_unitaire_ht), colPu, y, { width: 60, align: "right" })
+      doc.text(formatEUR(it.total_ht), colTotal, y, { width: 60, align: "right" })
+      y += Math.max(descHeight, 12) + 4
+    }
 
-  const pdfBuffer = Buffer.from(doc.output("arraybuffer"))
+    y += 4
+    doc.moveTo(startX, y).lineTo(startX + pageWidth, y).lineWidth(0.5).stroke()
+    y += 12
+
+    // Totaux
+    const totalsX = startX + pageWidth - 150
+    doc.font("LibSans").fontSize(9)
+    doc.text("Total HT", totalsX, y, { width: 90 })
+    doc.text(formatEUR(facture.total_ht), totalsX + 90, y, { width: 60, align: "right" })
+    y += 14
+    doc.text("TVA", totalsX, y, { width: 90 })
+    doc.text(formatEUR(facture.tva_montant), totalsX + 90, y, { width: 60, align: "right" })
+    y += 16
+    doc.font("LibSans-Bold").fontSize(11)
+    doc.text("Total TTC", totalsX, y, { width: 90 })
+    doc.text(formatEUR(facture.total_ttc), totalsX + 90, y, { width: 60, align: "right" })
+
+    doc.end()
+  })
 
   return new Response(new Uint8Array(pdfBuffer), {
     headers: {
