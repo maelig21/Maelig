@@ -1,13 +1,14 @@
 /**
- * Génère la facture Factur-X en une seule passe : PDF (PDFKit, polices
- * embarquées) + embarquement XML CII conforme EN16931/BASIC_WL.
- * Fusionné en une route (pas de fetch interne inter-routes, plus fiable
- * en environnement serverless).
+ * Génère la facture Factur-X : PDF (pdf-lib, même bibliothèque que celle
+ * utilisée en interne par @stackforge-eu/factur-x pour l'embarquement —
+ * élimine tout risque d'incompatibilité de format entre deux libs PDF
+ * différentes) + embarquement XML CII conforme EN16931/BASIC_WL.
  */
 import { NextRequest, NextResponse } from "next/server"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { formatDateFR } from "@/lib/utils"
-import PDFDocument from "pdfkit"
+import { PDFDocument, StandardFonts, rgb } from "pdf-lib"
+import fontkit from "@pdf-lib/fontkit"
 import { LIBERATION_SANS_REGULAR, LIBERATION_SANS_BOLD } from "@/lib/facturx/embedded-fonts"
 import { generateFacturXPdf } from "@/lib/facturx/generate"
 
@@ -16,87 +17,89 @@ export const maxDuration = 30
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-async function buildBasePdf(facture: Record<string, unknown>, org: Record<string, unknown>, client: Record<string, unknown>, items: Record<string, unknown>[]): Promise<Buffer> {
-  const regularBuf = Buffer.from(LIBERATION_SANS_REGULAR, "base64")
-  const boldBuf = Buffer.from(LIBERATION_SANS_BOLD, "base64")
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function buildBasePdf(facture: any, org: any, client: any, items: any[]): Promise<Buffer> {
+  const pdfDoc = await PDFDocument.create()
+  pdfDoc.registerFontkit(fontkit)
 
-  return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ size: "A4", margin: 50, pdfVersion: "1.7" })
-    const chunks: Buffer[] = []
-    doc.on("data", (c) => chunks.push(c))
-    doc.on("end", () => resolve(Buffer.concat(chunks.map((c) => Buffer.from(c)))))
-    doc.on("error", reject)
+  const regularBytes = Buffer.from(LIBERATION_SANS_REGULAR, "base64")
+  const boldBytes = Buffer.from(LIBERATION_SANS_BOLD, "base64")
+  const fontRegular = await pdfDoc.embedFont(regularBytes, { subset: true })
+  const fontBold = await pdfDoc.embedFont(boldBytes, { subset: true })
 
-    doc.registerFont("LibSans", regularBuf)
-    doc.registerFont("LibSans-Bold", boldBuf)
-    doc.font("LibSans")
+  let page = pdfDoc.addPage([595.28, 841.89]) // A4 en points
+  const { width, height } = page.getSize()
+  const marginX = 50
+  let y = height - 50
+  const black = rgb(0.1, 0.1, 0.1)
 
-    const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right
-    const startX = doc.page.margins.left
+  const draw = (text: string, x: number, yy: number, opts: { font?: typeof fontRegular; size?: number; align?: "left" | "right" } = {}) => {
+    const font = opts.font ?? fontRegular
+    const size = opts.size ?? 9
+    const w = font.widthOfTextAtSize(text, size)
+    const xx = opts.align === "right" ? x - w : x
+    page.drawText(text, { x: xx, y: yy, size, font, color: black })
+  }
 
-    doc.font("LibSans-Bold").fontSize(14).text(String(org.nom ?? ""), startX, 50)
-    doc.font("LibSans").fontSize(9)
-    if (org.adresse) doc.text(String(org.adresse))
-    if (org.cp || org.ville) doc.text(`${org.cp ?? ""} ${org.ville ?? ""}`)
-    if (org.siret) doc.text(`SIRET : ${org.siret}`)
+  // En-tête entreprise (gauche)
+  draw(String(org.nom ?? ""), marginX, y, { font: fontBold, size: 14 })
+  y -= 16
+  if (org.adresse) { draw(String(org.adresse), marginX, y); y -= 12 }
+  if (org.cp || org.ville) { draw(`${org.cp ?? ""} ${org.ville ?? ""}`, marginX, y); y -= 12 }
+  if (org.siret) { draw(`SIRET : ${org.siret}`, marginX, y); y -= 12 }
 
-    doc.font("LibSans-Bold").fontSize(22).text("FACTURE", startX, 50, { width: pageWidth, align: "right" })
-    doc.font("LibSans").fontSize(9)
-    doc.text(`N° ${facture.numero ?? ""}`, { width: pageWidth, align: "right" })
-    doc.text(formatDateFR(String(facture.date_emission ?? "")), { width: pageWidth, align: "right" })
+  // Titre + numéro (droite)
+  draw("FACTURE", width - marginX, height - 50, { font: fontBold, size: 22, align: "right" })
+  draw(`N° ${facture.numero ?? ""}`, width - marginX, height - 72, { align: "right" })
+  draw(formatDateFR(String(facture.date_emission ?? "")), width - marginX, height - 84, { align: "right" })
 
-    doc.moveDown(2)
-    doc.font("LibSans-Bold").fontSize(10).text("Facturé à :")
-    doc.font("LibSans").fontSize(9)
-    doc.text(String(client.raison_sociale || [client.prenom, client.nom].filter(Boolean).join(" ") || ""))
-    if (client.adresse) doc.text(String(client.adresse))
+  y -= 20
+  // Client
+  draw("Facturé à :", marginX, y, { font: fontBold, size: 10 })
+  y -= 14
+  draw(String(client.raison_sociale || [client.prenom, client.nom].filter(Boolean).join(" ") || ""), marginX, y)
+  y -= 12
+  if (client.adresse) { draw(String(client.adresse), marginX, y); y -= 12 }
 
-    doc.moveDown(1.5)
-    const colDesc = startX
-    const colQty = startX + pageWidth - 170
-    const colPu = startX + pageWidth - 110
-    const colTotal = startX + pageWidth - 50
-    let y = doc.y
+  y -= 20
+  const colDesc = marginX
+  const colQty = width - marginX - 170
+  const colPu = width - marginX - 110
+  const colTotal = width - marginX
 
-    doc.font("LibSans-Bold").fontSize(9)
-    doc.text("Désignation", colDesc, y)
-    doc.text("Qté", colQty, y, { width: 40, align: "right" })
-    doc.text("PU HT", colPu, y, { width: 60, align: "right" })
-    doc.text("Total HT", colTotal, y, { width: 60, align: "right" })
-    y += 14
-    doc.moveTo(startX, y).lineTo(startX + pageWidth, y).lineWidth(0.5).stroke()
-    y += 8
+  draw("Désignation", colDesc, y, { font: fontBold })
+  draw("Qté", colQty + 30, y, { font: fontBold, align: "right" })
+  draw("PU HT", colPu + 50, y, { font: fontBold, align: "right" })
+  draw("Total HT", colTotal, y, { font: fontBold, align: "right" })
+  y -= 6
+  page.drawLine({ start: { x: marginX, y }, end: { x: width - marginX, y }, thickness: 0.5, color: black })
+  y -= 14
 
-    doc.font("LibSans").fontSize(9)
-    for (const it of items) {
-      if (y > 720) { doc.addPage(); y = 50 }
-      const desc = String(it.description ?? "")
-      const descHeight = doc.heightOfString(desc, { width: colQty - colDesc - 10 })
-      doc.text(desc, colDesc, y, { width: colQty - colDesc - 10 })
-      doc.text(String(it.quantite ?? ""), colQty, y, { width: 40, align: "right" })
-      doc.text(`${Number(it.prix_unitaire_ht).toFixed(2)} €`, colPu, y, { width: 60, align: "right" })
-      doc.text(`${Number(it.total_ht).toFixed(2)} €`, colTotal, y, { width: 60, align: "right" })
-      y += Math.max(descHeight, 12) + 4
-    }
+  for (const it of items) {
+    if (y < 100) { page = pdfDoc.addPage([595.28, 841.89]); y = height - 50 }
+    draw(String(it.description ?? "").slice(0, 60), colDesc, y)
+    draw(String(it.quantite ?? ""), colQty + 30, y, { align: "right" })
+    draw(`${Number(it.prix_unitaire_ht).toFixed(2)} \u20ac`, colPu + 50, y, { align: "right" })
+    draw(`${Number(it.total_ht).toFixed(2)} \u20ac`, colTotal, y, { align: "right" })
+    y -= 16
+  }
 
-    y += 4
-    doc.moveTo(startX, y).lineTo(startX + pageWidth, y).lineWidth(0.5).stroke()
-    y += 12
+  y -= 6
+  page.drawLine({ start: { x: marginX, y }, end: { x: width - marginX, y }, thickness: 0.5, color: black })
+  y -= 20
 
-    const totalsX = startX + pageWidth - 150
-    doc.font("LibSans").fontSize(9)
-    doc.text("Total HT", totalsX, y, { width: 90 })
-    doc.text(`${Number(facture.total_ht).toFixed(2)} €`, totalsX + 90, y, { width: 60, align: "right" })
-    y += 14
-    doc.text("TVA", totalsX, y, { width: 90 })
-    doc.text(`${Number(facture.tva_montant).toFixed(2)} €`, totalsX + 90, y, { width: 60, align: "right" })
-    y += 16
-    doc.font("LibSans-Bold").fontSize(11)
-    doc.text("Total TTC", totalsX, y, { width: 90 })
-    doc.text(`${Number(facture.total_ttc).toFixed(2)} €`, totalsX + 90, y, { width: 60, align: "right" })
+  const totalsLabelX = width - marginX - 150
+  draw("Total HT", totalsLabelX, y)
+  draw(`${Number(facture.total_ht).toFixed(2)} \u20ac`, width - marginX, y, { align: "right" })
+  y -= 14
+  draw("TVA", totalsLabelX, y)
+  draw(`${Number(facture.tva_montant).toFixed(2)} \u20ac`, width - marginX, y, { align: "right" })
+  y -= 16
+  draw("Total TTC", totalsLabelX, y, { font: fontBold, size: 11 })
+  draw(`${Number(facture.total_ttc).toFixed(2)} \u20ac`, width - marginX, y, { font: fontBold, size: 11, align: "right" })
 
-    doc.end()
-  })
+  const bytes = await pdfDoc.save()
+  return Buffer.from(bytes)
 }
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -132,8 +135,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   if (items.length === 0) return NextResponse.json({ error: "no_items" }, { status: 400 })
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const basePdf = await buildBasePdf(facture as any, org, c, items)
+    const basePdf = await buildBasePdf(facture, org, c, items)
 
     const facturXPdf = await generateFacturXPdf(basePdf, {
       numero: facture.numero ?? id.slice(0, 8),
