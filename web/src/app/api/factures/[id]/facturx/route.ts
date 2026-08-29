@@ -45,6 +45,13 @@ async function buildBasePdf(facture: any, org: any, client: any, items: any[]): 
   const { width, height } = page.getSize()
   const marginX = 50
 
+  // Taille du logo selon le réglage de l'éditeur d'apparence (petit/moyen/grand)
+  // — mêmes proportions que LOGO_TAILLES côté web (h-8/h-14/h-20 en px CSS,
+  // converties en points PDF ~0.75x pour un rendu visuellement équivalent)
+  const logoTailleReglage = (org.devis_settings as { logo_taille?: string } | null)?.logo_taille ?? "moyen"
+  const LOGO_HEIGHTS: Record<string, number> = { petit: 24, moyen: 42, grand: 60 }
+  const logoTargetHeight = LOGO_HEIGHTS[logoTailleReglage] ?? LOGO_HEIGHTS.moyen
+
   // Tente de récupérer et embarquer le logo si disponible
   let logoImage: Awaited<ReturnType<typeof pdfDoc.embedPng>> | Awaited<ReturnType<typeof pdfDoc.embedJpg>> | null = null
   if (org.logo_url) {
@@ -83,10 +90,9 @@ async function buildBasePdf(facture: any, org: any, client: any, items: any[]): 
 
   // Logo ou nom (gauche)
   if (logoImage) {
-    const maxH = 40
-    const scale = maxH / logoImage.height
-    page.drawImage(logoImage, { x: marginX, y: y - maxH + 10, width: logoImage.width * scale, height: maxH })
-    y -= maxH + 4
+    const scale = logoTargetHeight / logoImage.height
+    page.drawImage(logoImage, { x: marginX, y: y - logoTargetHeight + 10, width: logoImage.width * scale, height: logoTargetHeight })
+    y -= logoTargetHeight + 4
   } else {
     draw(String(org.nom ?? ""), marginX, y, { font: fontBold, size: 15 })
     y -= 18
@@ -190,7 +196,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
   const { data: facture } = await supabase
     .from("factures")
-    .select("*, clients(*), orgs(nom, siret, tva_intracommunautaire, adresse, ville, cp, pays, tel, email, logo_url, couleur_principale), devis(devis_items(*))")
+    .select("*, clients(*), orgs(nom, siret, tva_intracommunautaire, adresse, ville, cp, pays, tel, email, logo_url, couleur_principale, devis_settings), devis(devis_items(*))")
     .eq("id", id)
     .eq("org_id", profile.org_id)
     .maybeSingle()
