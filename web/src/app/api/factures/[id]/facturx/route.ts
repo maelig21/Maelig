@@ -24,7 +24,7 @@ async function buildBasePdf(facture: Record<string, unknown>, org: Record<string
     const doc = new PDFDocument({ size: "A4", margin: 50, pdfVersion: "1.7" })
     const chunks: Buffer[] = []
     doc.on("data", (c) => chunks.push(c))
-    doc.on("end", () => resolve(Buffer.concat(chunks)))
+    doc.on("end", () => resolve(Buffer.concat(chunks.map((c) => Buffer.from(c)))))
     doc.on("error", reject)
 
     doc.registerFont("LibSans", regularBuf)
