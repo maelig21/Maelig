@@ -49,7 +49,7 @@ async function buildBasePdf(facture: any, org: any, client: any, items: any[]): 
   // — mêmes proportions que LOGO_TAILLES côté web (h-8/h-14/h-20 en px CSS,
   // converties en points PDF ~0.75x pour un rendu visuellement équivalent)
   const logoTailleReglage = (org.devis_settings as { logo_taille?: string } | null)?.logo_taille ?? "moyen"
-  const LOGO_HEIGHTS: Record<string, number> = { petit: 24, moyen: 42, grand: 60 }
+  const LOGO_HEIGHTS: Record<string, number> = { petit: 35, moyen: 60, grand: 90 }
   const logoTargetHeight = LOGO_HEIGHTS[logoTailleReglage] ?? LOGO_HEIGHTS.moyen
 
   // Tente de récupérer et embarquer le logo si disponible
@@ -91,8 +91,8 @@ async function buildBasePdf(facture: any, org: any, client: any, items: any[]): 
   // Logo ou nom (gauche)
   if (logoImage) {
     const scale = logoTargetHeight / logoImage.height
-    page.drawImage(logoImage, { x: marginX, y: y - logoTargetHeight + 10, width: logoImage.width * scale, height: logoTargetHeight })
-    y -= logoTargetHeight + 4
+    page.drawImage(logoImage, { x: marginX, y: y - logoTargetHeight, width: logoImage.width * scale, height: logoTargetHeight })
+    y -= logoTargetHeight + 10
   } else {
     draw(String(org.nom ?? ""), marginX, y, { font: fontBold, size: 15 })
     y -= 18
