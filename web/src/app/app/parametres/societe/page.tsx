@@ -47,6 +47,7 @@ async function saveSociete(formData: FormData) {
     iban: formData.get("iban") as string,
     bic: formData.get("bic") as string,
     conditions_reglement: formData.get("conditions_reglement") as string,
+    facturation_electronique_active: formData.get("facturation_electronique_active") === "on",
     couleur_principale: formData.get("couleur_principale") as string,
     police: formData.get("police") as string,
     metiers: METIERS.map((m) => m.id).filter((id) => formData.get(`metier_${id}`) === "on"),
@@ -199,6 +200,29 @@ export default async function SocietePage() {
               rows={4}
             />
           </div>
+        </Card>
+
+        <Card>
+          <div className="flex items-center gap-2 mb-4">
+            <h3 className="font-display font-semibold">⚡ Facturation électronique (Factur-X)</h3>
+          </div>
+          <p className="text-xs text-muted mb-4">
+            La réforme française rend obligatoire la facturation électronique via une plateforme agréée
+            (émission dès sept. 2027 pour les TPE/PME, dès sept. 2026 pour les grandes entreprises et ETI).
+            Activez cette option si vous travaillez déjà avec des entreprises qui exigent des factures conformes.
+          </p>
+          <label className="flex items-center justify-between p-3 rounded-xl border border-border cursor-pointer">
+            <div>
+              <div className="text-sm font-medium">Transmettre mes factures à la plateforme agréée</div>
+              <div className="text-xs text-muted mt-0.5">Génère et transmet automatiquement vos factures au format Factur-X</div>
+            </div>
+            <input
+              type="checkbox"
+              name="facturation_electronique_active"
+              defaultChecked={org?.facturation_electronique_active ?? false}
+              className="accent-electric h-5 w-5"
+            />
+          </label>
         </Card>
 
         <Card>
