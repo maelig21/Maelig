@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
 
   // Empêche Next.js de bundler ces packages natifs (binaires chromium) —
   // nécessaire pour puppeteer-core + @sparticuz/chromium sur Vercel.
-  serverExternalPackages: ["puppeteer-core", "@sparticuz/chromium"],
+  serverExternalPackages: ["pdfkit"],
 
   experimental: {
     serverActions: {
