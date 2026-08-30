@@ -30,6 +30,7 @@ export type FacturXInvoiceData = {
     ville?: string | null
     cp?: string | null
     pays?: string
+    electronicAddress?: string | null
   }
   lignes: Array<{
     description: string
@@ -140,6 +141,7 @@ export function buildCiiXml(data: FacturXInvoiceData): string {
           <ram:CityName>${esc(data.acheteur.ville ?? "")}</ram:CityName>
           <ram:CountryID>${esc(data.acheteur.pays ?? "FR")}</ram:CountryID>
         </ram:PostalTradeAddress>
+        ${data.acheteur.electronicAddress ? `<ram:URIUniversalCommunication><ram:URIID schemeID="0225">${esc(data.acheteur.electronicAddress)}</ram:URIID></ram:URIUniversalCommunication>` : ""}
       </ram:BuyerTradeParty>
     </ram:ApplicableHeaderTradeAgreement>
     <ram:ApplicableHeaderTradeDelivery/>

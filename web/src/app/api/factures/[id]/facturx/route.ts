@@ -240,11 +240,15 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       },
       acheteur: {
         nom: c.raison_sociale || [c.prenom, c.nom].filter(Boolean).join(" "),
-        siret: c.siret,
+        // TEMPORAIRE — SIREN et adresse Peppol fictifs "Tricatel" du bac à
+        // sable Super PDP, pour tester la réception côté acheteur. À
+        // remplacer par les vraies infos du client une fois en production.
+        siret: "000000001",
         adresse: c.adresse,
         ville: c.ville,
         cp: c.cp,
         pays: "FR",
+        electronicAddress: "0225:315143296_83355",
       },
       lignes: itemsPourXml.map((it) => ({
         description: it.description,
