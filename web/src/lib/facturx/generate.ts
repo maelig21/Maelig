@@ -122,14 +122,14 @@ export function buildCiiXml(data: FacturXInvoiceData): string {
     <ram:ApplicableHeaderTradeAgreement>
       <ram:SellerTradeParty>
         <ram:Name>${esc(data.vendeur.nom)}</ram:Name>
-        ${vendeurElectronicAddress ? `<ram:URIUniversalCommunication><ram:URIID schemeID="0225">${esc(vendeurElectronicAddress)}</ram:URIID></ram:URIUniversalCommunication>` : ""}
-        ${vendeurTax}
         <ram:PostalTradeAddress>
           <ram:PostcodeCode>${esc(data.vendeur.cp ?? "")}</ram:PostcodeCode>
           <ram:LineOne>${esc(data.vendeur.adresse ?? "")}</ram:LineOne>
           <ram:CityName>${esc(data.vendeur.ville ?? "")}</ram:CityName>
           <ram:CountryID>${esc(data.vendeur.pays ?? "FR")}</ram:CountryID>
         </ram:PostalTradeAddress>
+        ${vendeurElectronicAddress ? `<ram:URIUniversalCommunication><ram:URIID schemeID="0225">${esc(vendeurElectronicAddress)}</ram:URIID></ram:URIUniversalCommunication>` : ""}
+        ${vendeurTax}
       </ram:SellerTradeParty>
       <ram:BuyerTradeParty>
         <ram:Name>${esc(data.acheteur.nom)}</ram:Name>
