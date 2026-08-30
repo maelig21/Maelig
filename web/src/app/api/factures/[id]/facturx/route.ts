@@ -231,6 +231,11 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
         ville: org?.ville,
         cp: org?.cp,
         pays: org?.pays || "FR",
+        // TEMPORAIRE — adresse Peppol de l'entreprise fictive "Burger Queen"
+        // du bac à sable Super PDP, pour valider l'intégration technique.
+        // À remplacer par la vraie adresse Peppol de chaque entreprise cliente
+        // une fois le mécanisme d'inscription à l'annuaire mis en place.
+        electronicAddress: "0225:315143296_83356",
       },
       acheteur: {
         nom: c.raison_sociale || [c.prenom, c.nom].filter(Boolean).join(" "),

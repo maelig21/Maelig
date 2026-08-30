@@ -21,6 +21,7 @@ export type FacturXInvoiceData = {
     ville?: string | null
     cp?: string | null
     pays?: string
+    electronicAddress?: string | null
   }
   acheteur: {
     nom: string
@@ -94,6 +95,12 @@ export function buildCiiXml(data: FacturXInvoiceData): string {
     ? `<ram:SpecifiedTaxRegistration><ram:ID schemeID="VA">${esc(data.vendeur.tvaIntracom)}</ram:ID></ram:SpecifiedTaxRegistration>`
     : ""
 
+  // Adresse électronique Peppol du vendeur — requise pour la transmission via Super PDP.
+  // TODO: en production, récupérer la vraie adresse Peppol enregistrée par chaque
+  // entreprise cliente lors de son inscription à l'annuaire (via l'API companies/me
+  // ou une donnée saisie dans les paramètres société de DEP).
+  const vendeurElectronicAddress = data.vendeur.electronicAddress ?? ""
+
   return `<?xml version="1.0" encoding="UTF-8"?>
 <rsm:CrossIndustryInvoice xmlns:rsm="urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100"
   xmlns:ram="urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100"
@@ -115,6 +122,7 @@ export function buildCiiXml(data: FacturXInvoiceData): string {
     <ram:ApplicableHeaderTradeAgreement>
       <ram:SellerTradeParty>
         <ram:Name>${esc(data.vendeur.nom)}</ram:Name>
+        ${vendeurElectronicAddress ? `<ram:URIUniversalCommunication><ram:URIID schemeID="0225">${esc(vendeurElectronicAddress)}</ram:URIID></ram:URIUniversalCommunication>` : ""}
         ${vendeurTax}
         <ram:PostalTradeAddress>
           <ram:PostcodeCode>${esc(data.vendeur.cp ?? "")}</ram:PostcodeCode>
