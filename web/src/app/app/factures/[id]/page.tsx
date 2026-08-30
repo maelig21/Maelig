@@ -34,7 +34,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       .maybeSingle(),
     supabase
       .from("orgs")
-      .select("nom, adresse, ville, cp, tel, email, logo_url, siret, conditions_reglement, couleur_principale, police")
+      .select("nom, adresse, ville, cp, tel, email, logo_url, siret, conditions_reglement, couleur_principale, police, facturation_electronique_active")
       .eq("id", profile!.org_id!)
       .maybeSingle(),
   ])
@@ -180,7 +180,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
 
       {/* Actions */}
       <div className="mt-6">
-        <FactureActions factureId={id} statut={facture.statut} devisId={devis?.id} />
+        <FactureActions factureId={id} statut={facture.statut} devisId={devis?.id} facturationElectroniqueActive={org?.facturation_electronique_active} superpdpId={facture.superpdp_invoice_id} />
       </div>
     </div>
   )

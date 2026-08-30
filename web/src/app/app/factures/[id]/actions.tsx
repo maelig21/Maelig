@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Check, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-export function FactureActions({ factureId, statut, devisId }: { factureId: string; statut: string; devisId?: string }) {
+export function FactureActions({ factureId, statut, devisId, facturationElectroniqueActive, superpdpId }: { factureId: string; statut: string; devisId?: string; facturationElectroniqueActive?: boolean; superpdpId?: string | null }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
 
@@ -31,6 +31,12 @@ export function FactureActions({ factureId, statut, devisId }: { factureId: stri
     const res = await fetch(`/api/factures/${factureId}/abandonner`, { method: "POST" })
     const data = await res.json()
     if (!data.ok) throw new Error(data.error)
+  }
+
+  async function transmettre() {
+    const res = await fetch(`/api/factures/${factureId}/transmettre`, { method: "POST" })
+    const data = await res.json()
+    if (!data.ok) throw new Error(data.error ?? "Erreur transmission")
   }
 
   if (statut === "payee") {
@@ -59,6 +65,17 @@ export function FactureActions({ factureId, statut, devisId }: { factureId: stri
           📄 Télécharger Factur-X
         </a>
       </Button>
+      {facturationElectroniqueActive && (
+        superpdpId ? (
+          <div className="inline-flex items-center gap-2 text-green-600 text-sm font-medium px-3">
+            <Check className="h-4 w-4" /> Transmise (réf. {superpdpId})
+          </div>
+        ) : (
+          <Button variant="secondary" onClick={() => call(transmettre, "Facture transmise à la plateforme agréée !")} disabled={pending}>
+            ⚡ Transmettre (Super PDP)
+          </Button>
+        )
+      )}
       <Button variant="secondary" onClick={() => call(marquerAbandonnee, "Facture abandonnée")} disabled={pending}>
         <X className="h-4 w-4" /> Abandonner
       </Button>
