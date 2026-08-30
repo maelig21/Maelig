@@ -225,16 +225,17 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       dateEmission: facture.date_emission ?? new Date().toISOString().slice(0, 10),
       vendeur: {
         nom: org?.nom ?? "",
-        siret: org?.siret,
+        // TEMPORAIRE — SIREN fictif "Burger Queen" (000000002) du bac à sable
+        // Super PDP, requis pour que l'API accepte la facture avec les
+        // identifiants OAuth sandbox actuels. À remplacer par org?.siret
+        // une fois passé en environnement production avec les vraies
+        // entreprises clientes inscrites.
+        siret: "000000002",
         tvaIntracom: org?.tva_intracommunautaire,
         adresse: org?.adresse,
         ville: org?.ville,
         cp: org?.cp,
         pays: org?.pays || "FR",
-        // TEMPORAIRE — adresse Peppol de l'entreprise fictive "Burger Queen"
-        // du bac à sable Super PDP, pour valider l'intégration technique.
-        // À remplacer par la vraie adresse Peppol de chaque entreprise cliente
-        // une fois le mécanisme d'inscription à l'annuaire mis en place.
         electronicAddress: "0225:315143296_83356",
       },
       acheteur: {
