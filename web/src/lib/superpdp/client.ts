@@ -1,28 +1,23 @@
 /**
  * Client Super PDP — Plateforme agréée pour la facturation électronique
- * conforme à la réforme française (format UBL, réseau Peppol).
+ * conforme à la réforme française (Factur-X, réseau Peppol).
+ *
+ * Chaque entreprise cliente DEP possède ses propres identifiants OAuth
+ * (client_id/client_secret) obtenus via son propre compte Super PDP —
+ * voir /app/parametres/facturation-electronique pour le guide.
  *
  * Basé sur le script officiel : https://github.com/superpdp/examples
- * Documentation : https://www.superpdp.tech/documentation/2
  */
 
 const BASE_URL = process.env.SUPERPDP_ENDPOINT ?? "https://api.superpdp.tech"
 
-let cachedToken: { token: string; expiresAt: number } | null = null
+// Cache de tokens en mémoire, par client_id (une entreprise = un token)
+const tokenCache = new Map<string, { token: string; expiresAt: number }>()
 
-/**
- * Récupère un token d'accès OAuth2 (client_credentials), avec cache en
- * mémoire pour éviter de redemander un token à chaque appel.
- */
-async function getAccessToken(): Promise<string> {
-  if (cachedToken && cachedToken.expiresAt > Date.now() + 30_000) {
-    return cachedToken.token
-  }
-
-  const clientId = process.env.SUPERPDP_CLIENT_ID
-  const clientSecret = process.env.SUPERPDP_CLIENT_SECRET
-  if (!clientId || !clientSecret) {
-    throw new Error("SUPERPDP_CLIENT_ID / SUPERPDP_CLIENT_SECRET manquants")
+async function getAccessToken(clientId: string, clientSecret: string): Promise<string> {
+  const cached = tokenCache.get(clientId)
+  if (cached && cached.expiresAt > Date.now() + 30_000) {
+    return cached.token
   }
 
   const res = await fetch(`${BASE_URL}/oauth2/token`, {
@@ -41,17 +36,16 @@ async function getAccessToken(): Promise<string> {
   }
 
   const data = await res.json() as { access_token: string; expires_in?: number }
-  cachedToken = {
+  tokenCache.set(clientId, {
     token: data.access_token,
-    // expires_in n'est pas garanti dans la réponse d'après le script officiel — fallback 55 min
     expiresAt: Date.now() + (data.expires_in ?? 3300) * 1000,
-  }
-  return cachedToken.token
+  })
+  return data.access_token
 }
 
-/** Vérifie l'entreprise associée aux identifiants configurés. */
-export async function getMyCompany(): Promise<{ formal_name: string; [k: string]: unknown }> {
-  const token = await getAccessToken()
+/** Vérifie l'entreprise associée aux identifiants fournis. */
+export async function getMyCompany(clientId: string, clientSecret: string): Promise<{ formal_name: string; [k: string]: unknown }> {
+  const token = await getAccessToken(clientId, clientSecret)
   const res = await fetch(`${BASE_URL}/v1.beta/companies/me`, {
     headers: { Authorization: `Bearer ${token}` },
   })
@@ -62,15 +56,16 @@ export async function getMyCompany(): Promise<{ formal_name: string; [k: string]
 }
 
 /**
- * Transmet une facture à Super PDP pour distribution via le réseau Peppol.
- * Super PDP détecte automatiquement le format envoyé (Factur-X, CII, UBL)
- * et le convertit en interne vers sa représentation EN16931.
- *
- * Le corps de la requête est le contenu brut du document, pas un FormData
- * (confirmé par le script officiel superpdp/examples).
+ * Transmet une facture (PDF Factur-X ou XML UBL/CII — détection automatique
+ * par Super PDP) pour distribution via le réseau Peppol.
  */
-export async function submitInvoice(fileBuffer: Buffer, contentType = "application/pdf"): Promise<{ id: string | number; [k: string]: unknown }> {
-  const token = await getAccessToken()
+export async function submitInvoice(
+  clientId: string,
+  clientSecret: string,
+  fileBuffer: Buffer,
+  contentType = "application/pdf",
+): Promise<{ id: string | number; [k: string]: unknown }> {
+  const token = await getAccessToken(clientId, clientSecret)
 
   const res = await fetch(`${BASE_URL}/v1.beta/invoices`, {
     method: "POST",
@@ -90,8 +85,12 @@ export async function submitInvoice(fileBuffer: Buffer, contentType = "applicati
 }
 
 /** Vérifie le statut de transmission d'une facture déjà envoyée. */
-export async function getInvoiceStatus(invoiceId: string | number): Promise<{ id: string | number; en_invoice?: unknown; [k: string]: unknown }> {
-  const token = await getAccessToken()
+export async function getInvoiceStatus(
+  clientId: string,
+  clientSecret: string,
+  invoiceId: string | number,
+): Promise<{ id: string | number; en_invoice?: unknown; [k: string]: unknown }> {
+  const token = await getAccessToken(clientId, clientSecret)
 
   const res = await fetch(`${BASE_URL}/v1.beta/invoices/${invoiceId}`, {
     headers: { Authorization: `Bearer ${token}` },
@@ -102,22 +101,4 @@ export async function getInvoiceStatus(invoiceId: string | number): Promise<{ id
   }
 
   return res.json()
-}
-
-/** Envoie un événement de cycle de vie (ex: "Encaissée" = fr:212). */
-export async function sendInvoiceEvent(invoiceId: string | number, statusCode: string): Promise<void> {
-  const token = await getAccessToken()
-
-  const res = await fetch(`${BASE_URL}/v1.beta/invoice_events`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ invoice_id: invoiceId, status_code: statusCode }),
-  })
-
-  if (!res.ok) {
-    throw new Error(`[superpdp] invoice event failed: ${res.status}`)
-  }
 }

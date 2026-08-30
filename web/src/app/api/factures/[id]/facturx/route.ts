@@ -225,30 +225,27 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       dateEmission: facture.date_emission ?? new Date().toISOString().slice(0, 10),
       vendeur: {
         nom: org?.nom ?? "",
-        // TEMPORAIRE — SIREN fictif "Burger Queen" (000000002) du bac à sable
-        // Super PDP, requis pour que l'API accepte la facture avec les
-        // identifiants OAuth sandbox actuels. À remplacer par org?.siret
-        // une fois passé en environnement production avec les vraies
-        // entreprises clientes inscrites.
-        siret: "000000002",
+        siret: org?.siret,
         tvaIntracom: org?.tva_intracommunautaire,
         adresse: org?.adresse,
         ville: org?.ville,
         cp: org?.cp,
         pays: org?.pays || "FR",
-        electronicAddress: "0225:315143296_83356",
+        electronicAddress: org?.superpdp_electronic_address,
       },
       acheteur: {
         nom: c.raison_sociale || [c.prenom, c.nom].filter(Boolean).join(" "),
-        // TEMPORAIRE — SIREN et adresse Peppol fictifs "Tricatel" du bac à
-        // sable Super PDP, pour tester la réception côté acheteur. À
-        // remplacer par les vraies infos du client une fois en production.
-        siret: "000000001",
+        siret: c.siret,
         adresse: c.adresse,
         ville: c.ville,
         cp: c.cp,
         pays: "FR",
-        electronicAddress: "0225:315143296_83355",
+        // TODO: adresse Peppol du client — nécessite un mécanisme de saisie
+        // ou de vérification annuaire côté fiche client. Sans elle, la
+        // transmission échouera si le client n'est pas encore inscrit à
+        // l'annuaire Peppol (obligation universelle en réception dès
+        // septembre 2026).
+        electronicAddress: c.superpdp_electronic_address,
       },
       lignes: itemsPourXml.map((it) => ({
         description: it.description,

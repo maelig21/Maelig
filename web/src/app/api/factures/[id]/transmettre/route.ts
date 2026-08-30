@@ -1,7 +1,7 @@
 /**
- * Transmission d'une facture à la plateforme agréée Super PDP (conformité
- * réforme facturation électronique). N'agit que si l'entreprise a activé
- * l'option dans ses paramètres (facturation_electronique_active).
+ * Transmission d'une facture à Super PDP en utilisant les identifiants
+ * OAuth propres à l'entreprise cliente (configurés dans
+ * /app/parametres/facturation-electronique).
  */
 import { NextRequest, NextResponse } from "next/server"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
@@ -25,12 +25,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   const { data: org } = await supabase
     .from("orgs")
-    .select("facturation_electronique_active")
+    .select("facturation_electronique_active, superpdp_client_id, superpdp_client_secret")
     .eq("id", profile.org_id)
     .maybeSingle()
 
   if (!org?.facturation_electronique_active) {
-    return NextResponse.json({ error: "not_enabled", detail: "Activez la facturation électronique dans les paramètres société." }, { status: 400 })
+    return NextResponse.json({ error: "not_enabled", detail: "Activez la facturation électronique dans les paramètres." }, { status: 400 })
+  }
+  if (!org.superpdp_client_id || !org.superpdp_client_secret) {
+    return NextResponse.json({ error: "not_configured", detail: "Connectez d'abord votre compte Super PDP dans les paramètres." }, { status: 400 })
   }
 
   const { data: facture } = await supabase
@@ -47,7 +50,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
 
   try {
-    // Réutilise la génération Factur-X déjà fonctionnelle
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? new URL(req.url).origin
     const pdfRes = await fetch(`${baseUrl}/api/factures/${id}/facturx`, {
       headers: { cookie: req.headers.get("cookie") ?? "" },
@@ -57,7 +59,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
     const pdfBuffer = Buffer.from(await pdfRes.arrayBuffer())
 
-    const result = await submitInvoice(pdfBuffer, "application/pdf")
+    const result = await submitInvoice(org.superpdp_client_id, org.superpdp_client_secret, pdfBuffer, "application/pdf")
 
     await supabase
       .from("factures")
