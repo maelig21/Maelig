@@ -122,6 +122,7 @@ export function buildCiiXml(data: FacturXInvoiceData): string {
     <ram:ApplicableHeaderTradeAgreement>
       <ram:SellerTradeParty>
         <ram:Name>${esc(data.vendeur.nom)}</ram:Name>
+        ${data.vendeur.siret ? `<ram:SpecifiedLegalOrganization><ram:ID schemeID="0002">${esc(data.vendeur.siret.replace(/\s/g, ""))}</ram:ID></ram:SpecifiedLegalOrganization>` : ""}
         <ram:PostalTradeAddress>
           <ram:PostcodeCode>${esc(data.vendeur.cp ?? "")}</ram:PostcodeCode>
           <ram:LineOne>${esc(data.vendeur.adresse ?? "")}</ram:LineOne>
