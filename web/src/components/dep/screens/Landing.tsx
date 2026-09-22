@@ -308,7 +308,7 @@ function LandingMath() {
             Tu passes 8h par semaine sur l’admin. Devis, factures, relances, planning équipe. À 70 €/h facturable, tu perds 560 € chaque semaine. Multiplié par 52 semaines, ça fait 29 120 € qui sortent de ta poche.
           </p>
           <p style={{ fontSize: 'clamp(13px, 1.7vw, 17px)', color: 'var(--dep-black)', fontWeight: 600 }}>
-            DEP récupère cette somme. Tu rentres chez toi à 18h
+            Vous récupérez cette somme. Vous rentrez chez vous à 18h
           </p>
         </div>
 
