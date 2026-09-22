@@ -93,7 +93,7 @@ function LandingHero() {
         <DepReveal>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 32 }}>
             <span className="dep-cable" />
-            <span className="dep-eyebrow dep-eyebrow--on-dark">L&apos;outil terrain · pour électriciens · 2026</span>
+            <span className="dep-eyebrow dep-eyebrow--on-dark">L&apos;outil terrain · pour le bâtiment · 2026</span>
           </div>
         </DepReveal>
 
@@ -624,7 +624,7 @@ function LandingFooter() {
         <div>
           <Image src="/dep-logo.png" alt="DEP" width={120} height={40} priority style={{ width: "auto", height: 'clamp(28px, 5vw, 40px)', mixBlendMode: 'screen' }} />
           <p style={{ marginTop: 16, fontSize: 13, maxWidth: 'min(320px, 100%)', lineHeight: 1.5 }}>
-            DEP. Devis Électricité Plateforme. Le SaaS terrain pour électriciens FR. Conçu sur chantier avec Maelig, électricien indépendant
+            DEP. Devis et gestion d'entreprise. Le SaaS terrain pour les artisans du bâtiment FR. Conçu sur chantier avec Maelig et Djibril
           </p>
         </div>
         <div style={{ fontSize: 13, color: 'var(--dep-grey-3)', lineHeight: 1.8 }}>

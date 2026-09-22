@@ -33,7 +33,7 @@ export function SiteFooter() {
           <div>
             <DepLogo size={32} withWordmark />
             <p className="mt-4 text-sm text-muted max-w-xs leading-relaxed">
-              Le devis et la facture d&apos;électricien à la voix. Conçu en France pour les pros
+              Le devis et la facture du bâtiment à la voix. Conçu en France pour les pros
               du bâtiment qui veulent gagner du temps sans bidouille.
             </p>
           </div>
@@ -64,7 +64,7 @@ export function SiteFooter() {
         </div>
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-border pt-6 text-xs text-muted-2">
           <span>© {new Date().getFullYear()} DEP · Tous droits réservés.</span>
-          <span className="wire-underline bg-clip-text text-transparent font-medium">Fait avec ⚡ pour les électriciens</span>
+          <span className="wire-underline bg-clip-text text-transparent font-medium">Fait avec ⚡ pour les artisans du bâtiment</span>
         </div>
       </div>
     </footer>

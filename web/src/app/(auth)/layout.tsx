@@ -15,7 +15,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             Parlez<DepTypingDots size={14} /> <span className="text-electric">C&apos;est facturé.</span>
           </h2>
           <p className="mt-4 text-muted">
-            Vos devis et factures à la voix. Conçu pour les électriciens qui
+            Vos devis et factures à la voix. Conçu pour les artisans du bâtiment qui
             préfèrent leurs outils à leur clavier.
           </p>
           <ul className="mt-8 space-y-3 text-sm text-foreground/85">
