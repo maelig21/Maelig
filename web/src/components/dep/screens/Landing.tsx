@@ -109,8 +109,8 @@ function LandingHero() {
             fontSize: 'clamp(15px, 2.2vw, 22px)', lineHeight: 1.45, color: 'var(--dep-grey-4)',
             maxWidth: 'min(720px, 100%)', marginBottom: 48,
           }}>
-            Tu <DepImpact tone="action">parles</DepImpact>, ton devis sort. Tu valides, la facture part. Le client paie, <DepImpact tone="gain">t&apos;es payé</DepImpact>.
-            En français, et dans <DepImpact tone="proof">20 langues</DepImpact> parlées sur tes chantiers
+            Vous <DepImpact tone="action">parlez</DepImpact>, DEP fait le devis. Le client signe, la facture part toute seule, et vous êtes <DepImpact tone="gain">payé</DepImpact> plus vite.
+            En français, et dans <DepImpact tone="proof">20 langues</DepImpact> parlées sur vos chantiers
           </p>
         </DepReveal>
 
