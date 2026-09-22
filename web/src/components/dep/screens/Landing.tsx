@@ -364,7 +364,7 @@ function LandingParcours() {
           <span className="dep-eyebrow">Parcours · 4 étapes · 4 minutes</span>
         </div>
         <h2 style={{ fontSize: 'clamp(28px, 5.5vw, 56px)', fontWeight: 700, letterSpacing: '-0.035em', lineHeight: 1.04, marginBottom: 'clamp(36px, 6vw, 64px)', maxWidth: 'min(800px, 100%)' }}>
-          De ta <DepImpact tone="action">voix</DepImpact> au <DepImpact tone="gain">cash</DepImpact>, sans repasser au bureau
+          De la <DepImpact tone="action">voix</DepImpact> au <DepImpact tone="gain">paiement</DepImpact>, sans repasser au bureau
         </h2>
         <div style={{
           display: 'grid',
