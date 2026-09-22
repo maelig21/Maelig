@@ -122,15 +122,7 @@ function LandingHero() {
                 <DepIcon.arrow style={{ width: 18, height: 18 }} />
               </a>
             </DepMagnetic>
-            <a href="#demo" className="dep-btn dep-btn--ghost-dark dep-btn--lg" style={{ textDecoration: 'none' }}>
-              <span style={{
-                width: 28, height: 28, borderRadius: '50%', background: 'rgba(255,255,255,0.08)',
-                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <svg width="10" height="11" viewBox="0 0 10 11" fill="currentColor"><path d="M0 0v11l10-5.5z"/></svg>
-              </span>
-              Voir la démo (2 min)
-            </a>
+
           </div>
         </DepReveal>
 
