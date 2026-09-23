@@ -63,7 +63,7 @@ export default async function AdminOverviewPage() {
           href="/app/admin/employes"
           Icon={HardHat}
           title="Employés"
-          subtitle="Comptes esclaves (slave)"
+          subtitle="Comptes employés"
           count={s.total_employes ?? 0}
           accent="info"
           desc="Compagnons connectés au chat traduit + module incidents. Patron rattaché visible."

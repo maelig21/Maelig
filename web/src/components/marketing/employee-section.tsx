@@ -3,7 +3,7 @@ import { motion } from "framer-motion"
 import { ShieldCheck, KeyRound, Eye, Sparkles } from "lucide-react"
 
 /**
- * Section employés : l'IA qui ne fait pas chier vos esclaves, et qui vous protège.
+ * Section employés : gestion simple des comptes collaborateurs.
  */
 export function EmployeeSection() {
   const points = [
@@ -29,7 +29,7 @@ export function EmployeeSection() {
       Icon: ShieldCheck,
       title: "Vous ajoutez quand vous voulez",
       body:
-        "+5 €/mois par employé. Vous coupez en 1 clic. Le compte se débranche sans toucher à vos données.",
+        "+10 €/mois par employé. Vous coupez en 1 clic. Le compte se débranche sans toucher à vos données.",
     },
   ]
   return (

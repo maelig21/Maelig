@@ -46,7 +46,7 @@ export function PricingCard() {
             <span className="text-muted">/ mois</span>
           </div>
           <p className="mt-2 text-sm text-muted">
-            Sans engagement. Annulez en 1 clic. Compte secondaire (esclave) : +5€/mois par utilisateur.
+            Sans engagement. Annulez en 1 clic. Compte employé supplémentaire : +10€/mois par utilisateur.
           </p>
         </div>
 
