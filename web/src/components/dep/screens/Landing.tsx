@@ -508,7 +508,7 @@ function LandingPricing() {
               Chaque employé connecté au chat traduit et au module incidents
             </p>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 32 }}>
-              <span className="mono" style={{ fontSize: 'clamp(32px, 6vw, 64px)', fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1 }}>5</span>
+              <span className="mono" style={{ fontSize: 'clamp(32px, 6vw, 64px)', fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1 }}>10</span>
               <span style={{ fontSize: 'clamp(15px, 2.2vw, 22px)', fontWeight: 600 }}>€</span>
               <span style={{ fontSize: 14, color: 'var(--dep-grey-3)' }}>/ employé / mois</span>
             </div>
