@@ -602,7 +602,7 @@ function LandingCTAFinal() {
           </a>
         </DepMagnetic>
         <p className="mono" style={{ fontSize: 13, color: 'var(--dep-grey-3)', marginTop: 24, letterSpacing: '0.08em' }}>
-          <DepImpact tone="proof">14 jours</DepImpact> · <DepImpact tone="trust">Pas de CB</DepImpact> · Résiliation libre · <DepImpact tone="trust">RGPD strict</DepImpact>
+          <DepImpact tone="proof">14 jours d'essai gratuit</DepImpact> · <DepImpact tone="trust">Pas de CB</DepImpact> · Résiliation libre · <DepImpact tone="trust">RGPD strict</DepImpact>
         </p>
       </div>
     </section>
