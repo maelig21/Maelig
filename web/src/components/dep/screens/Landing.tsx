@@ -175,7 +175,7 @@ function LandingMultilingue() {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 28 }}>
             <span className="dep-cable" />
-            <span className="dep-eyebrow dep-eyebrow--on-dark">Killer feature · multilingue chantier</span>
+            <span className="dep-eyebrow dep-eyebrow--on-dark">Fonctionnalité phare · multilingue chantier</span>
           </div>
           <h2 style={{ fontSize: 'clamp(28px, 5vw, 52px)', fontWeight: 700, letterSpacing: '-0.035em', lineHeight: 1.03, marginBottom: 28 }}>
             Ton chef d’équipe parle <em style={{ color: 'var(--dep-yellow)', fontStyle: 'italic' }}>darija</em>.<br />
