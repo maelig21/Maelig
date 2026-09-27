@@ -32,7 +32,7 @@ export async function middleware(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     const path = request.nextUrl.pathname
     const isAuthRoute = path.startsWith("/connexion") || path.startsWith("/inscription") || path.startsWith("/oubli") || path.startsWith("/accepter-invitation")
-    const isPublicRoute = path.startsWith("/signer/") || path.startsWith("/api/") || path === "/" || isAuthRoute
+    const isPublicRoute = path.startsWith("/signer/") || path.startsWith("/api/") || path === "/" || path === "/cgv" || path === "/confidentialite" || isAuthRoute
 
     // Redirection mobile
     const ua = request.headers.get("user-agent") ?? ""
