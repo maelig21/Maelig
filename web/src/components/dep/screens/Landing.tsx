@@ -621,8 +621,8 @@ function LandingFooter() {
         </div>
         <div style={{ fontSize: 13, color: 'var(--dep-grey-3)', lineHeight: 1.8 }}>
           <div className="mono" style={{ color: 'var(--dep-paper)', textTransform: 'uppercase', letterSpacing: '0.16em', fontSize: 11, marginBottom: 10 }}>Contact</div>
-          <a href="mailto:ayouneslead@gmail.com" style={{ color: 'inherit', textDecoration: 'none' }}>ayouneslead@gmail.com</a><br />
-          <span>Maelig21 · pilote · Hébergé OVH Roubaix</span>
+          <a href="mailto:dep.pro21@gmail.com" style={{ color: 'inherit', textDecoration: 'none' }}>dep.pro21@gmail.com</a><br />
+          <span>Hébergé OVH Roubaix</span>
         </div>
       </div>
       <div style={{ borderTop: '1px solid var(--dep-line-dark)', marginTop: 40, paddingTop: 24, display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.06em' }}>
