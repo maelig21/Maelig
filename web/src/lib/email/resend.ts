@@ -4,7 +4,8 @@
  */
 const RESEND_URL = "https://api.resend.com/emails"
 const KEY = process.env.RESEND_API_KEY
-const FROM = process.env.RESEND_FROM || "DEP <noreply@dep-electrique.fr>"
+const FROM_DOMAIN = process.env.RESEND_FROM_DOMAIN || "noreply@dep-pro.fr"
+const DEFAULT_FROM = process.env.RESEND_FROM || `DEP <${FROM_DOMAIN}>`
 const FALLBACK_FROM = "DEP <onboarding@resend.dev>"
 
 export interface SendEmailInput {
@@ -13,6 +14,10 @@ export interface SendEmailInput {
   html: string
   text?: string
   replyTo?: string
+  /** Nom de l'entreprise émettrice à afficher avant "via DEP" dans l'expéditeur
+   *  (ex: "Électricité Dupont via DEP <noreply@dep-pro.fr>"). Rassure le client
+   *  final en lui montrant le nom de son artisan en premier. */
+  fromName?: string
   attachments?: Array<{ filename: string; content: string /* base64 */ }>
 }
 
@@ -38,7 +43,11 @@ async function doSend(input: SendEmailInput, from: string, html: string) {
 export async function sendEmail(input: SendEmailInput): Promise<{ id: string }> {
   if (!KEY) throw new Error("RESEND_API_KEY missing")
 
-  let res = await doSend(input, FROM, input.html)
+  const from = input.fromName
+    ? `${input.fromName} via DEP <${FROM_DOMAIN}>`
+    : DEFAULT_FROM
+
+  let res = await doSend(input, from, input.html)
 
   if (!res.ok) {
     const detail = await res.text().catch(() => "")
@@ -66,7 +75,7 @@ export async function sendEmail(input: SendEmailInput): Promise<{ id: string }> 
       let fbParsed: { message?: string } | null = null
       try { fbParsed = JSON.parse(fbDetail) } catch {}
       throw new Error(
-        `[resend] Domaine non vérifié sur Resend. Ajoutez et vérifiez le domaine dep-electrique.fr sur https://resend.com/domains. ` +
+        `[resend] Domaine non vérifié sur Resend. Ajoutez et vérifiez le domaine dep-pro.fr sur https://resend.com/domains. ` +
         `Le fallback via ${FALLBACK_FROM} a également échoué (${fbRes.status}): ${fbParsed?.message || fbDetail.slice(0, 200)}`
       )
     }

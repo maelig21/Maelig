@@ -208,6 +208,7 @@ export async function saveDevis(payload: DevisPayload, action: "draft" | "send" 
         await sendEmail({
           to: clientEmail,
           replyTo: (org as { email?: string })?.email || undefined,
+          fromName: emailOpts.patronEntreprise,
           ...devisEnvoiTemplate(emailOpts),
         })
         await admin.from("devis").update({ date_envoi_email: new Date().toISOString() }).eq("id", devisId)
@@ -297,6 +298,7 @@ export async function approveSlaveDevis(devisId: string) {
         }
         await sendEmail({
           to: clientEmail,
+          fromName: emailOpts.patronEntreprise,
           ...devisEnvoiTemplate(emailOpts),
         })
         await supabaseAdmin()
